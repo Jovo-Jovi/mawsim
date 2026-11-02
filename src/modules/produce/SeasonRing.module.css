@@ -1,0 +1,55 @@
+.ring {
+  grid-area: 1 / 1;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.ring[data-kind="fruit"] {
+  --arc-in: var(--color-kind-fruit);
+}
+
+.ring[data-kind="vegetable"] {
+  --arc-in: var(--color-kind-vegetable);
+}
+
+.ring[data-kind="leafy"] {
+  --arc-in: var(--color-kind-leafy);
+}
+
+.turn {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+:dir(rtl) .turn {
+  transform: scaleX(-1);
+}
+
+.inBed,
+.outBed,
+.inArc,
+.outArc {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.inBed {
+  stroke: var(--color-surface);
+  stroke-width: 3.4;
+}
+
+.inArc {
+  stroke: var(--arc-in);
+  stroke-width: 2.2;
+}
+
+.outBed {
+  stroke: var(--color-ink);
+  stroke-width: 3.4;
+}
+
+.outArc {
+  stroke: var(--color-track);
+  stroke-width: 2.2;
+}

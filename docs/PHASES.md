@@ -9,7 +9,7 @@ wait for the developer's merge.
 | T02 | P01 | J4 | Security headers baseline and CSP | 3 | G-Foundation | [x] | PASS a1 — docs/reviews/T02-a1.md |
 | T03 | P02 | J5 | Bilingual shell: Arabic-first locale routes, lang and dir, tokens, fonts, header and footer | 2 | — | [x] | PASS a2 — docs/reviews/T03-a2.md |
 | T04 | P02 | J5 | Produce catalogue module and season logic | 2 | — | [x] | PASS a1 — docs/reviews/T04-a1.md |
-| T05 | P02 | J5 | Photo slots: licence manifest, responsive photo frame with designed fallback | 2 | — | [ ] | — |
+| T05 | P02 | J5 | Photo slots: licence manifest, responsive photo frame with designed fallback | 2 | — | [x] | PASS a1 — docs/reviews/T05-a1.md |
 | T06 | P02 | J5 | Produce page with photo, season bar and storage tip | 2 | G-Design | [ ] | — |
 | T07 | P03 | J5 | Guide page: card grid and kind chips | 2 | — | [ ] | — |
 | T08 | P03 | J5 | Guide page: twelve-month scroller | 2 | — | [ ] | — |
