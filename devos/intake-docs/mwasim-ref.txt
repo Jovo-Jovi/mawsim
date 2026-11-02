@@ -1,0 +1,15 @@
+– Animated Hero Website Design
+ – Food Website Layout
+ – Food Dashboard UI
+ – Organic Color Palette
+
+
+
+Brand: warm sand background, deep Nile green, a terracotta accent. Fonts: IBM Plex Sans Arabic and Inter
+I'd combine:
+- Warm cream backgrounds.
+- Fresh green as the primary color.
+- Orange, lemon yellow, tomato red as accents.
+- Large, beautiful fruit and vegetable photography.
+- Rounded cards and subtle glass effects.
+- English/Arabic typography with proper RTL support.

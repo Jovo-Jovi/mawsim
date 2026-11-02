@@ -1,0 +1,13 @@
+---
+description: Locale, direction and styling rules for application code (docs/I18N_MODEL.md)
+globs: src/**
+alwaysApply: false
+---
+- Two locales, `ar` (default, `rtl`) and `en` (`ltr`) (`docs/I18N_MODEL.md`). `src/i18n/config.ts` exports `locales = ["ar", "en"] as const`, `defaultLocale = "ar"`, `isLocale()` and `directionOf()`; the `[locale]` root layout sets `lang` and `dir` from the route, never a literal. `/` redirects to `/ar` (temporary, the only redirect; `/ar…` and `/en…` never redirect). No `Accept-Language`, no cookie, no proxy choosing a language.
+- Arabic is the primary composition (RTL order, navigation from the right, IBM Plex Sans Arabic's own size and line height, no letter-spacing or case change); English is its LTR adaptation. The language link goes to the equivalent page, keeping the query.
+- Logical CSS properties only (`margin-inline-start`, `padding-block`, `inset-inline-end`, `text-align: start`), never `left`/`right`. Colours, spacing, radii, type and motion come from `src/styles/tokens.css`; raw values anywhere else fail `guard:design`.
+- Every interface string exists in `src/i18n/messages/en.json` and `ar.json` with identical keys (`guard:i18n`). Produce names and storage tips come from `content/produce.json` by locale (`en`/`ar`, `tip_en`/`tip_ar`); month names from the catalogue keys `months.1` … `months.12`.
+- The counter-name (the produce's name in the other language) carries its own `lang` attribute; a Latin string inside Arabic text is wrapped in `<bdi>`.
+- The twelve-month order runs from the inline start (right to left in Arabic); direction-bearing icons mirror in `rtl`.
+- Compose `docs/DESIGN_SYSTEM.md` and the fence's Design specification; never restyle a shared component inside a feature. A gap is reported in the report, not improvised.
+- No third-party host in source (`guards.design.allowed_hosts` is empty); fonts come from `next/font`, self-hosted at build.

@@ -1,0 +1,9 @@
+---
+description: Enforced vocabulary for identifiers (from docs/GLOSSARY.md §3)
+alwaysApply: true
+---
+- Forbidden bare nouns in type, interface, class, enum, route-segment and content-field names: `item items product products category categories season month tip data info user users account order price cart record entry type`.
+- Use the entity names of `docs/GLOSSARY.md` §1: `Produce`, `ProduceKind`, `CalendarMonth`, `SeasonMonths`, `StorageTip`, `Locale`, `Direction`. product → `Produce`; category → `ProduceKind`; month → `CalendarMonth`; season → `SeasonMonths` (or the predicate `isInSeason`); tip → `StorageTip`; item, entry, record, data, info → name the entity; type → name what it types.
+- user, account, order, price, cart → forbidden: MAWSIM has no accounts and sells nothing.
+- Route segments in use: `[locale]`, `guide`, `produce`, `[slug]`, `about`, `api`, `health`. A new segment must not be a forbidden noun.
+- The data's own field names (`slug`, `en`, `ar`, `kind`, `months`, `tip_en`, `tip_ar`) are the developer's and are allowed. Copy and local variable names are outside this rule. `guard:naming` fails the build on a bare forbidden noun.

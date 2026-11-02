@@ -1,0 +1,13 @@
+---
+description: Secrets, data protection and the boundary gate
+alwaysApply: true
+---
+- No credential, key, token or real personal data in code, commits, fixtures, logs or reports. Fixtures are synthetic. MAWSIM needs no secret at all; there is no `.env` file to create.
+- Boundary gate (non-waivable, `docs/BOUNDARY_MODEL.md`): nothing collects, stores or sends a visitor's data. No `<form>`, `<input>`, `<textarea>`, `<select>`, cookie, `localStorage`, `sessionStorage`, `indexedDB`, beacon, analytics, tracker or third-party script. Every control is a link (or a button for retry). `guard:boundary` fails the build on them.
+- The only route handler is `src/app/api/health/route.ts` (zone `health`, OD-05): no input, no header or cookie read, returns `{ "status": "ok" }` or a safe error. Any other `route.ts`, proxy or middleware is out of scope: HALT.
+- Never read the visitor's language, location or device (`Accept-Language`, geo-IP, user agent) to choose content; the language comes from the URL only.
+- Logs go through `logger` (`src/lib/logger.ts`) only, and never contain an IP address, user agent, cookie, header dump or request body.
+- `content/produce.json` is the developer's sample data (OD-06): read it, never edit it. The same holds for `content/photos.json` and every file in `public/photos/` (OD-09): never add, replace, download or delete a photograph; render only what the manifest lists, through `next/image`, from the site's own origin.
+- No contact data (phone, email, address) as literals in source; `guard:literals` fails the build on them.
+- Route and query values (`locale`, `slug`, `month`, `kind`) are checked against their closed sets (`docs/SECURITY_MODEL.md` §2); no `dangerouslySetInnerHTML`.
+- Never weaken the security headers in `next.config.ts` (landed by T02, `docs/SECURITY_MODEL.md` §4).

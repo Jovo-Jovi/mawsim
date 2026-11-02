@@ -1,0 +1,39 @@
+{
+  "$comment": "Your answers to devos init. The blueprint reads them; change them here and ask for changes.",
+  "name": "MAWSIM",
+  "key": "MAWSIM",
+  "brief": "Mawsim (\"season\" in Arabic) is a small bilingual guide that shows which fruits and vegetables are in season in Egypt, month by month, in English and Arabic. It is a test product, and its data is sample data, not farming or nutrition advice. It has:\n\na home page with an animated hero and \"in season this month\";\na guide page with a 12-month scroller and category chips (fruit, vegetable, leafy greens) that filter a card grid;\na page for each produce, with a 12-month season bar and storage tips;\nan about page.\n\nThe site has no accounts, forms, search box, cookies, browser storage, analytics or trackers. Every control is a button or a link, and the colour theme follows the system. The language comes from the URL (/en/…, /ar/…), and Arabic is laid out right to left. Motion is calm and purposeful, and it respects reduced motion. It is mobile-first, works at 390 and 1280, is accessible to WCAG 2.2 AA, and there is no layout shift.\n\nUsers: people in Egypt who shop at markets and want to know what is fresh now, on a phone or a laptop, in English or Arabic.",
+  "users": "people in Egypt who shop at markets and want to know what is fresh now, on a phone or a laptop, in English or Arabic.",
+  "stores_data": false,
+  "sign_in": "none",
+  "languages": [
+    "en",
+    "ar"
+  ],
+  "deploy": "none",
+  "visibility": "public",
+  "type": "web-app",
+  "stack": "next",
+  "modules": {
+    "database": "none",
+    "storage": "none",
+    "auth": "none",
+    "hosting": "none",
+    "observability": "structured-logs"
+  },
+  "scope": "mvp",
+  "contract_version": "2",
+  "registry_link": true,
+  "blueprint_agent": {
+    "tool": "claude",
+    "model": "claude-opus-5-5"
+  },
+  "attachments": [
+    "mwasim-ref.txt",
+    "produce.json",
+    "ref-hero-motion.png",
+    "ref-layout-sections.png",
+    "ref-seasonal-editorial.png",
+    "ref-visual-style.png"
+  ]
+}

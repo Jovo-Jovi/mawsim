@@ -1,0 +1,12 @@
+[
+  {"slug":"tomato","en":"Tomato","ar":"طماطم","kind":"vegetable","months":[1,2,3,4,5,6,7,8,9,10,11,12],"tip_en":"Keep at room temperature until ripe.","tip_ar":"احفظها في حرارة الغرفة حتى تنضج."},
+  {"slug":"mango","en":"Mango","ar":"مانجو","kind":"fruit","months":[7,8,9,10],"tip_en":"Ripen on the counter, then chill.","tip_ar":"اتركها حتى تنضج ثم ضعها في الثلاجة."},
+  {"slug":"orange","en":"Orange","ar":"برتقال","kind":"fruit","months":[12,1,2,3,4],"tip_en":"Keeps two weeks in the fridge.","tip_ar":"يبقى أسبوعين في الثلاجة."},
+  {"slug":"strawberry","en":"Strawberry","ar":"فراولة","kind":"fruit","months":[1,2,3,4],"tip_en":"Wash just before eating.","tip_ar":"اغسلها قبل الأكل مباشرة."},
+  {"slug":"watermelon","en":"Watermelon","ar":"بطيخ","kind":"fruit","months":[6,7,8],"tip_en":"Chill after cutting.","tip_ar":"ضعه في الثلاجة بعد التقطيع."},
+  {"slug":"guava","en":"Guava","ar":"جوافة","kind":"fruit","months":[8,9,10,11,12],"tip_en":"Eat within a few days.","tip_ar":"تؤكل خلال أيام قليلة."},
+  {"slug":"pomegranate","en":"Pomegranate","ar":"رمان","kind":"fruit","months":[9,10,11],"tip_en":"Whole fruit keeps for weeks.","tip_ar":"الثمرة الكاملة تبقى أسابيع."},
+  {"slug":"okra","en":"Okra","ar":"بامية","kind":"vegetable","months":[6,7,8,9],"tip_en":"Store dry in the fridge.","tip_ar":"احفظها جافة في الثلاجة."},
+  {"slug":"molokhia","en":"Molokhia","ar":"ملوخية","kind":"leafy","months":[5,6,7,8,9],"tip_en":"Use fresh, or freeze chopped.","tip_ar":"تستخدم طازجة أو تجمد مفرومة."},
+  {"slug":"dates","en":"Dates","ar":"بلح","kind":"fruit","months":[8,9,10],"tip_en":"Fresh dates keep a week chilled.","tip_ar":"البلح الطازج يبقى أسبوعا في الثلاجة."}
+]
