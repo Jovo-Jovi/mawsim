@@ -6,7 +6,7 @@ wait for the developer's merge.
 | Task | Phase | Station | Name | Risk | Gate | Done | Verdict |
 |---|---|---|---|---|---|---|---|
 | T01 | P01 | J4 | Scaffold: Next.js, checks, logger, error handling, health route, architecture test | 2 | — | [x] | PASS a1 — docs/reviews/T01-a1.md |
-| T02 | P01 | J4 | Security headers baseline and CSP | 3 | G-Foundation | [ ] | — |
+| T02 | P01 | J4 | Security headers baseline and CSP | 3 | G-Foundation | [x] | PASS a1 — docs/reviews/T02-a1.md |
 | T03 | P02 | J5 | Bilingual shell: Arabic-first locale routes, lang and dir, tokens, fonts, header and footer | 2 | — | [ ] | — |
 | T04 | P02 | J5 | Produce catalogue module and season logic | 2 | — | [ ] | — |
 | T05 | P02 | J5 | Photo slots: licence manifest, responsive photo frame with designed fallback | 2 | — | [ ] | — |
