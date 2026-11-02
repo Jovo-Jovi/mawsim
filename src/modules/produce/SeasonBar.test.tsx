@@ -13,6 +13,40 @@ function cells(html: string): string[] {
   return [...html.matchAll(/<li\b[\s\S]*?<\/li>/g)].map((match) => match[0]);
 }
 
+function visibleMonthLabels(html: string): string[] {
+  return [...html.matchAll(/aria-hidden="true">([^<]+)</g)].map((match) => match[1]);
+}
+
+const englishShortLabels = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+const arabicShortLabels = [
+  "يناير",
+  "فبراير",
+  "مارس",
+  "أبريل",
+  "مايو",
+  "يونيو",
+  "يوليو",
+  "أغسطس",
+  "سبتمبر",
+  "أكتوبر",
+  "نوفمبر",
+  "ديسمبر",
+] as const;
+
 const mangoEnglish = [
   "January, not in season",
   "February, not in season",
@@ -97,6 +131,16 @@ it("joins separated months with a range dash", () => {
   expect(english).not.toContain("Keep this sentence out of the bar.");
   expect(arabic).toContain("في الموسم: من يناير إلى فبراير\u060C مايو");
   expect(arabic).not.toContain("أبق هذه الجملة خارج الشريط.");
+});
+
+it("prints a full English month name under a season cell", () => {
+  const html = renderToStaticMarkup(<SeasonBar produce={produceOf("mango")} locale="en" currentMonth={9} />);
+  expect(visibleMonthLabels(html)).toEqual([...englishShortLabels]);
+});
+
+it("prints a truncated Arabic month label", () => {
+  const html = renderToStaticMarkup(<SeasonBar produce={produceOf("mango")} locale="ar" currentMonth={9} />);
+  expect(visibleMonthLabels(html)).toEqual([...arabicShortLabels]);
 });
 
 it("prints a single month as a range", () => {

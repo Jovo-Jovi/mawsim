@@ -2,18 +2,18 @@ import { expect, it } from "vitest";
 import { messages } from "@/i18n/messages";
 
 const monthNames = [
-  ["1", "January", "يناير", "Jan", "ينا"],
-  ["2", "February", "فبراير", "Feb", "فبر"],
-  ["3", "March", "مارس", "Mar", "مار"],
-  ["4", "April", "أبريل", "Apr", "أبر"],
-  ["5", "May", "مايو", "May", "ماي"],
-  ["6", "June", "يونيو", "Jun", "يون"],
-  ["7", "July", "يوليو", "Jul", "يول"],
-  ["8", "August", "أغسطس", "Aug", "أغس"],
-  ["9", "September", "سبتمبر", "Sep", "سبت"],
-  ["10", "October", "أكتوبر", "Oct", "أكت"],
-  ["11", "November", "نوفمبر", "Nov", "نوف"],
-  ["12", "December", "ديسمبر", "Dec", "ديس"],
+  ["1", "January", "يناير", "Jan", "يناير"],
+  ["2", "February", "فبراير", "Feb", "فبراير"],
+  ["3", "March", "مارس", "Mar", "مارس"],
+  ["4", "April", "أبريل", "Apr", "أبريل"],
+  ["5", "May", "مايو", "May", "مايو"],
+  ["6", "June", "يونيو", "Jun", "يونيو"],
+  ["7", "July", "يوليو", "Jul", "يوليو"],
+  ["8", "August", "أغسطس", "Aug", "أغسطس"],
+  ["9", "September", "سبتمبر", "Sep", "سبتمبر"],
+  ["10", "October", "أكتوبر", "Oct", "أكتوبر"],
+  ["11", "November", "نوفمبر", "Nov", "نوفمبر"],
+  ["12", "December", "ديسمبر", "Dec", "ديسمبر"],
 ] as const;
 
 const catalogueKeys = [

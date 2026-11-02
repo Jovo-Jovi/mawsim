@@ -44,15 +44,15 @@ export function SeasonBar({
                   {stateJoiner[locale]}
                   {state}
                 </span>
+                {current ? (
+                  <span className={styles.markerRow} data-slot={currentMonth}>
+                    <span className={styles.marker}>{copy.produce.thisMonth}</span>
+                  </span>
+                ) : null}
               </li>
             );
           })}
         </ol>
-        <div className={styles.markerTrack}>
-          <span className={styles.marker} data-slot={currentMonth}>
-            {copy.produce.thisMonth}
-          </span>
-        </div>
       </div>
       <p className={styles.sentence}>{seasonSentence(produce, locale)}</p>
     </div>
