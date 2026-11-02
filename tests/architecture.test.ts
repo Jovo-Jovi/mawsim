@@ -104,3 +104,42 @@ it("reads every src/domain TypeScript file and finds no forbidden import", () =>
   );
   expect(violations).toEqual([]);
 });
+
+function repoRelative(file: string): string {
+  return path.relative(root, file).replaceAll("\\", "/");
+}
+
+function specifierTargetsProduceJson(spec: string, fromFile: string): boolean {
+  const normalized = spec.replaceAll("\\", "/");
+  if (!normalized.startsWith(".")) {
+    return normalized === "content/produce.json" || normalized.endsWith("/content/produce.json");
+  }
+  const resolved = path.normalize(path.join(path.dirname(fromFile), normalized));
+  return repoRelative(resolved) === "content/produce.json";
+}
+
+function produceJsonImportOutsideModule(source: string, fromFile: string): boolean {
+  const relative = repoRelative(fromFile);
+  if (/\.test\.tsx?$/.test(relative) || relative.startsWith("src/modules/produce/")) return false;
+  if (!relative.startsWith("src/")) return false;
+  return specifiers(source).some((spec) => specifierTargetsProduceJson(spec, fromFile));
+}
+
+it("imports content/produce.json from outside the produce module", () => {
+  const caught = 'import p from "../../content/produce.json"';
+  const allowed = 'import p from "../../../content/produce.json"';
+  const fromApp = path.join(root, "src/app/x.tsx");
+  const fromCatalogue = path.join(root, "src/modules/produce/catalogue.ts");
+  const fromTest = path.join(root, "src/domain/season.test.ts");
+  expect(specifiers(caught).some((spec) => specifierTargetsProduceJson(spec, fromApp))).toBe(true);
+  expect(produceJsonImportOutsideModule(caught, fromApp)).toBe(true);
+  expect(specifiers(allowed).some((spec) => specifierTargetsProduceJson(spec, fromCatalogue))).toBe(true);
+  expect(produceJsonImportOutsideModule(allowed, fromCatalogue)).toBe(false);
+  expect(specifiers(caught).some((spec) => specifierTargetsProduceJson(spec, fromTest))).toBe(true);
+  expect(produceJsonImportOutsideModule(caught, fromTest)).toBe(false);
+  const files = listTypeScript(path.join(root, "src"));
+  const violations = files
+    .filter((file) => produceJsonImportOutsideModule(readFileSync(file, "utf8"), file))
+    .map((file) => repoRelative(file));
+  expect(violations).toEqual([]);
+});
