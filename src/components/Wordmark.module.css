@@ -1,0 +1,38 @@
+.mark {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  gap: var(--space-1);
+  min-block-size: var(--target-min);
+  min-inline-size: var(--target-min);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.name {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+}
+
+.counter {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  line-height: var(--leading-body);
+  letter-spacing: 0;
+}
+
+.counter:lang(en) {
+  font-family: var(--font-latin);
+}
+
+.counter:lang(ar) {
+  font-family: var(--font-arabic);
+}
+
+.mark:hover .name {
+  color: var(--color-primary);
+}

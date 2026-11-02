@@ -1,0 +1,30 @@
+.footer {
+  margin-block-start: auto;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  inline-size: 100%;
+  max-inline-size: var(--container);
+  margin-inline: auto;
+  padding-block: var(--space-6);
+  padding-inline: var(--space-5);
+}
+
+.line {
+  margin: 0;
+  max-inline-size: 65ch;
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+}
+
+@media (min-width: 64rem) {
+  .bar {
+    padding-inline: var(--space-8);
+  }
+}

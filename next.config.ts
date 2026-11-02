@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: { globalNotFound: true },
   async headers() {
     return [
       {
@@ -38,6 +39,9 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
+  },
+  async redirects() {
+    return [{ source: "/", destination: "/ar", permanent: false }];
   },
 };
 

@@ -1,0 +1,10 @@
+.icon {
+  display: block;
+  inline-size: var(--space-5);
+  block-size: var(--space-5);
+  flex: none;
+}
+
+:dir(rtl) .arrow {
+  transform: scaleX(-1);
+}

@@ -1,9 +1,8 @@
 "use client";
 
-import { defaultLocale } from "@/i18n/config";
+import { useParams } from "next/navigation";
+import { defaultLocale, isLocale } from "@/i18n/config";
 import { messages } from "@/i18n/messages";
-
-const copy = messages(defaultLocale);
 
 export default function ErrorPage({
   retry,
@@ -12,6 +11,11 @@ export default function ErrorPage({
   reset: () => void;
   retry: () => void;
 }) {
+  const params = useParams();
+  const raw = params.locale;
+  const candidate = Array.isArray(raw) ? raw[0] : raw;
+  const locale = candidate !== undefined && isLocale(candidate) ? candidate : defaultLocale;
+  const copy = messages(locale);
   return (
     <main>
       <h1>{copy.error.title}</h1>
