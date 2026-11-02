@@ -143,3 +143,38 @@ it("imports content/produce.json from outside the produce module", () => {
     .map((file) => repoRelative(file));
   expect(violations).toEqual([]);
 });
+
+function specifierTargetsPhotosJson(spec: string, fromFile: string): boolean {
+  const normalized = spec.replaceAll("\\", "/");
+  if (!normalized.startsWith(".")) {
+    return normalized === "content/photos.json" || normalized.endsWith("/content/photos.json");
+  }
+  const resolved = path.normalize(path.join(path.dirname(fromFile), normalized));
+  return repoRelative(resolved) === "content/photos.json";
+}
+
+function photosJsonImportOutsideModule(source: string, fromFile: string): boolean {
+  const relative = repoRelative(fromFile);
+  if (/\.test\.tsx?$/.test(relative) || relative.startsWith("src/modules/produce/")) return false;
+  if (!relative.startsWith("src/")) return false;
+  return specifiers(source).some((spec) => specifierTargetsPhotosJson(spec, fromFile));
+}
+
+it("imports content/photos.json from outside the produce module", () => {
+  const caught = 'import p from "../../content/photos.json"';
+  const allowed = 'import p from "../../../content/photos.json"';
+  const fromApp = path.join(root, "src/app/x.tsx");
+  const fromPhotos = path.join(root, "src/modules/produce/photos.ts");
+  const fromTest = path.join(root, "src/domain/season.test.ts");
+  expect(specifiers(caught).some((spec) => specifierTargetsPhotosJson(spec, fromApp))).toBe(true);
+  expect(photosJsonImportOutsideModule(caught, fromApp)).toBe(true);
+  expect(specifiers(allowed).some((spec) => specifierTargetsPhotosJson(spec, fromPhotos))).toBe(true);
+  expect(photosJsonImportOutsideModule(allowed, fromPhotos)).toBe(false);
+  expect(specifiers(caught).some((spec) => specifierTargetsPhotosJson(spec, fromTest))).toBe(true);
+  expect(photosJsonImportOutsideModule(caught, fromTest)).toBe(false);
+  const files = listTypeScript(path.join(root, "src"));
+  const violations = files
+    .filter((file) => photosJsonImportOutsideModule(readFileSync(file, "utf8"), file))
+    .map((file) => repoRelative(file));
+  expect(violations).toEqual([]);
+});
