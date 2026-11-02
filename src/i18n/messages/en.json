@@ -6,5 +6,26 @@
   "error": {
     "title": "Something went wrong.",
     "retry": "Try again"
+  },
+  "skip": {
+    "content": "Skip to content"
+  },
+  "nav": {
+    "label": "Main",
+    "home": "Home"
+  },
+  "language": {
+    "switch": "العربية"
+  },
+  "notice": {
+    "sample": "Sample data for a test product — not farming or nutrition advice."
+  },
+  "footer": {
+    "collectsNothing": "Mawsim collects nothing: no accounts, cookies or trackers."
+  },
+  "notFound": {
+    "title": "This page is not here.",
+    "body": "The address may be mistyped, or the page has moved.",
+    "home": "Back to the home page"
   }
 }
