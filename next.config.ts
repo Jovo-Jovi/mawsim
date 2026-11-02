@@ -21,6 +21,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: { globalNotFound: true },
   async headers() {
     return [
       {
