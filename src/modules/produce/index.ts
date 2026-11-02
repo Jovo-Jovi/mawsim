@@ -8,3 +8,4 @@ export { ProducePhoto } from "./ProducePhoto";
 export { SeasonBar } from "./SeasonBar";
 export { StorageTipPanel } from "./StorageTipPanel";
 export { seasonRuns } from "./season-text";
+export { seasonSentence } from "./season-sentence";
