@@ -1,0 +1,15 @@
+:root {
+  --color-bg: #F6EFE3;
+  --color-ink: #1F2A22;
+  --color-primary: #1E5B45;
+  --space-4: 1rem;
+  --space-8: 2.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #12201A;
+    --color-ink: #F3EBDD;
+    --color-primary: #7CC39A;
+  }
+}
