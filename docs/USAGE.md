@@ -11,28 +11,28 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 5 · Not reported: 0 · Last run: 2026-11-02T10:45:06.375Z
+Runs: 7 · Not reported: 0 · Last run: 2026-11-02T11:10:20.787Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 5 | 638,509 | 474,430 | 44,296,332 | 1,000,550 | $18.99 (2 without a price) |
+| 7 | 1,000,473 | 606,499 | 59,272,306 | 1,348,047 | $24.43 (3 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 3 | 118,852 | 337,266 | 28,344,716 | 1,000,550 | $18.99 |
-| cursor | grok-4.7-xhigh-fast | 2 | 519,657 | 137,164 | 15,951,616 | 0 | — |
+| claude | claude-opus-5-5 | 4 | 119,038 | 416,960 | 36,572,914 | 1,348,047 | $24.43 |
+| cursor | grok-4.7-xhigh-fast | 3 | 881,435 | 189,539 | 22,699,392 | 0 | — |
 
 ## By stage
 
 | Stage | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
-| builder | 2 | 519,657 | 137,164 | 15,951,616 | 0 | — |
-| reviewer | 1 | 146 | 56,100 | 4,500,727 | 249,235 | $3.68 |
+| builder | 3 | 881,435 | 189,539 | 22,699,392 | 0 | — |
+| reviewer | 2 | 332 | 135,794 | 12,728,925 | 596,732 | $9.13 |
 
 ## By task
 
@@ -40,3 +40,4 @@ Runs: 5 · Not reported: 0 · Last run: 2026-11-02T10:45:06.375Z
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
 | T01 | 3 | 519,803 | 193,264 | 20,452,343 | 249,235 | $3.68 (2 without a price) |
+| T02 | 2 | 361,964 | 132,069 | 14,975,974 | 347,497 | $5.45 (1 without a price) |
