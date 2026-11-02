@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { defaultLocale, directionOf, isLocale, locales } from "@/i18n/config";
 import { localeSegment } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
+import { fontVariableClass } from "../fonts";
 import NotFoundPage from "./not-found";
 import "../globals.css";
 
@@ -29,7 +30,7 @@ export default async function LocaleLayout({ children }: { children: ReactNode }
   const value = await localeSegment();
   const locale = isLocale(value) ? value : defaultLocale;
   return (
-    <html lang={locale} dir={directionOf(locale)}>
+    <html lang={locale} dir={directionOf(locale)} className={fontVariableClass}>
       <body>
         {isLocale(value) ? (
           <Suspense>{children}</Suspense>

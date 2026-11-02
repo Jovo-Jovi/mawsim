@@ -1,31 +1,98 @@
 @import "../styles/tokens.css";
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html {
+  block-size: 100%;
   background: var(--color-bg);
   color: var(--color-ink);
-  color-scheme: light dark;
+}
+
+:lang(ar) {
+  font-family: var(--font-arabic);
+}
+
+:lang(en) {
+  font-family: var(--font-latin);
 }
 
 body {
   margin: 0;
   min-block-size: 100%;
+  display: flex;
+  flex-direction: column;
   background: var(--color-bg);
   color: var(--color-ink);
+  font-size: var(--text-base);
+  font-weight: 400;
+  line-height: var(--leading-body);
+  text-align: start;
 }
 
-main {
-  padding-block: var(--space-8);
-  padding-inline: var(--space-4);
+body:lang(ar) {
+  font-family: var(--font-arabic);
+}
+
+body:lang(en) {
+  font-family: var(--font-latin);
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+::selection {
+  background: var(--color-highlight);
+  color: var(--color-on-highlight);
 }
 
 h1 {
   margin-block: 0;
   margin-inline: 0;
   color: var(--color-ink);
+  font-size: var(--text-display);
+  font-weight: 800;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  text-align: start;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+:root:lang(ar) h1 {
+  font-weight: 700;
 }
 
 p {
   margin-block: var(--space-4) 0;
   margin-inline: 0;
+  max-inline-size: 65ch;
   color: var(--color-ink);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition-property: color;
+  transition-duration: var(--dur-1);
+  transition-timing-function: var(--ease-out);
+}
+
+a:hover {
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  a {
+    transition-duration: 0s;
+  }
 }
