@@ -1,2 +1,2 @@
 // Rule: code under src/domain imports nothing from the framework, the database client or src/app.
-export {};
+export * from "./season";
