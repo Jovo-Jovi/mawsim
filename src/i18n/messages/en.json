@@ -1,0 +1,10 @@
+{
+  "app": {
+    "name": "Mawsim",
+    "tagline": "What is in season in Egypt, month by month."
+  },
+  "error": {
+    "title": "Something went wrong.",
+    "retry": "Try again"
+  }
+}

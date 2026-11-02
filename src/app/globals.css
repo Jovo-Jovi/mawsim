@@ -1,0 +1,31 @@
+@import "../styles/tokens.css";
+
+html {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+main {
+  padding-block: var(--space-8);
+  padding-inline: var(--space-4);
+}
+
+h1 {
+  margin-block: 0;
+  margin-inline: 0;
+  color: var(--color-ink);
+}
+
+p {
+  margin-block: var(--space-4) 0;
+  margin-inline: 0;
+  color: var(--color-ink);
+}

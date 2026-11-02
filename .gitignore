@@ -19,6 +19,7 @@ ui-debug*.log
 # Local environment
 .env
 .env.*
+.env*
 !.env.example
 
 # Node / Next.js
@@ -82,3 +83,5 @@ yarn-error.log*
 
 # typescript
 next-env.d.ts
+
+# env files (can opt-in for committing if needed)
