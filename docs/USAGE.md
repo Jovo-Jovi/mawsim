@@ -11,28 +11,28 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 11 · Not reported: 0 · Last run: 2026-11-02T17:12:54.954Z
+Runs: 13 · Not reported: 0 · Last run: 2026-11-02T17:36:04.717Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 11 | 2,030,482 | 974,998 | 102,537,595 | 1,825,144 | $31.17 (5 without a price) |
+| 13 | 2,244,262 | 1,122,467 | 122,104,442 | 2,187,023 | $36.52 (6 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 6 | 119,304 | 531,527 | 43,603,195 | 1,825,144 | $31.17 |
-| cursor | grok-4.7-xhigh-fast | 5 | 1,911,178 | 443,471 | 58,934,400 | 0 | — |
+| claude | claude-opus-5-5 | 7 | 119,472 | 610,415 | 50,895,866 | 2,187,023 | $36.52 |
+| cursor | grok-4.7-xhigh-fast | 6 | 2,124,790 | 512,052 | 71,208,576 | 0 | — |
 
 ## By stage
 
 | Stage | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
-| builder | 5 | 1,911,178 | 443,471 | 58,934,400 | 0 | — |
-| reviewer | 4 | 598 | 250,361 | 19,759,206 | 1,073,829 | $15.87 |
+| builder | 6 | 2,124,790 | 512,052 | 71,208,576 | 0 | — |
+| reviewer | 5 | 766 | 329,249 | 27,051,877 | 1,435,708 | $21.21 |
 
 ## By task
 
@@ -41,4 +41,4 @@ Runs: 11 · Not reported: 0 · Last run: 2026-11-02T17:12:54.954Z
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
 | T01 | 3 | 519,803 | 193,264 | 20,452,343 | 249,235 | $3.68 (2 without a price) |
 | T02 | 3 | 362,086 | 175,406 | 17,926,604 | 533,296 | $8.09 (1 without a price) |
-| T03 | 3 | 1,029,887 | 325,162 | 40,314,659 | 291,298 | $4.10 (2 without a price) |
+| T03 | 5 | 1,243,667 | 472,631 | 59,881,506 | 653,177 | $9.44 (3 without a price) |
