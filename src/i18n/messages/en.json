@@ -27,5 +27,47 @@
     "title": "This page is not here.",
     "body": "The address may be mistyped, or the page has moved.",
     "home": "Back to the home page"
+  },
+  "months": {
+    "1": "January",
+    "2": "February",
+    "3": "March",
+    "4": "April",
+    "5": "May",
+    "6": "June",
+    "7": "July",
+    "8": "August",
+    "9": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  },
+  "monthsShort": {
+    "1": "Jan",
+    "2": "Feb",
+    "3": "Mar",
+    "4": "Apr",
+    "5": "May",
+    "6": "Jun",
+    "7": "Jul",
+    "8": "Aug",
+    "9": "Sep",
+    "10": "Oct",
+    "11": "Nov",
+    "12": "Dec"
+  },
+  "kind": {
+    "fruit": "Fruit",
+    "vegetable": "Vegetables",
+    "leafy": "Leafy greens"
+  },
+  "produce": {
+    "keepIt": "How to keep it",
+    "inSeason": "In season:",
+    "thisMonth": "This month",
+    "monthInSeason": "in season",
+    "monthOutOfSeason": "not in season",
+    "seasonRange": "{from} \u2013 {to}",
+    "seasonList": "{earlier}, {later}"
   }
 }

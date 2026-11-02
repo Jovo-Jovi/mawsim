@@ -53,3 +53,10 @@
   stroke: var(--color-track);
   stroke-width: 2.2;
 }
+
+.tick {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}

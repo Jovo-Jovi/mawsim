@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Locale } from "@/i18n/config";
 import { otherLocale } from "@/i18n/href";
+import type { CalendarMonth } from "../../domain";
 import type { Produce } from "./catalogue";
 import type { ProducePhotoRow } from "./photos";
 import { SeasonRing } from "./SeasonRing";
@@ -32,12 +33,14 @@ export function ProducePhoto({
   locale,
   slot,
   priority = false,
+  currentMonth,
 }: {
   produce: Produce;
   photo: ProducePhotoRow | undefined;
   locale: Locale;
   slot: "card" | "page" | "hero";
   priority?: boolean;
+  currentMonth?: CalendarMonth;
 }) {
   const frameClass = `${styles.frame} ${slotClass[slot]}`;
   if (photo) {
@@ -60,7 +63,7 @@ export function ProducePhoto({
     <div className={frameClass}>
       <div className={styles.tile} data-kind={produce.kind}>
         <div className={styles.dial}>
-          <SeasonRing kind={produce.kind} months={produce.months} />
+          <SeasonRing kind={produce.kind} months={produce.months} currentMonth={currentMonth} />
           <div className={styles.copy}>
             <p className={styles.name}>
               <bdi>{produce[locale]}</bdi>
