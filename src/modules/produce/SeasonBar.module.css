@@ -30,7 +30,7 @@
 
 .cells {
   display: grid;
-  grid-template-columns: repeat(6, minmax(min-content, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   column-gap: var(--space-1);
   row-gap: var(--space-3);
   margin: 0;
@@ -44,6 +44,7 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-1);
+  min-inline-size: 0;
   padding-block-end: var(--space-7);
 }
 
@@ -128,10 +129,11 @@
   white-space: nowrap;
 }
 
-/* English abbreviations fit twelve across once the bar is wider than a phone column. */
+/* Twelve equal tracks once the widest English label at weight 600 fits: 24rem is above
+   12 × that label + 11 × --space-1 + the almanac's padding. */
 @container almanac (min-width: 24rem) {
   :lang(en) .cells {
-    grid-template-columns: repeat(12, minmax(min-content, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
   :lang(en) .markerRow[data-slot="6"],
@@ -140,10 +142,11 @@
   }
 }
 
-/* Full Arabic month names need a wider bar before twelve columns keep a gap. */
-@container almanac (min-width: 28rem) {
+/* Twelve equal tracks once the widest Arabic label at weight 600 fits.
+   12 × 2.875rem + 11 × --space-1 + the almanac's padding = 37.75rem. */
+@container almanac (min-width: 37.75rem) {
   :lang(ar) .cells {
-    grid-template-columns: repeat(12, minmax(min-content, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
   :lang(ar) .markerRow[data-slot="6"],

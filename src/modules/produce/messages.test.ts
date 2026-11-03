@@ -103,7 +103,7 @@ it("drops a produce-page string or copies the English into Arabic", () => {
     seasonList: "{earlier}, {later}",
   });
   expect(messages("ar").produce).toEqual({
-    keepIt: "كيف تحفظه",
+    keepIt: "طريقة الحفظ",
     inSeason: "في الموسم:",
     thisMonth: "هذا الشهر",
     monthInSeason: "في الموسم",

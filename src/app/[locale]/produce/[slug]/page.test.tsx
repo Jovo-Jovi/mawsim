@@ -93,7 +93,7 @@ it("renders an English mango page as Arabic, drops the season sentence, or skips
   expect(main).toContain("في الموسم: من يوليو إلى أكتوبر");
   expect(main).toContain("اتركها حتى تنضج ثم ضعها في الثلاجة.");
   expect(main).not.toContain("Ripen on the counter, then chill.");
-  expect(main).toContain("كيف تحفظه");
+  expect(main).toContain("طريقة الحفظ");
   expect(html.match(/<line\b/g)?.length).toBe(1);
   expect(html.match(/data-current="true"/g)?.length).toBe(1);
   expect(html.match(/هذا الشهر/g)?.length).toBe(1);

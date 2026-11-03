@@ -12,7 +12,7 @@ it("replaces mango's Arabic tip or translates it", () => {
   const html = renderToStaticMarkup(<StorageTipPanel produce={mango()} locale="ar" />);
   expect(html).toContain("اتركها حتى تنضج ثم ضعها في الثلاجة.");
   expect(html).not.toContain("Ripen on the counter, then chill.");
-  expect(html).toContain("كيف تحفظه");
+  expect(html).toContain("طريقة الحفظ");
   expect(html).not.toContain('lang="');
   expect(html).not.toContain("dir=");
 });
