@@ -26,8 +26,10 @@ const catalogueKeys = [
   "guide.all",
   "guide.empty",
   "guide.kinds",
+  "guide.months",
   "guide.showAll",
   "guide.showThisMonth",
+  "guide.thisMonth",
   "guide.title",
   "kind.fruit",
   "kind.leafy",
@@ -128,5 +130,5 @@ it("drops a produce-page string or copies the English into Arabic", () => {
 it("adds a key the fence does not name, or loses one", () => {
   expect(flatKeys(messages("en")).sort()).toEqual([...catalogueKeys]);
   expect(flatKeys(messages("ar")).sort()).toEqual([...catalogueKeys]);
-  expect(catalogueKeys).toHaveLength(57);
+  expect(catalogueKeys).toHaveLength(59);
 });

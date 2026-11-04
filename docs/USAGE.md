@@ -11,29 +11,29 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 69 · Not reported: 32 · Last run: 2026-11-04T18:44:56.555Z
+Runs: 71 · Not reported: 32 · Last run: 2026-11-04T19:09:02.868Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 69 | 4,917,196 | 2,727,461 | 286,941,404 | 5,136,215 | $83.36 (20 without a price) |
+| 71 | 5,357,114 | 2,848,749 | 302,216,716 | 5,202,131 | $83.82 (21 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
 | claude | claude-opus-5-5 | 13 | 120,914 | 1,341,439 | 118,662,531 | 4,865,951 | $81.57 |
-| claude | claude-sonnet-5-5 | 4 | 94 | 45,202 | 2,507,737 | 270,264 | $1.78 |
-| cursor | grok-4.7-xhigh-fast | 52 | 4,796,188 | 1,340,820 | 165,771,136 | 0 | — |
+| claude | claude-sonnet-5-5 | 5 | 120 | 58,120 | 3,268,105 | 336,180 | $2.25 |
+| cursor | grok-4.7-xhigh-fast | 53 | 5,236,080 | 1,449,190 | 180,286,080 | 0 | — |
 
 ## By stage
 
 | Stage | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
-| builder | 52 | 4,796,188 | 1,340,820 | 165,771,136 | 0 | — |
-| reviewer | 15 | 2,302 | 1,105,475 | 97,326,279 | 4,384,900 | $68.05 |
+| builder | 53 | 5,236,080 | 1,449,190 | 180,286,080 | 0 | — |
+| reviewer | 16 | 2,328 | 1,118,393 | 98,086,647 | 4,450,816 | $68.52 |
 
 ## By task
 
@@ -47,3 +47,4 @@ Runs: 69 · Not reported: 32 · Last run: 2026-11-04T18:44:56.555Z
 | T05 | 2 | 212,182 | 121,684 | 8,638,264 | 74,772 | $0.52 (1 without a price) |
 | T06 | 43 | 1,340,052 | 950,821 | 97,175,309 | 2,191,094 | $36.54 (6 without a price) |
 | T07 | 8 | 953,091 | 303,100 | 41,830,613 | 126,114 | $0.83 (6 without a price) |
+| T08 | 2 | 439,918 | 121,288 | 15,275,312 | 65,916 | $0.47 (1 without a price) |

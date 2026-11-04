@@ -77,9 +77,11 @@
   "guide": {
     "title": "ما الذي في موسمه في {month}",
     "kinds": "الأنواع",
+    "months": "الشهور",
     "all": "الكل",
     "empty": "لا شيء من هذا النوع في موسمه في {month}.",
     "showAll": "عرض كل الأنواع",
-    "showThisMonth": "عرض هذا الشهر"
+    "showThisMonth": "عرض هذا الشهر",
+    "thisMonth": "هذا الشهر"
   }
 }

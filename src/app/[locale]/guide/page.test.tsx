@@ -40,8 +40,12 @@ function slugs(html: string): string[] {
   return [...html.matchAll(/href="\/(?:ar|en)\/produce\/([a-z-]+)"/g)].map((match) => match[1] ?? "");
 }
 
+function labelledNav(html: string, label: string): string {
+  return new RegExp(`<nav\\b[^>]*aria-label="${label}"[^>]*>[\\s\\S]*?</nav>`).exec(html)?.[0] ?? "";
+}
+
 function chipHrefs(html: string, label: string): string[] {
-  const nav = new RegExp(`<nav\\b[^>]*aria-label="${label}"[^>]*>[\\s\\S]*?</nav>`).exec(html)?.[0] ?? "";
+  const nav = labelledNav(html, label);
   return [...nav.matchAll(/href="([^"]*)"/g)].map((match) => (match[1] ?? "").replaceAll("&amp;", "&"));
 }
 
@@ -146,6 +150,36 @@ it("drops the parsed month or kind from a language link", async () => {
   const html = await render({ month: "8", kind: "fruit" });
   const links = anchors(html).filter((anchor) => anchor.lang === "en").map((anchor) => anchor.href);
   expect(links).toEqual(["/en/guide?month=8&kind=fruit", "/en/guide?month=8&kind=fruit"]);
+});
+
+it("places Kinds before Months, or leaves a junk month on the scroller", async () => {
+  localeState.value = "en";
+  const english = await render({ month: "12" });
+  const monthsAt = english.indexOf('aria-label="Months"');
+  const kindsAt = english.indexOf('aria-label="Kinds"');
+  expect(monthsAt).toBeGreaterThan(english.indexOf("<h1"));
+  expect(kindsAt).toBeGreaterThan(monthsAt);
+
+  localeState.value = "ar";
+  const arabic = await render({ month: "3" });
+  const arabicMonths = arabic.indexOf('aria-label="الشهور"');
+  expect(arabicMonths).toBeGreaterThan(arabic.indexOf("<h1"));
+  expect(arabic.indexOf('aria-label="الأنواع"')).toBeGreaterThan(arabicMonths);
+
+  localeState.value = "en";
+  const junk: { month?: string | string[] }[] = [{ month: "13" }, { month: ["8", "9"] }];
+  for (const query of junk) {
+    const html = await render(query);
+    const nav = labelledNav(html, "Months");
+    const current = [...nav.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].filter((match) =>
+      (match[1] ?? "").includes('aria-current="true"'),
+    );
+    expect(current).toHaveLength(1);
+    expect((current[0]?.[2] ?? "").replace(/<[^>]+>/g, "")).toContain("August");
+    expect(html).not.toContain("month=13");
+    expect(html).not.toContain("nuts");
+    expect(html).not.toContain("8,9");
+  }
 });
 
 it("keeps a bare guide or a junk query on the language links", async () => {
