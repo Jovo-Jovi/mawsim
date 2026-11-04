@@ -45,6 +45,16 @@ function chipHrefs(html: string, label: string): string[] {
   return [...nav.matchAll(/href="([^"]*)"/g)].map((match) => (match[1] ?? "").replaceAll("&amp;", "&"));
 }
 
+function anchors(html: string): { href: string; current: string | null; lang: string | null }[] {
+  return [...html.matchAll(/<a\b[^>]*>/g)].map((match) => {
+    const tag = match[0];
+    const href = (/href="([^"]*)"/.exec(tag)?.[1] ?? "").replaceAll("&amp;", "&");
+    const current = /aria-current="([^"]*)"/.exec(tag)?.[1] ?? null;
+    const lang = /(?:^|\s)lang="([^"]*)"/.exec(tag)?.[1] ?? null;
+    return { href, current, lang };
+  });
+}
+
 const augustAll = ["tomato", "mango", "watermelon", "guava", "okra", "molokhia", "dates"];
 
 async function render(query: { month?: string | string[]; kind?: string | string[] }): Promise<string> {
@@ -119,4 +129,38 @@ it("sets a generic title, adds a canonical, or reads the query into the metadata
   expect(arabic.alternates).toEqual({ languages: { en: "/en/guide" } });
   expect(JSON.stringify(arabic)).not.toContain("canonical");
   expect(JSON.stringify(arabic)).not.toContain("metadataBase");
+});
+
+it("drops aria-current from the guide link or marks Home as the current page", async () => {
+  localeState.value = "ar";
+  const arabic = anchors(await render({ month: "8" })).filter((anchor) => anchor.current === "page");
+  expect(arabic.map((anchor) => anchor.href)).toEqual(["/ar/guide"]);
+
+  localeState.value = "en";
+  const english = anchors(await render({ month: "8" })).filter((anchor) => anchor.current === "page");
+  expect(english.map((anchor) => anchor.href)).toEqual(["/en/guide"]);
+});
+
+it("drops the parsed month or kind from a language link", async () => {
+  localeState.value = "ar";
+  const html = await render({ month: "8", kind: "fruit" });
+  const links = anchors(html).filter((anchor) => anchor.lang === "en").map((anchor) => anchor.href);
+  expect(links).toEqual(["/en/guide?month=8&kind=fruit", "/en/guide?month=8&kind=fruit"]);
+});
+
+it("keeps a bare guide or a junk query on the language links", async () => {
+  localeState.value = "ar";
+  const bare = anchors(await render({})).filter((anchor) => anchor.lang === "en").map((anchor) => anchor.href);
+  expect(bare).toEqual(["/en/guide", "/en/guide"]);
+
+  const junkHtml = await render({ month: "13", kind: "nuts" });
+  const junk = anchors(junkHtml).filter((anchor) => anchor.lang === "en").map((anchor) => anchor.href);
+  expect(junk).toEqual(["/en/guide", "/en/guide"]);
+  expect(junkHtml).not.toContain("month=13");
+  expect(junkHtml).not.toContain("nuts");
+
+  const paddedHtml = await render({ month: "08", kind: "fruit" });
+  const padded = anchors(paddedHtml).filter((anchor) => anchor.lang === "en").map((anchor) => anchor.href);
+  expect(padded).toEqual(["/en/guide?kind=fruit", "/en/guide?kind=fruit"]);
+  expect(paddedHtml).not.toContain("month=08");
 });

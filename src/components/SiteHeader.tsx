@@ -6,9 +6,18 @@ import { LanguageLink } from "./LanguageLink";
 import { Wordmark } from "./Wordmark";
 import styles from "./SiteHeader.module.css";
 
-export function SiteHeader({ locale, path }: { locale: Locale; path: string }) {
+export function SiteHeader({
+  locale,
+  path,
+  query = "",
+}: {
+  locale: Locale;
+  path: string;
+  query?: string;
+}) {
   const copy = messages(locale);
   const home = path === "";
+  const guide = path === "/guide";
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
@@ -23,9 +32,16 @@ export function SiteHeader({ locale, path }: { locale: Locale; path: string }) {
           >
             {copy.nav.home}
           </Link>
+          <Link
+            className={guide ? `${styles.link} ${styles.current}` : styles.link}
+            href={localeHref(locale, "/guide")}
+            aria-current={guide ? "page" : undefined}
+          >
+            {copy.nav.guide}
+          </Link>
         </nav>
         <div className={styles.language}>
-          <LanguageLink locale={locale} path={path} />
+          <LanguageLink locale={locale} path={path} query={query} />
         </div>
       </div>
     </header>

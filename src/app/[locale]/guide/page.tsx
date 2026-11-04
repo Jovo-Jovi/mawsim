@@ -5,7 +5,7 @@ import { filterByKind, parseKindParam, parseMonthParam } from "@/domain";
 import { localeHref, otherLocale } from "@/i18n/href";
 import { localeParam } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
-import { CardGrid, KindChips } from "@/modules/guide";
+import { CardGrid, KindChips, guideQuery } from "@/modules/guide";
 import { catalogueMonth, inSeasonIn, thisCalendarMonth } from "@/modules/produce";
 import styles from "./page.module.css";
 
@@ -34,11 +34,12 @@ export default async function GuidePage({
   const currentMonth = await thisCalendarMonth();
   const selectedMonth = parseMonthParam(query.month, currentMonth);
   const kind = parseKindParam(query.kind);
+  const requestedMonth = query.month === String(selectedMonth) ? selectedMonth : null;
   const rows = filterByKind(inSeasonIn(selectedMonth), kind);
   const copy = messages(locale);
   const title = copy.guide.title.replaceAll("{month}", catalogueMonth(copy.months, selectedMonth));
   return (
-    <PageShell locale={locale} path="/guide">
+    <PageShell locale={locale} path="/guide" query={guideQuery(requestedMonth, kind)}>
       <div className={styles.page}>
         <h1>{title}</h1>
         <KindChips locale={locale} selectedMonth={selectedMonth} kind={kind} />
