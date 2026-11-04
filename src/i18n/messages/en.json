@@ -77,9 +77,11 @@
   "guide": {
     "title": "What is in season in {month}",
     "kinds": "Kinds",
+    "months": "Months",
     "all": "All",
     "empty": "Nothing of this kind is in season in {month}.",
     "showAll": "Show all kinds",
-    "showThisMonth": "Show this month"
+    "showThisMonth": "Show this month",
+    "thisMonth": "This month"
   }
 }
