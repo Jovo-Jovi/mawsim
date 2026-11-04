@@ -17,6 +17,19 @@ const monthNames = [
 ] as const;
 
 const catalogueKeys = [
+  "about.collects",
+  "about.collectsTitle",
+  "about.languages",
+  "about.languagesTitle",
+  "about.photoBy",
+  "about.photoHero",
+  "about.photoLicence",
+  "about.photoSource",
+  "about.photosNone",
+  "about.photosTitle",
+  "about.title",
+  "about.what",
+  "about.whatTitle",
   "app.name",
   "app.tagline",
   "app.titleJoin",
@@ -63,6 +76,7 @@ const catalogueKeys = [
   "monthsShort.7",
   "monthsShort.8",
   "monthsShort.9",
+  "nav.about",
   "nav.guide",
   "nav.home",
   "nav.label",
@@ -134,5 +148,5 @@ it("drops a produce-page string or copies the English into Arabic", () => {
 it("adds a key the fence does not name, or loses one", () => {
   expect(flatKeys(messages("en")).sort()).toEqual([...catalogueKeys]);
   expect(flatKeys(messages("ar")).sort()).toEqual([...catalogueKeys]);
-  expect(catalogueKeys).toHaveLength(63);
+  expect(catalogueKeys).toHaveLength(77);
 });

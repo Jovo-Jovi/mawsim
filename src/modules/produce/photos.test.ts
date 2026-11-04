@@ -52,7 +52,7 @@ function photoRow(overrides: Record<string, unknown> = {}) {
     height: 1200,
     alt_en: "Market stall",
     alt_ar: "كشك السوق",
-    author: "Huda N.",
+    author: "Fixture Studio",
     source_url: "https://localhost/source",
     licence: "Commercial use",
     licence_url: "https://localhost/licence",
