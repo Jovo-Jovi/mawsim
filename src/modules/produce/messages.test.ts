@@ -19,9 +19,16 @@ const monthNames = [
 const catalogueKeys = [
   "app.name",
   "app.tagline",
+  "app.titleJoin",
   "error.retry",
   "error.title",
   "footer.collectsNothing",
+  "guide.all",
+  "guide.empty",
+  "guide.kinds",
+  "guide.showAll",
+  "guide.showThisMonth",
+  "guide.title",
   "kind.fruit",
   "kind.leafy",
   "kind.vegetable",
@@ -50,9 +57,11 @@ const catalogueKeys = [
   "monthsShort.7",
   "monthsShort.8",
   "monthsShort.9",
+  "nav.guide",
   "nav.home",
   "nav.label",
   "notFound.body",
+  "notFound.guide",
   "notFound.home",
   "notFound.title",
   "notice.sample",
@@ -62,6 +71,7 @@ const catalogueKeys = [
   "produce.monthOutOfSeason",
   "produce.seasonList",
   "produce.seasonRange",
+  "produce.stateJoin",
   "produce.thisMonth",
   "skip.content",
 ] as const;
@@ -101,6 +111,7 @@ it("drops a produce-page string or copies the English into Arabic", () => {
     monthOutOfSeason: "not in season",
     seasonRange: "{from} \u2013 {to}",
     seasonList: "{earlier}, {later}",
+    stateJoin: ", ",
   });
   expect(messages("ar").produce).toEqual({
     keepIt: "طريقة الحفظ",
@@ -110,11 +121,12 @@ it("drops a produce-page string or copies the English into Arabic", () => {
     monthOutOfSeason: "خارج الموسم",
     seasonRange: "من {from} إلى {to}",
     seasonList: "{earlier}\u060C {later}",
+    stateJoin: "\u060C ",
   });
 });
 
 it("adds a key the fence does not name, or loses one", () => {
   expect(flatKeys(messages("en")).sort()).toEqual([...catalogueKeys]);
   expect(flatKeys(messages("ar")).sort()).toEqual([...catalogueKeys]);
-  expect(catalogueKeys).toHaveLength(47);
+  expect(catalogueKeys).toHaveLength(57);
 });

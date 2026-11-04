@@ -5,11 +5,6 @@ import type { Produce } from "./catalogue";
 import { catalogueMonth, seasonSentence } from "./season-sentence";
 import styles from "./SeasonBar.module.css";
 
-const stateJoiner: Record<Locale, string> = {
-  en: ", ",
-  ar: "\u060C ",
-};
-
 export function SeasonBar({
   produce,
   locale,
@@ -41,7 +36,7 @@ export function SeasonBar({
                 </span>
                 <span className={styles.state}>
                   {catalogueMonth(copy.months, calendarMonth)}
-                  {stateJoiner[locale]}
+                  {copy.produce.stateJoin}
                   {state}
                 </span>
                 {current ? (

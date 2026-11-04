@@ -8,10 +8,12 @@ import styles from "./PageShell.module.css";
 export function PageShell({
   locale,
   path,
+  query = "",
   children,
 }: {
   locale: Locale;
   path: string;
+  query?: string;
   children: ReactNode;
 }) {
   return (
@@ -20,12 +22,12 @@ export function PageShell({
         <a className={styles.skip} href="#content">
           {messages(locale).skip.content}
         </a>
-        <SiteHeader locale={locale} path={path} />
+        <SiteHeader locale={locale} path={path} query={query} />
       </div>
       <main id="content" tabIndex={-1} className={styles.main}>
         <div className={styles.frame}>{children}</div>
       </main>
-      <SiteFooter locale={locale} path={path} />
+      <SiteFooter locale={locale} path={path} query={query} />
     </div>
   );
 }

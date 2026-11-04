@@ -1,7 +1,8 @@
 {
   "app": {
     "name": "Mawsim",
-    "tagline": "What is in season in Egypt, month by month."
+    "tagline": "What is in season in Egypt, month by month.",
+    "titleJoin": " \u2014 "
   },
   "error": {
     "title": "Something went wrong.",
@@ -12,7 +13,8 @@
   },
   "nav": {
     "label": "Main",
-    "home": "Home"
+    "home": "Home",
+    "guide": "Guide"
   },
   "language": {
     "switch": "العربية"
@@ -26,7 +28,8 @@
   "notFound": {
     "title": "This page is not here.",
     "body": "The address may be mistyped, or the page has moved.",
-    "home": "Back to the home page"
+    "home": "Back to the home page",
+    "guide": "Open the guide"
   },
   "months": {
     "1": "January",
@@ -68,6 +71,15 @@
     "monthInSeason": "in season",
     "monthOutOfSeason": "not in season",
     "seasonRange": "{from} \u2013 {to}",
-    "seasonList": "{earlier}, {later}"
+    "seasonList": "{earlier}, {later}",
+    "stateJoin": ", "
+  },
+  "guide": {
+    "title": "What is in season in {month}",
+    "kinds": "Kinds",
+    "all": "All",
+    "empty": "Nothing of this kind is in season in {month}.",
+    "showAll": "Show all kinds",
+    "showThisMonth": "Show this month"
   }
 }

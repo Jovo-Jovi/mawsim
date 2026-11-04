@@ -11,10 +11,15 @@ export function NotFoundCopy({ locale }: { locale: Locale }) {
     <>
       <h1>{copy.notFound.title}</h1>
       <p>{copy.notFound.body}</p>
-      <Link className={styles.home} href={localeHref(locale, "")}>
-        <Icon name="arrow" />
-        {copy.notFound.home}
-      </Link>
+      <div className={styles.actions}>
+        <Link className={styles.home} href={localeHref(locale, "")}>
+          <Icon name="arrow" />
+          {copy.notFound.home}
+        </Link>
+        <Link className={styles.guide} href={localeHref(locale, "/guide")}>
+          {copy.notFound.guide}
+        </Link>
+      </div>
     </>
   );
 }

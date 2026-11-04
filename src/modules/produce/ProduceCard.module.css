@@ -1,0 +1,131 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  inline-size: 100%;
+  min-inline-size: 0;
+  padding: var(--space-3);
+  container-type: inline-size;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  text-decoration: none;
+  transition-property: none;
+}
+
+.card:hover {
+  color: var(--color-ink);
+  box-shadow: var(--shadow-2);
+}
+
+.card:active {
+  box-shadow: none;
+}
+
+.card:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.frame {
+  position: relative;
+  inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.badge {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-end: var(--space-2);
+  display: grid;
+  inline-size: var(--space-9);
+  block-size: var(--space-9);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: var(--space-1);
+  min-inline-size: 0;
+  text-align: start;
+}
+
+.name,
+.counter,
+.kind,
+.sentence {
+  margin: 0;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+
+.name,
+.counter {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.name {
+  color: var(--color-ink);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  text-wrap: balance;
+}
+
+:lang(ar) .name {
+  font-weight: 700;
+}
+
+@container (max-inline-size: 13rem) {
+  .name {
+    font-size: var(--text-lg);
+  }
+}
+
+@container (max-inline-size: 8.25rem) {
+  .name {
+    font-size: var(--text-sm);
+  }
+}
+
+.counter {
+  color: var(--color-ink-muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+
+.counter:lang(en) {
+  font-family: var(--font-latin);
+}
+
+.counter:lang(ar) {
+  font-family: var(--font-arabic);
+}
+
+.kind {
+  margin-block-start: var(--space-2);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-tight);
+  letter-spacing: 0;
+}
+
+.sentence {
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  line-height: var(--leading-body);
+  letter-spacing: 0;
+  text-wrap: pretty;
+}

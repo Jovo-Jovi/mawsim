@@ -1,0 +1,44 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-inline-size: 0;
+}
+
+/* The Arabic display face is narrower than its fallback, so an uncapped heading
+   drops a line when the face arrives. The cap is the loaded line count. */
+.page h1:lang(ar) {
+  overflow: hidden;
+}
+
+@media (min-width: 23.5rem) {
+  .page h1:lang(ar) {
+    max-block-size: calc(var(--leading-tight) * 2em);
+  }
+}
+
+@media (min-width: 40rem) {
+  .page h1:lang(ar) {
+    max-block-size: none;
+  }
+}
+
+@media (min-width: 72rem) {
+  .page h1:lang(ar) {
+    max-block-size: calc(var(--leading-tight) * 1em);
+  }
+}
+
+.notice {
+  margin-inline: calc(-1 * var(--space-5));
+}
+
+@media (min-width: 64rem) {
+  .page {
+    gap: var(--space-8);
+  }
+
+  .notice {
+    margin-inline: calc(-1 * var(--space-8));
+  }
+}
