@@ -12,7 +12,7 @@
   min-inline-size: 0;
 }
 
-.season h2 {
+.inSeasonHeading {
   margin: 0;
   max-inline-size: 100%;
   color: var(--color-ink);
@@ -24,7 +24,7 @@
   text-wrap: balance;
 }
 
-.season h2:lang(ar) {
+.inSeasonHeading:lang(ar) {
   font-weight: 700;
 }
 

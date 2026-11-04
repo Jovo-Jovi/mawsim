@@ -29,7 +29,7 @@ export default async function HomePage() {
           photo={getHeroPhoto()}
         />
         <div className={styles.season}>
-          <h2>{copy.home.inSeason}</h2>
+          <h2 className={styles.inSeasonHeading}>{copy.home.inSeason}</h2>
           <CardGrid
             produce={rows}
             locale={locale}

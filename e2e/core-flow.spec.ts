@@ -53,7 +53,7 @@ test("follows a second redirect, drops the guide month or fruit kind, changes th
   const seen = new Set<string>();
   const steps: string[] = [];
   let found = 0;
-  page.on("request", (request) => rememberForeign(request.url(), foreign));
+  context.on("request", (request) => rememberForeign(request.url(), foreign));
   page.on("websocket", (socket) => rememberForeign(socket.url(), foreign));
 
   const landing = await page.goto("/");
