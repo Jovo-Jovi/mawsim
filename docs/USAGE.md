@@ -11,19 +11,19 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 74 · Not reported: 32 · Last run: 2026-11-04T19:57:14.368Z
+Runs: 75 · Not reported: 32 · Last run: 2026-11-04T21:46:32.889Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 74 | 5,913,855 | 3,122,862 | 331,460,259 | 5,441,859 | $87.07 (23 without a price) |
+| 75 | 5,913,959 | 3,159,774 | 333,965,227 | 5,593,443 | $89.34 (23 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 14 | 121,036 | 1,388,882 | 122,168,346 | 5,105,679 | $84.82 |
+| claude | claude-opus-5-5 | 15 | 121,140 | 1,425,794 | 124,673,314 | 5,257,263 | $87.09 |
 | claude | claude-sonnet-5-5 | 5 | 120 | 58,120 | 3,268,105 | 336,180 | $2.25 |
 | cursor | grok-4.7-xhigh-fast | 55 | 5,792,699 | 1,675,860 | 206,023,808 | 0 | — |
 
@@ -33,7 +33,7 @@ Runs: 74 · Not reported: 32 · Last run: 2026-11-04T19:57:14.368Z
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
 | builder | 55 | 5,792,699 | 1,675,860 | 206,023,808 | 0 | — |
-| reviewer | 17 | 2,450 | 1,165,836 | 101,592,462 | 4,690,544 | $71.76 |
+| reviewer | 18 | 2,554 | 1,202,748 | 104,097,430 | 4,842,128 | $74.04 |
 
 ## By task
 
@@ -48,4 +48,4 @@ Runs: 74 · Not reported: 32 · Last run: 2026-11-04T19:57:14.368Z
 | T06 | 43 | 1,340,052 | 950,821 | 97,175,309 | 2,191,094 | $36.54 (6 without a price) |
 | T07 | 8 | 953,091 | 303,100 | 41,830,613 | 126,114 | $0.83 (6 without a price) |
 | T08 | 2 | 439,918 | 121,288 | 15,275,312 | 65,916 | $0.47 (1 without a price) |
-| T09 | 3 | 556,741 | 274,113 | 29,243,543 | 239,728 | $3.24 (2 without a price) |
+| T09 | 4 | 556,845 | 311,025 | 31,748,511 | 391,312 | $5.52 (2 without a price) |
