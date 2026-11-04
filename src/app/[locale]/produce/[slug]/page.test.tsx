@@ -138,7 +138,7 @@ it("labels molokhia as fruit or omits the leafy season sentence", async () => {
 it("accepts a near-miss slug or echoes it in the failure", async () => {
   localeState.value = "ar";
   for (const slug of ["kiwi", "Mango", "mang", "mango-extra"]) {
-    await expect(ProducePage({ params: Promise.resolve({ slug }) })).rejects.toThrow("not-found");
-    await expect(generateMetadata({ params: Promise.resolve({ slug }) })).rejects.toThrow("not-found");
+    await expect(ProducePage({ params: Promise.resolve({ slug }) })).rejects.toThrow(new Error("not-found"));
+    await expect(generateMetadata({ params: Promise.resolve({ slug }) })).rejects.toThrow(new Error("not-found"));
   }
 });
