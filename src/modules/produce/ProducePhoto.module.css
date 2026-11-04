@@ -157,3 +157,18 @@
   word-break: normal;
   white-space: nowrap;
 }
+
+/* A two-line pill covers the ring in the short card frame. The card repeats the counter-name. */
+@container (max-block-size: 8rem) {
+  .card .counter {
+    display: none;
+  }
+
+  .card .name {
+    font-size: var(--text-xs);
+  }
+
+  .card .copy {
+    padding-inline: var(--space-1);
+  }
+}
