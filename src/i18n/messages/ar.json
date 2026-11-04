@@ -1,7 +1,8 @@
 {
   "app": {
     "name": "موسم",
-    "tagline": "ما الذي في موسمه في مصر، شهرًا بشهر."
+    "tagline": "ما الذي في موسمه في مصر، شهرًا بشهر.",
+    "titleJoin": " \u2014 "
   },
   "error": {
     "title": "حدث خطأ ما.",
@@ -12,7 +13,8 @@
   },
   "nav": {
     "label": "القائمة الرئيسية",
-    "home": "الرئيسية"
+    "home": "الرئيسية",
+    "guide": "الدليل"
   },
   "language": {
     "switch": "English"
@@ -26,7 +28,8 @@
   "notFound": {
     "title": "هذه الصفحة غير موجودة.",
     "body": "ربما كُتب العنوان خطأً أو نُقلت الصفحة.",
-    "home": "العودة إلى الصفحة الرئيسية"
+    "home": "العودة إلى الصفحة الرئيسية",
+    "guide": "افتح الدليل"
   },
   "months": {
     "1": "يناير",
@@ -68,6 +71,15 @@
     "monthInSeason": "في الموسم",
     "monthOutOfSeason": "خارج الموسم",
     "seasonRange": "من {from} إلى {to}",
-    "seasonList": "{earlier}\u060C {later}"
+    "seasonList": "{earlier}\u060C {later}",
+    "stateJoin": "\u060C "
+  },
+  "guide": {
+    "title": "ما الذي في موسمه في {month}",
+    "kinds": "الأنواع",
+    "all": "الكل",
+    "empty": "لا شيء من هذا النوع في موسمه في {month}.",
+    "showAll": "عرض كل الأنواع",
+    "showThisMonth": "عرض هذا الشهر"
   }
 }

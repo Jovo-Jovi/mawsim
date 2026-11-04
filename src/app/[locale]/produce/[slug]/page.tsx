@@ -23,8 +23,6 @@ import styles from "./page.module.css";
 // "navigation" waits, so an unknown slug answers 404.
 export const ensureStatic = "navigation";
 
-const titleJoin = " \u2014 ";
-
 function kindLabel(produce: Produce, locale: Locale): string {
   const labels = messages(locale).kind;
   const table: Record<Produce["kind"], string> = {
@@ -54,9 +52,10 @@ export async function generateMetadata({
   const locale = await localeParam();
   const { slug } = await params;
   const produce = produceForSlug(slug);
+  const copy = messages(locale);
   const other = otherLocale(locale);
   return {
-    title: `${produce[locale]}${titleJoin}${messages(locale).app.name}`,
+    title: `${produce[locale]}${copy.app.titleJoin}${copy.app.name}`,
     description: seasonSentence(produce, locale),
     alternates: {
       languages: {
