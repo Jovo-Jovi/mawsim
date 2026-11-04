@@ -1,0 +1,112 @@
+.cluster {
+  display: contents;
+}
+
+.plate {
+  grid-area: plate;
+  justify-self: center;
+  display: grid;
+  place-items: center;
+  inline-size: var(--space-12);
+  aspect-ratio: 1;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.ring {
+  grid-area: 1 / 1;
+  inline-size: 84%;
+  block-size: 84%;
+}
+
+.turn {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+:dir(rtl) .turn {
+  transform: scaleX(-1);
+}
+
+.bed,
+.arc,
+.currentBed,
+.currentArc {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.bed,
+.currentBed {
+  stroke: var(--color-ink);
+  stroke-width: 3.4;
+}
+
+.arc {
+  stroke: var(--color-track);
+  stroke-width: 2.2;
+}
+
+.currentArc {
+  stroke: var(--color-highlight);
+  stroke-width: 2.2;
+}
+
+/* Lemon on the surface plate is 1.60:1 in light, so the ink bed is the edge. In the dark theme it is 8.87:1. */
+@media (prefers-color-scheme: dark) {
+  .currentBed {
+    stroke: transparent;
+  }
+}
+
+.numeral {
+  grid-area: 1 / 1;
+  margin: 0;
+  color: var(--color-ink);
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-display);
+  text-align: center;
+}
+
+.numeral:lang(ar) {
+  font-weight: 700;
+}
+
+.equivalent {
+  grid-area: caption;
+  justify-self: center;
+  margin: 0;
+  inline-size: fit-content;
+  min-inline-size: calc(var(--space-12) * 2);
+  max-inline-size: 100%;
+  padding-inline: var(--space-3);
+  padding-block: var(--space-2);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: var(--leading-body);
+  text-align: center;
+  text-wrap: balance;
+}
+
+@media (min-width: 64rem) {
+  .plate {
+    grid-area: visual;
+    justify-self: start;
+    align-self: start;
+    margin-block-start: var(--space-4);
+    margin-inline-start: calc(var(--space-6) * -1);
+    z-index: 1;
+  }
+
+  .equivalent {
+    justify-self: start;
+  }
+}
