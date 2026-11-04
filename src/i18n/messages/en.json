@@ -83,5 +83,11 @@
     "showAll": "Show all kinds",
     "showThisMonth": "Show this month",
     "thisMonth": "This month"
+  },
+  "home": {
+    "headline": "What is fresh in Egypt in",
+    "guideLink": "See the whole guide",
+    "inSeason": "In season this month",
+    "dialCount": "In season this month: {count}"
   }
 }

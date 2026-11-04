@@ -83,5 +83,11 @@
     "showAll": "عرض كل الأنواع",
     "showThisMonth": "عرض هذا الشهر",
     "thisMonth": "هذا الشهر"
+  },
+  "home": {
+    "headline": "الطازج في مصر في",
+    "guideLink": "تصفّح الدليل كاملًا",
+    "inSeason": "في موسمه هذا الشهر",
+    "dialCount": "في موسمه هذا الشهر: {count}"
   }
 }
