@@ -11,29 +11,29 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 75 · Not reported: 32 · Last run: 2026-11-04T21:46:32.889Z
+Runs: 77 · Not reported: 32 · Last run: 2026-11-04T22:21:21.751Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 75 | 5,913,959 | 3,159,774 | 333,965,227 | 5,593,443 | $89.34 (23 without a price) |
+| 77 | 6,082,633 | 3,381,809 | 360,110,747 | 6,217,342 | $100.56 (24 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 15 | 121,140 | 1,425,794 | 124,673,314 | 5,257,263 | $87.09 |
+| claude | claude-opus-5-5 | 16 | 121,462 | 1,600,972 | 143,489,042 | 5,881,162 | $98.30 |
 | claude | claude-sonnet-5-5 | 5 | 120 | 58,120 | 3,268,105 | 336,180 | $2.25 |
-| cursor | grok-4.7-xhigh-fast | 55 | 5,792,699 | 1,675,860 | 206,023,808 | 0 | — |
+| cursor | grok-4.7-xhigh-fast | 56 | 5,961,051 | 1,722,717 | 213,353,600 | 0 | — |
 
 ## By stage
 
 | Stage | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
-| builder | 55 | 5,792,699 | 1,675,860 | 206,023,808 | 0 | — |
-| reviewer | 18 | 2,554 | 1,202,748 | 104,097,430 | 4,842,128 | $74.04 |
+| builder | 56 | 5,961,051 | 1,722,717 | 213,353,600 | 0 | — |
+| reviewer | 19 | 2,876 | 1,377,926 | 122,913,158 | 5,466,027 | $85.25 |
 
 ## By task
 
@@ -48,4 +48,4 @@ Runs: 75 · Not reported: 32 · Last run: 2026-11-04T21:46:32.889Z
 | T06 | 43 | 1,340,052 | 950,821 | 97,175,309 | 2,191,094 | $36.54 (6 without a price) |
 | T07 | 8 | 953,091 | 303,100 | 41,830,613 | 126,114 | $0.83 (6 without a price) |
 | T08 | 2 | 439,918 | 121,288 | 15,275,312 | 65,916 | $0.47 (1 without a price) |
-| T09 | 4 | 556,845 | 311,025 | 31,748,511 | 391,312 | $5.52 (2 without a price) |
+| T09 | 6 | 725,519 | 533,060 | 57,894,031 | 1,015,211 | $16.73 (3 without a price) |
