@@ -129,9 +129,9 @@
   white-space: nowrap;
 }
 
-/* Twelve equal tracks once the widest English label at weight 600 fits: 24rem is above
-   12 × that label + 11 × --space-1 + the almanac's padding. */
-@container almanac (min-width: 24rem) {
+/* Twelve equal tracks once the widest English label at weight 600 fits.
+   Widest label 1.75rem. 12 × 1.75rem + 11 × --space-1 + 2 × --space-1 = 24.25rem. */
+@container almanac (min-width: 24.25rem) {
   :lang(en) .cells {
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
@@ -143,8 +143,8 @@
 }
 
 /* Twelve equal tracks once the widest Arabic label at weight 600 fits.
-   12 × 2.875rem + 11 × --space-1 + the almanac's padding = 37.75rem. */
-@container almanac (min-width: 37.75rem) {
+   Widest label 2.9375rem. 12 × 2.9375rem + 11 × --space-1 + 2 × --space-1 = 38.5rem. */
+@container almanac (min-width: 38.5rem) {
   :lang(ar) .cells {
     grid-template-columns: repeat(12, minmax(0, 1fr));
   }
