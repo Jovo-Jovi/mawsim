@@ -124,3 +124,36 @@
 .hero .counter {
   font-size: var(--text-sm);
 }
+
+/* The card frame is the narrow slot. Page and hero keep the rules above. */
+.card .tile {
+  padding: var(--space-1);
+}
+
+.card .dial {
+  inline-size: min(100cqmin, 100%);
+  max-inline-size: 100%;
+  max-block-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
+.card .copy {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 50%;
+  inset-inline: var(--space-1);
+  translate: 0 -50%;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  margin-inline: auto;
+  padding-inline: var(--space-2);
+  padding-block: var(--space-1);
+}
+
+.card .name,
+.card .counter {
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: nowrap;
+}
