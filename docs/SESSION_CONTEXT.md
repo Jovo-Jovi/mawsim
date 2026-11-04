@@ -1,6 +1,6 @@
 # MAWSIM — Session context
 
-**Phase:** P05 About and motion · **Station:** J5 · **Next task:** T10 (about page; attempt 1 halted on a layout shift) · **Profile:** A, adapted (no personal
+**Phase:** P05 About and motion · **Station:** J5 · **Next task:** T11 (hero dial animation and motion pass) · **Profile:** A, adapted (no personal
 data, no database) · **Scope:** mvp
 
 ## Done steps
@@ -13,9 +13,9 @@ data, no database) · **Scope:** mvp
 
 ## Open carry-forwards
 
-31 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-39. Developer content pending: the licensed photographs and their manifest rows
-(`docs/OPEN_QUESTIONS.md`); every frame shows its fallback until then. The doubled sample-data notice stays (CF-24).
+30 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-39. Developer content pending: the licensed photographs and their manifest rows
+(`docs/OPEN_QUESTIONS.md`); every frame shows its fallback until then. The doubled sample-data notice stays (CF-24). CF-15 is closed (T10, step 7).
 
 ## Next action
 
-T10 is open. Attempt 1 halted: `/ar/about` at 390 has layout shift 0.0122, from the Arabic face swap in `src/app/fonts.ts`, which this fence cannot edit. The carry-forward ledger is landed (31 open, live maximum CF-39).
+T11 is next (hero dial animation and the motion pass). T10 built the about page. CF-15 is closed: IBM Plex Sans Arabic uses `subsets: ["arabic", "latin"]`, and all four about captures record layout shift 0. The ledger stands at 30 open, live maximum CF-39.

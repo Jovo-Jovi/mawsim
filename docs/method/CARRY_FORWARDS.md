@@ -22,7 +22,7 @@ An item marked "Owner: none" or "no action" is not a row. `closed` only where a 
 | CF-12 | DOC CORRECTION. On 16.4.3 the `/` 307 carries none of the six headers. `SECURITY_MODEL.md` §4 says "every route", so it should record the redirect as a known framework exception. | reviewer | open | — |
 | CF-13 | Since the root layout no longer enforces the closed locale set, every new page must call `localeParam()`, and its fence must probe an unknown locale on the new route. Also consider narrowing `localeSegment()`, which exports the raw segment. | reviewer | open | T06, T07, T10 |
 | CF-14 | Decide whether `global-not-found.tsx` and `experimental.globalNotFound` stay, since no URL reaches them. Removing them is a deep-path change. | reviewer, developer | open | — |
-| CF-15 | Set IBM Plex Sans Arabic `subsets: ["arabic", "latin"]`, so punctuation and Western digits in Arabic text do not swap faces after first paint. | builder | open | T06 |
+| CF-15 | Set IBM Plex Sans Arabic `subsets: ["arabic", "latin"]`, so punctuation and Western digits in Arabic text do not swap faces after first paint. | builder | closed | T10, step 7 |
 | CF-16 | Align the focused skip link with the container edge at 64rem and wider (`PageShell.module.css`). | builder | open | T09 |
 | CF-17 | The runner should capture a hydrated 404 state (`not-found-ar`). The runner counts a 404 as a failed request, so the not-found page has no capture. | method (developer) | open | — |
 | CF-18 | The runner should capture each state in dark as well as light (UA-11). `screens.mjs` sets no `colorScheme`, so dark evidence rests on computed contrast. | method (developer) | open | — |
