@@ -11,7 +11,7 @@ wait for the developer's merge.
 | T04 | P02 | J5 | Produce catalogue module and season logic | 2 | — | [x] | PASS a1 — docs/reviews/T04-a1.md |
 | T05 | P02 | J5 | Photo slots: licence manifest, responsive photo frame with designed fallback | 2 | — | [x] | PASS a1 — docs/reviews/T05-a1.md |
 | T06 | P02 | J5 | Produce page with photo, season bar and storage tip | 2 | G-Design | [x] | PASS a3 — docs/reviews/T06-a3.md |
-| T07 | P03 | J5 | Guide page: card grid and kind chips | 2 | — | [ ] | FAIL a1 — docs/reviews/T07-a1.md |
+| T07 | P03 | J5 | Guide page: card grid and kind chips | 2 | — | [x] | PASS a2 — docs/reviews/T07-a2.md |
 | T08 | P03 | J5 | Guide page: twelve-month scroller | 2 | — | [ ] | — |
 | T09 | P04 | J5 | Home page: photo hero and in season this month; core-flow browser test | 2 | G-Public | [ ] | — |
 | T10 | P05 | J5 | About page with photo credits | 2 | — | [ ] | — |
