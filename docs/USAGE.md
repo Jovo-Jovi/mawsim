@@ -11,19 +11,19 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 60 · Not reported: 32 · Last run: 2026-11-04T14:39:35.964Z
+Runs: 61 · Not reported: 32 · Last run: 2026-11-04T16:50:42.054Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 60 | 3,963,825 | 2,285,077 | 232,681,053 | 4,513,987 | $74.13 (14 without a price) |
+| 61 | 3,964,105 | 2,424,361 | 245,110,791 | 5,010,101 | $82.53 (14 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 12 | 120,634 | 1,202,155 | 106,232,793 | 4,369,837 | $73.17 |
+| claude | claude-opus-5-5 | 13 | 120,914 | 1,341,439 | 118,662,531 | 4,865,951 | $81.57 |
 | claude | claude-sonnet-5-5 | 2 | 50 | 23,819 | 1,429,380 | 144,150 | $0.96 |
 | cursor | grok-4.7-xhigh-fast | 46 | 3,843,141 | 1,059,103 | 125,018,880 | 0 | — |
 
@@ -33,7 +33,7 @@ Runs: 60 · Not reported: 32 · Last run: 2026-11-04T14:39:35.964Z
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
 | builder | 46 | 3,843,141 | 1,059,103 | 125,018,880 | 0 | — |
-| reviewer | 12 | 1,978 | 944,808 | 83,818,184 | 3,762,672 | $58.82 |
+| reviewer | 13 | 2,258 | 1,084,092 | 96,247,922 | 4,258,786 | $67.22 |
 
 ## By task
 
@@ -45,4 +45,4 @@ Runs: 60 · Not reported: 32 · Last run: 2026-11-04T14:39:35.964Z
 | T03 | 6 | 1,243,941 | 619,110 | 72,519,838 | 1,141,011 | $17.95 (3 without a price) |
 | T04 | 2 | 167,335 | 82,910 | 4,554,444 | 69,378 | $0.44 (1 without a price) |
 | T05 | 2 | 212,182 | 121,684 | 8,638,264 | 74,772 | $0.52 (1 without a price) |
-| T06 | 42 | 1,339,772 | 811,537 | 84,745,571 | 1,694,980 | $28.14 (6 without a price) |
+| T06 | 43 | 1,340,052 | 950,821 | 97,175,309 | 2,191,094 | $36.54 (6 without a price) |
