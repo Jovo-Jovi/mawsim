@@ -102,7 +102,11 @@
     "photosTitle": "Photographs",
     "photosNone": "No photographs are listed yet. Until one is, each frame shows a coloured tile with its season ring.",
     "photoHero": "Home page",
+    "photoTexture": "Background texture",
     "photoBy": "Photograph by {author}",
+    "photoGenerated": "Generated for Mawsim with {model}",
+    "photoTerms": "Terms of use",
+    "photoOwn": "Artwork by {author}",
     "photoSource": "Source",
     "photoLicence": "Licence:"
   }

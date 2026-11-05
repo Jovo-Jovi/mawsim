@@ -17,6 +17,7 @@ const photo: ProducePhotoRow = {
   height: 1400,
   alt_en: "Market stall in warm light",
   alt_ar: "كشك في ضوء دافئ",
+  source: "licensed",
   author: "Fixture Studio",
   source_url: "https://localhost/source",
   licence: "Commercial use",

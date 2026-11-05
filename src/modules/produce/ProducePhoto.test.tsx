@@ -24,6 +24,7 @@ const photo: ProducePhotoRow = {
   height: 1400,
   alt_en: "Mango on linen",
   alt_ar: "مانجو على قماش",
+  source: "licensed",
   author: "Fixture Studio",
   source_url: "https://localhost/source",
   licence: "Commercial use",

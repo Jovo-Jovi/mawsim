@@ -11,36 +11,38 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 88 · Not reported: 32 · Last run: 2026-11-05T00:41:03.249Z
+Runs: 92 · Not reported: 32 · Last run: 2026-11-05T10:50:05.807Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 88 | 7,409,212 | 3,797,308 | 407,890,487 | 6,477,024 | $102.34 (32 without a price) |
+| 92 | 7,765,124 | 4,047,503 | 425,521,457 | 6,807,433 | $107.65 (34 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 16 | 121,462 | 1,600,972 | 143,489,042 | 5,881,162 | $98.30 |
-| claude | claude-sonnet-5-5 | 8 | 212 | 111,404 | 6,272,165 | 595,862 | $4.04 |
+| claude | claude-opus-5-5 | 17 | 121,626 | 1,689,383 | 150,339,167 | 6,117,534 | $103.05 |
+| claude | claude-sonnet-5-5 | 9 | 238 | 122,258 | 7,077,458 | 689,899 | $4.61 |
 | cursor | grok-4.7-xhigh-fast | 56 | 5,961,051 | 1,722,717 | 213,353,600 | 0 | — |
-| cursor | grok-4.7-high | 8 | 1,326,487 | 362,215 | 44,775,680 | 0 | — |
+| cursor | grok-4.7-high | 10 | 1,682,209 | 513,145 | 54,751,232 | 0 | — |
 
 ## By stage
 
 | Stage | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
-| builder | 64 | 7,287,538 | 2,084,932 | 258,129,280 | 0 | — |
-| reviewer | 22 | 2,968 | 1,431,210 | 125,917,218 | 5,725,709 | $87.04 |
+| intake | 1 | 164 | 88,411 | 6,850,125 | 236,372 | $4.74 |
+| builder | 66 | 7,643,260 | 2,235,862 | 268,104,832 | 0 | — |
+| reviewer | 23 | 2,994 | 1,442,064 | 126,722,511 | 5,819,746 | $87.60 |
 
 ## By task
 
 | Task | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
+| intake-17 | 1 | 164 | 88,411 | 6,850,125 | 236,372 | $4.74 |
 | T01 | 3 | 519,803 | 193,264 | 20,452,343 | 249,235 | $3.68 (2 without a price) |
 | T02 | 3 | 362,086 | 175,406 | 17,926,604 | 533,296 | $8.09 (1 without a price) |
 | T03 | 6 | 1,243,941 | 619,110 | 72,519,838 | 1,141,011 | $17.95 (3 without a price) |
@@ -52,3 +54,4 @@ Runs: 88 · Not reported: 32 · Last run: 2026-11-05T00:41:03.249Z
 | T09 | 6 | 725,519 | 533,060 | 57,894,031 | 1,015,211 | $16.73 (3 without a price) |
 | T10 | 8 | 933,676 | 284,798 | 31,785,813 | 225,103 | $1.61 (6 without a price) |
 | T11 | 3 | 392,903 | 130,701 | 15,993,927 | 34,579 | $0.18 (2 without a price) |
+| T12 | 3 | 355,748 | 161,784 | 10,780,845 | 94,037 | $0.57 (2 without a price) |

@@ -102,7 +102,11 @@
     "photosTitle": "الصور",
     "photosNone": "لم تُدرَج أي صورة بعد. وحتى تُدرَج، يعرض كل إطار مساحة ملوّنة عليها حلقة الموسم.",
     "photoHero": "الصفحة الرئيسية",
+    "photoTexture": "خلفية الصفحة",
     "photoBy": "تصوير: {author}",
+    "photoGenerated": "صُنعت لموسم بالذكاء الاصطناعي ({model})",
+    "photoTerms": "شروط الاستخدام",
+    "photoOwn": "عمل فني: {author}",
     "photoSource": "المصدر",
     "photoLicence": "الترخيص:"
   }

@@ -35,8 +35,8 @@ The whole suite: `node scripts/devos/run-checks.mjs --strict` (exits 0 only when
 
 ```
 content/produce.json            developer-owned sample data (the builder never edits content/**)
-content/photos.json             developer-owned photo licence manifest (OD-09)
-public/photos/{hero,produce}/   developer-owned licensed photographs (outside surfaces.builder)
+content/photos.json             developer-owned photo manifest (OD-09, OD-10): hero, produce and the texture. The owner writes the rows, by hand or with scripts/images/generate.mjs, which he runs on his own computer (OD-10 §3)
+public/photos/{hero,produce,texture}/   developer-owned photographs, including the texture folder (outside surfaces.builder). The owner fills them by running scripts/images/generate.mjs on his own computer (OD-10 §3)
 src/app/[locale]/               routes: page.tsx (home), guide/, produce/[slug]/, about/; layout.tsx sets lang/dir
 src/app/api/health/route.ts     the health route (the one boundary zone, OD-05)
 src/app/global-error.tsx        last-resort error boundary (safe message)
@@ -62,10 +62,11 @@ module creates its folder and its entry.
   locale is `notFound()`. `/` → `/ar` by one `redirects()` entry in `next.config.ts` (`permanent: false`, 307), the
   only redirect, so no loop is possible. No proxy or middleware: nothing is read from the request to choose a
   language.
-- **Images.** Photographs are local files in `public/photos/`, rendered with `next/image` (built in; optimised to
-  AVIF/WebP in responsive sizes by `next start`) using the manifest's `width` and `height`, a `sizes` value per slot
-  and the frame's fixed `aspect-ratio`, so nothing shifts. The hero is the only `priority` image; the rest load
-  lazily. No remote image host is configured.
+- **Images.** Photographs are local files in `public/photos/` (`hero/`, `produce/` and `texture/`), rendered with
+  `next/image` (built in; optimised to AVIF/WebP in responsive sizes by `next start`) using the manifest's `width`
+  and `height`, a `sizes` value per slot and the frame's fixed `aspect-ratio`, so nothing shifts. The hero is the
+  only `priority` image; the rest load lazily. The owner generates a file and its manifest row with
+  `scripts/images/generate.mjs`, which he runs on his own computer (OD-10 §3). No remote image host is configured.
 - **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state (none is
   planned: every control is a link). The produce pages are generated for every slug × locale. "This month" is
   computed on the server in `Africa/Cairo` and cached for at most an hour (with Cache Components, a `"use cache"`
