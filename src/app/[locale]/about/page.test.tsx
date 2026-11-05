@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it, vi } from "vitest";
 
@@ -16,7 +17,14 @@ vi.mock("next/root-params", () => ({
 import { generateMetadata, default as AboutPage } from "./page";
 
 const TEXTURE_FILE = "/photos/texture/texture.webp";
-const TERMS_URL = "https://x.ai/legal/terms-of-service";
+const TERMS_URLS = (
+  JSON.parse(readFileSync(new URL("../../../../content/photos.json", import.meta.url), "utf8")) as {
+    credit_required: boolean;
+    terms_url?: string;
+  }[]
+)
+  .filter((row) => row.credit_required)
+  .map((row) => row.terms_url);
 const EMPTY_CREDITS_EN =
   "No photographs are listed yet. Until one is, each frame shows a coloured tile with its season ring.";
 const EMPTY_CREDITS_AR = "لم تُدرَج أي صورة بعد. وحتى تُدرَج، يعرض كل إطار مساحة ملوّنة عليها حلقة الموسم.";
@@ -178,7 +186,8 @@ it("adds a second h1, reorders the sections, drops a credited subject, or places
   const englishUrls = httpsOutsideScript(english);
   const englishHrefs = creditHrefs(english);
   expect(englishUrls).toEqual(englishHrefs);
-  expect(englishHrefs).toEqual(Array.from({ length: SUBJECTS_EN.length }, () => TERMS_URL));
+  expect(TERMS_URLS).toHaveLength(SUBJECTS_EN.length);
+  expect(englishHrefs).toEqual(TERMS_URLS);
   expect(httpsOutsideScript(english.replace(creditList(english), ""))).toEqual([]);
 
   localeState.value = "ar";
@@ -191,7 +200,8 @@ it("adds a second h1, reorders the sections, drops a credited subject, or places
   const arabicUrls = httpsOutsideScript(arabic);
   const arabicHrefs = creditHrefs(arabic);
   expect(arabicUrls).toEqual(arabicHrefs);
-  expect(arabicHrefs).toEqual(Array.from({ length: SUBJECTS_AR.length }, () => TERMS_URL));
+  expect(TERMS_URLS).toHaveLength(SUBJECTS_AR.length);
+  expect(arabicHrefs).toEqual(TERMS_URLS);
   expect(httpsOutsideScript(arabic.replace(creditList(arabic), ""))).toEqual([]);
 });
 

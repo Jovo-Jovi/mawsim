@@ -1,7 +1,7 @@
 # MAWSIM — Carry-forwards
 
 Every finding becomes a row; the landing task allocates the id from the live maximum (handbook §5.2).
-**Live maximum: CF-39.**
+**Live maximum: CF-48.**
 
 One item carried across later reviews stays one row. A bullet that lists several items has one row each.
 An item marked "Owner: none" or "no action" is not a row. `closed` only where a later review, or T10 stages 1–3, shows the item done.
@@ -47,3 +47,12 @@ An item marked "Owner: none" or "no action" is not a row. `closed` only where a 
 | CF-37 | `card-names.spec.ts` runs only in the optional `e2e` check (`test:e2e` runs `core-flow.spec.ts` only), so a failure there would not override a PASS (PR-08). | reviewer | open | T11 |
 | CF-38 | In the first film frame the Arabic `h1` is 17px wider than from 47ms on, so the Arabic 700 face arrives late. The line count is the same and the shift is 0. | T11 | open | T11 |
 | CF-39 | At 390 the dial sits below the photo. §5 says "below the headline" and §6 says "overlapping the photo's inline-start edge". The wording should be settled. | T11 | open | T11 |
+| CF-40 | The licence name accepts any non-empty string, while `CONTENT_MODEL.md` §5 names a closed set (Unsplash License, Pexels License, CC0 or CC BY). Decide whether manifest v2 should enforce that set. | reviewer | open | — |
+| CF-41 | The poster and the scene differ in composition. When the scene replaces the poster, the produce visibly jumps up and shrinks (poster x784–970 y245–401, scene x792–956 y228–358, `home-en-1280-film-320.png` against `-film-640.png`). This is not a layout shift, and §13 asks only for "the same produce in the same colours". The poster's bottom sits inside the band, but the button never shows with the poster. | developer | open | G-Showcase |
+| CF-42 | Every e2e that measures layout or reads computed style after `page.goto` first waits for the element to be visible, because the layout's `<Suspense>` hides the body at `load`. `e2e/showcase.spec.ts` and the Stage 1 specs (`hero-scene.spec.ts` `boxOf`, `card-motion.spec.ts`) do this; no `waitForTimeout`. | reviewer | closed | T17 |
+| CF-43 | Size of the late scene chunk. Measured on the T17 build: `.next/static/chunks/0v7dp6epeqnci.js` is 927041 bytes (`wc -c`) and 243431 bytes gzipped (`gzip -c <file> \| wc -c`). The budget is the developer's decision at G-Showcase. | developer | open | G-Showcase |
+| CF-44 | The frame's placement under OD-10 §1 ("beside the dial"): from 64rem it sits above the photograph and leaves about 180px empty above the photograph's inline end. | developer | open | G-Showcase |
+| CF-45 | The "Pomegranate" label overlapped its ring on the fallback card tile. With every manifest row present, the captures show the photograph in that frame and no fallback tile. | reviewer | closed | T17 |
+| CF-46 | Capture method: after the hover, the full-page shot paints the sticky header mid-page, and the 390 filmstrips of `home-en`/`home-ar` never reach the frame, which is below the fold. | method (developer) | open | — |
+| CF-47 | `docs/SESSION_CONTEXT.md` still said "P05 … complete · Next task: none" after T16. T17 rewrites it for P06, with T12–T16 done and T17 waiting at G-Showcase. | T17 builder | closed | T17 |
+| CF-48 | T16 attempt 3's D2 lockfile count cited "the script" without its command. Attempt 4 did not repeat that count. Report hygiene: a count names its command. | builder | open | — |
