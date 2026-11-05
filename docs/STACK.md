@@ -67,10 +67,11 @@ module creates its folder and its entry.
   and `height`, a `sizes` value per slot and the frame's fixed `aspect-ratio`, so nothing shifts. The hero is the
   only `priority` image; the rest load lazily. The owner generates a file and its manifest row with
   `scripts/images/generate.mjs`, which he runs on his own computer (OD-10 §3). No remote image host is configured.
-- **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state (none is
-  planned: every control is a link). The produce pages are generated for every slug × locale. "This month" is
+- **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state. `Reveal`
+  (`src/modules/guide/Reveal.tsx`) is the first: it only adds an attribute and an observer and renders no state.
+  Every control is a link. The produce pages are generated for every slug × locale. "This month" is
   computed on the server in `Africa/Cairo` and cached for at most an hour (with Cache Components, a `"use cache"`
-  function with `cacheLife("hours")`), so no client code changes the page after it renders.
+  function with `cacheLife("hours")`), so the content is never changed, only revealed.
 - **Data.** `content/produce.json` is imported once, in `src/modules/produce/`, and checked by a unit test (unique
   slugs, kinds in `ProduceKind`, months 1–12, non-empty names and tips in both locales). No database, no fetch.
 - **Strings.** Every interface string is in both catalogues with identical keys (`guard:i18n`); `lang` and `dir` come

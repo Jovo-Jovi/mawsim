@@ -5,7 +5,7 @@ import { filterByKind, parseKindParam, parseMonthParam } from "@/domain";
 import { localeHref, otherLocale } from "@/i18n/href";
 import { localeParam } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
-import { CardGrid, KindChips, MonthScroller, guideQuery } from "@/modules/guide";
+import { CardGrid, KindChips, MonthScroller, Reveal, guideQuery } from "@/modules/guide";
 import { catalogueMonth, getTexturePhoto, inSeasonIn, MarketTexture, thisCalendarMonth } from "@/modules/produce";
 import styles from "./page.module.css";
 
@@ -47,16 +47,19 @@ export default async function GuidePage({
           <MonthScroller locale={locale} selectedMonth={selectedMonth} currentMonth={currentMonth} kind={kind} />
           <KindChips locale={locale} selectedMonth={selectedMonth} kind={kind} />
         </div>
-        <CardGrid
-          produce={rows}
-          locale={locale}
-          currentMonth={currentMonth}
-          selectedMonth={selectedMonth}
-          kind={kind}
-        />
-        <div className={styles.notice}>
-          <SampleDataNotice locale={locale} />
-        </div>
+        <Reveal>
+          <CardGrid
+            key={`${selectedMonth}-${kind ?? "all"}`}
+            produce={rows}
+            locale={locale}
+            currentMonth={currentMonth}
+            selectedMonth={selectedMonth}
+            kind={kind}
+          />
+          <div className={styles.notice} data-reveal-item="">
+            <SampleDataNotice locale={locale} />
+          </div>
+        </Reveal>
       </div>
     </PageShell>
   );

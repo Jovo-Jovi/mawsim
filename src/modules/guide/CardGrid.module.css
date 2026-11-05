@@ -54,6 +54,11 @@
   animation: none;
 }
 
+.cell[data-reveal="pending"]:nth-child(n),
+.cell[data-reveal="shown"]:nth-child(n) {
+  animation: none;
+}
+
 .cell > * {
   flex: 1 1 auto;
   min-inline-size: 0;

@@ -65,6 +65,7 @@
   --dur-reveal: 560ms;
   --reveal-rise: 1rem;
   --reveal-stagger: 60ms;
+  --pill-grow-from: 0.92;
   --zoom-photo: 1.05;
   --tilt-card: 1.5deg;
   --glow-ring-opacity: 0.55;

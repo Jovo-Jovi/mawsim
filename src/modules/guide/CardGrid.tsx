@@ -42,7 +42,7 @@ export function CardGrid({
   return (
     <ul className={styles.grid}>
       {produce.map((row) => (
-        <li key={row.slug} className={styles.cell}>
+        <li key={row.slug} className={styles.cell} data-reveal-item="">
           <ProduceCard
             produce={row}
             photo={getProducePhoto(row.slug)}
