@@ -46,6 +46,11 @@
 .chip[aria-current="true"] {
   background-color: var(--color-primary);
   color: var(--color-on-primary);
+  animation-name: grow;
+  animation-duration: var(--dur-2);
+  animation-timing-function: var(--ease-out);
+  animation-iteration-count: 1;
+  animation-fill-mode: backwards;
 }
 
 .chip[aria-current="true"]:hover,
@@ -58,11 +63,27 @@
   outline-offset: var(--focus-ring-offset);
 }
 
+@keyframes grow {
+  from {
+    opacity: 0;
+    transform: scale(var(--pill-grow-from));
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .chip {
     animation: none;
     transition-property: background-color, color;
     transition-duration: var(--dur-2), var(--dur-1);
     transition-timing-function: var(--ease-out), var(--ease-out);
+  }
+
+  .chip[aria-current="true"] {
+    animation: none;
   }
 }

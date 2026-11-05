@@ -108,6 +108,7 @@ and `next/font`'s fallback metrics, so the swap causes no layout shift.
 | `--dur-1` / `--dur-2` / `--dur-3` / `--dur-dial` | `120ms` / `200ms` / `420ms` / `1200ms` |
 | `--ease-out` / `--ease-in-out` | `cubic-bezier(0.2, 0.7, 0.2, 1)` / `cubic-bezier(0.6, 0, 0.3, 1)` |
 | `--dur-reveal` / `--reveal-rise` / `--reveal-stagger` | `560ms` / `1rem` / `60ms` (version 2: the scroll reveal, §7) |
+| `--pill-grow-from` | `0.92` (version 2: the selected pill grows in from this scale, §7) |
 | `--zoom-photo` / `--tilt-card` | `1.05` / `1.5deg` (version 2: card hover and focus; the tilt's sign flips in `rtl`) |
 | `--glow-ring-opacity` / `--glow-ring-spread` | `0.55` / `0.5rem` (version 2: the ring's glow, drawn in the card's kind colour) |
 | `--scene-turn` | `48s` (version 2: one full turn of the hero scene) |

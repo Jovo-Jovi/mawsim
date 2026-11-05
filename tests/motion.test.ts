@@ -3,7 +3,7 @@ import path from "node:path";
 import { expect, it } from "vitest";
 
 const srcRoot = path.resolve(import.meta.dirname, "../src");
-const ALLOWED_KEYFRAMES = new Set(["draw", "settle", "rise"]);
+const ALLOWED_KEYFRAMES = new Set(["draw", "settle", "rise", "grow"]);
 const QUIET_PROPERTIES = new Set(["opacity", "transform"]);
 const MOTION_DECLARATION =
   /(?:^|[\s;{])(animation-name|animation|transition-property|transition)\s*:\s*([^;]+)/g;
@@ -58,13 +58,15 @@ it("catches a looping module stylesheet, because its source contains infinite", 
   expect(looping).toEqual([]);
 });
 
-it("catches a @keyframes name outside draw, settle and rise", () => {
+it("catches a @keyframes name outside draw, settle, rise and grow", () => {
   const names: string[] = [];
   for (const { css } of stylesheets) {
     for (const match of css.matchAll(/@keyframes\s+([A-Za-z0-9_-]+)/g)) names.push(match[1]);
   }
   expect(names).toContain("draw");
   expect(names).toContain("settle");
+  expect(names).toContain("rise");
+  expect(names).toContain("grow");
   expect(names.filter((name) => !ALLOWED_KEYFRAMES.has(name))).toEqual([]);
 });
 
@@ -93,6 +95,7 @@ it("catches a @keyframes other than draw that animates a property other than opa
     }
   }
   expect(seen.has("settle")).toBe(true);
+  expect(seen.has("grow")).toBe(true);
   expect(offenders).toEqual([]);
 });
 
@@ -284,4 +287,114 @@ it("catches a ::before halo placed with a percentage translate or a physical lef
   expect(sheet("modules/produce/ProducePhoto.module.css")).toContain(".dial::before");
   expect(sheet("modules/produce/ProduceCard.module.css")).toContain(".badge::before");
   expect(offenders).toEqual([]);
+});
+
+function cssFiles(dir: string): string[] {
+  const found: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) found.push(...cssFiles(full));
+    else if (entry.name.endsWith(".css")) found.push(full);
+  }
+  return found;
+}
+
+function ruleBodyAt(css: string, open: number): string {
+  let depth = 0;
+  for (let cursor = open; cursor < css.length; cursor += 1) {
+    if (css[cursor] === "{") depth += 1;
+    else if (css[cursor] === "}") {
+      depth -= 1;
+      if (depth === 0) return css.slice(open + 1, cursor);
+    }
+  }
+  return "";
+}
+
+function exactSelectorBodies(css: string, selector: string): string[] {
+  const bodies: string[] = [];
+  let from = 0;
+  while (from < css.length) {
+    const at = css.indexOf(selector, from);
+    if (at === -1) break;
+    const prev = at === 0 ? "\n" : css[at - 1];
+    const next = css[at + selector.length] ?? "";
+    const prevOk = /[\s,{]/.test(prev);
+    const continues = next === ":" || next === "." || next === "[" || /[A-Za-z]/.test(next);
+    if (prevOk && !continues) {
+      const open = css.indexOf("{", at);
+      if (open !== -1 && !css.slice(at + selector.length, open).includes("{")) bodies.push(ruleBodyAt(css, open));
+    }
+    from = at + selector.length;
+  }
+  return bodies;
+}
+
+const PILL_ARRIVALS = [
+  ["modules/guide/KindChips.module.css", '.chip[aria-current="true"]'],
+  ["modules/guide/MonthScroller.module.css", '.link[aria-current="true"] .label'],
+] as const;
+
+it("catches a selected pill animation whose reduced-motion block omits the aria-current rule, so the arrival animation keeps playing", () => {
+  const bare: string[] = [];
+  for (const [name, selector] of PILL_ARRIVALS) {
+    const css = sheet(name);
+    const reduced = blockAfter(css, "@media (prefers-reduced-motion: reduce)").join("\n");
+    let outer = css;
+    for (const block of blockAfter(css, "@media (prefers-reduced-motion: reduce)")) outer = outer.replace(block, "");
+    const grows = exactSelectorBodies(outer, selector).some((body) => body.includes("animation-name: grow"));
+    const stops = exactSelectorBodies(reduced, selector).some((body) => /\banimation\s*:\s*none\b/.test(body));
+    if (!grows || !stops) bare.push(name);
+  }
+  expect(bare).toEqual([]);
+});
+
+it("catches a guide transition or keyframe that animates a property other than transform or opacity, besides the pills' colour transitions", () => {
+  const allowedTransition =
+    /^(?:transform|opacity|color|background-color)(?:\s*,\s*(?:transform|opacity|color|background-color))*$/;
+  const offenders: string[] = [];
+  for (const { file, css } of stylesheets) {
+    const name = relative(file);
+    if (!name.startsWith("modules/guide/")) continue;
+    for (const match of css.matchAll(/transition-property\s*:\s*([^;]+)/g)) {
+      const value = match[1].trim().replaceAll(/\s+/g, " ");
+      if (!allowedTransition.test(value)) offenders.push(`${name} transition ${value}`);
+    }
+    for (const block of keyframeBodies(css)) {
+      for (const match of block.body.matchAll(/(?:^|[\s;{])([a-zA-Z-]+)\s*:/g)) {
+        if (match[1] !== "opacity" && match[1] !== "transform") offenders.push(`${name} ${block.name} ${match[1]}`);
+      }
+    }
+  }
+  expect(sheet("modules/guide/KindChips.module.css")).toContain("transition-property: background-color, color");
+  expect(sheet("modules/guide/MonthScroller.module.css")).toContain("transition-property: background-color, color");
+  expect(sheet("modules/guide/KindChips.module.css")).toContain("@keyframes grow");
+  expect(sheet("modules/guide/MonthScroller.module.css")).toContain("@keyframes grow");
+  expect(offenders).toEqual([]);
+});
+
+it("catches a raw scale() in a guide stylesheet, so a pill scale stays on the --pill-grow-from token", () => {
+  const rawScale = /scale\(\s*(?!var\()/;
+  const offenders: string[] = [];
+  for (const { file, css } of stylesheets) {
+    const name = relative(file);
+    if (!name.startsWith("modules/guide/")) continue;
+    if (rawScale.test(css)) offenders.push(name);
+  }
+  expect(sheet("modules/guide/KindChips.module.css")).toContain("scale(var(--pill-grow-from))");
+  expect(sheet("modules/guide/MonthScroller.module.css")).toContain("scale(var(--pill-grow-from))");
+  expect(offenders).toEqual([]);
+});
+
+it("catches an infinite animation anywhere in a stylesheet, because a loop never stops", () => {
+  const files = cssFiles(srcRoot).map((file) => relative(file)).sort();
+  expect(files).toContain("styles/tokens.css");
+  expect(files).toContain("app/globals.css");
+  expect(files).toContain("modules/guide/KindChips.module.css");
+  expect(files).toContain("modules/guide/MonthScroller.module.css");
+  const looping = files.filter((file) => {
+    const css = stripComments(readFileSync(path.join(srcRoot, file), "utf8"));
+    return css.includes("infinite");
+  });
+  expect(looping).toEqual([]);
 });
