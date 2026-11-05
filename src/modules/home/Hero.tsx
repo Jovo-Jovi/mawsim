@@ -4,6 +4,7 @@ import { messages } from "@/i18n/messages";
 import { guideHref } from "@/modules/guide";
 import {
   catalogueMonth,
+  MarketTexture,
   ProducePhoto,
   type CalendarMonth,
   type Produce,
@@ -18,17 +19,20 @@ export function Hero({
   inSeasonCount,
   produce,
   photo,
+  texture,
 }: {
   locale: Locale;
   currentMonth: CalendarMonth;
   inSeasonCount: number;
   produce: Produce;
   photo: ProducePhotoRow | undefined;
+  texture: ProducePhotoRow | undefined;
 }) {
   const copy = messages(locale);
   const monthName = catalogueMonth(copy.months, currentMonth);
   return (
-    <div className={styles.hero}>
+    <div className={styles.hero} data-texture-band="hero">
+      <MarketTexture photo={texture} />
       <h1 className={styles.headline}>
         {copy.home.headline}{" "}
         <span className={styles.month}>{monthName}</span>

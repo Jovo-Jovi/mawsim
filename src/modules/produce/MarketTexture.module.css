@@ -1,0 +1,30 @@
+.layer {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: var(--texture-opacity);
+}
+
+.cover {
+  object-fit: cover;
+  object-position: center;
+}
+
+.weave {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.weave pattern,
+.weave pattern svg {
+  width: var(--texture-tile);
+  height: var(--texture-tile);
+}
+
+.weave path {
+  fill: none;
+  stroke: var(--texture-ink);
+}

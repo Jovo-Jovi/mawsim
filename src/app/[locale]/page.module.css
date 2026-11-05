@@ -12,6 +12,12 @@
   min-inline-size: 0;
 }
 
+.headingBand {
+  position: relative;
+  isolation: isolate;
+  min-inline-size: 0;
+}
+
 .inSeasonHeading {
   margin: 0;
   max-inline-size: 100%;

@@ -49,6 +49,25 @@ function chipHrefs(html: string, label: string): string[] {
   return [...nav.matchAll(/href="([^"]*)"/g)].map((match) => (match[1] ?? "").replaceAll("&amp;", "&"));
 }
 
+function elementByAttr(html: string, attr: string): string {
+  const attrAt = html.indexOf(attr);
+  if (attrAt < 0) return "";
+  const start = html.lastIndexOf("<div", attrAt);
+  let depth = 0;
+  const tags = /<\/?div\b[^>]*>/g;
+  tags.lastIndex = start;
+  let match: RegExpExecArray | null;
+  while ((match = tags.exec(html))) {
+    if (match[0].startsWith("</")) {
+      depth -= 1;
+      if (depth === 0) return html.slice(start, tags.lastIndex);
+    } else {
+      depth += 1;
+    }
+  }
+  return "";
+}
+
 function anchors(html: string): { href: string; current: string | null; lang: string | null }[] {
   return [...html.matchAll(/<a\b[^>]*>/g)].map((match) => {
     const tag = match[0];
@@ -64,6 +83,29 @@ const augustAll = ["tomato", "mango", "watermelon", "guava", "okra", "molokhia",
 async function render(query: { month?: string | string[]; kind?: string | string[] }): Promise<string> {
   return renderToStaticMarkup(await GuidePage({ searchParams: Promise.resolve(query) }));
 }
+
+it("leaves the guide header without a weave, or paints that weave behind a card or the sample-data notice", async () => {
+  localeState.value = "en";
+  const english = await render({ month: "8" });
+  const band = elementByAttr(english, 'data-texture-band="guide"');
+  expect(band).toContain("<h1");
+  expect(band).toContain('aria-label="Months"');
+  expect(band).toContain('aria-label="Kinds"');
+  expect(band).toContain("<pattern");
+  expect(band).not.toContain("/produce/");
+  expect(band).not.toContain("Sample data");
+  expect(english.match(/<pattern\b/g)?.length).toBe(1);
+  expect(english.slice(english.indexOf("<h1"))).not.toContain("<pattern");
+
+  localeState.value = "ar";
+  const arabic = await render({ month: "8" });
+  const arabicBand = elementByAttr(arabic, 'data-texture-band="guide"');
+  expect(arabicBand).toContain('aria-label="الشهور"');
+  expect(arabicBand).toContain('aria-label="الأنواع"');
+  expect(arabicBand).toContain("<pattern");
+  expect(arabicBand).not.toContain("/produce/");
+  expect(arabic.match(/<pattern\b/g)?.length).toBe(1);
+});
 
 it("writes the wrong month into the heading or adds a second h1", async () => {
   localeState.value = "en";

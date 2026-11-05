@@ -5,6 +5,15 @@
   min-inline-size: 0;
 }
 
+.header {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+  min-inline-size: 0;
+}
+
 /* The Arabic display face is narrower than its fallback, so an uncapped heading
    drops a line when the face arrives. The cap is the loaded line count. */
 .page h1:lang(ar) {
@@ -35,6 +44,10 @@
 
 @media (min-width: 64rem) {
   .page {
+    gap: var(--space-8);
+  }
+
+  .header {
     gap: var(--space-8);
   }
 

@@ -4,7 +4,7 @@ import { localeParam } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
 import { CardGrid } from "@/modules/guide";
 import { Hero } from "@/modules/home";
-import { getHeroPhoto, inSeasonIn, thisCalendarMonth, type Produce } from "@/modules/produce";
+import { getHeroPhoto, getTexturePhoto, inSeasonIn, MarketTexture, thisCalendarMonth, type Produce } from "@/modules/produce";
 import styles from "./page.module.css";
 
 function firstInSeason(rows: readonly Produce[]): Produce {
@@ -18,6 +18,7 @@ export default async function HomePage() {
   const currentMonth = await thisCalendarMonth();
   const rows = inSeasonIn(currentMonth);
   const copy = messages(locale);
+  const texture = getTexturePhoto();
   return (
     <PageShell locale={locale} path="">
       <div className={styles.page}>
@@ -27,9 +28,13 @@ export default async function HomePage() {
           inSeasonCount={rows.length}
           produce={firstInSeason(rows)}
           photo={getHeroPhoto()}
+          texture={texture}
         />
         <div className={styles.season}>
-          <h2 className={styles.inSeasonHeading}>{copy.home.inSeason}</h2>
+          <div className={styles.headingBand} data-texture-band="heading">
+            <MarketTexture photo={texture} />
+            <h2 className={styles.inSeasonHeading}>{copy.home.inSeason}</h2>
+          </div>
           <CardGrid
             produce={rows}
             locale={locale}
