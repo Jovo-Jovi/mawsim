@@ -7,6 +7,7 @@
     "headline"
     "visual"
     "plate"
+    "scene"
     "caption"
     "guide";
   row-gap: var(--space-5);
@@ -26,6 +27,13 @@
 .stage {
   grid-area: visual;
   min-inline-size: 0;
+}
+
+.scene {
+  grid-area: scene;
+  justify-self: center;
+  inline-size: var(--scene-size);
+  block-size: var(--scene-size);
 }
 
 .guide {
@@ -58,13 +66,20 @@
 
 @media (min-width: 64rem) {
   .hero {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 0.85fr);
     grid-template-areas:
-      "headline visual"
-      "caption visual"
-      "guide visual";
+      "headline scene visual"
+      "caption scene visual"
+      "guide scene visual";
     column-gap: var(--space-8);
     align-items: start;
+  }
+
+  .scene {
+    justify-self: end;
+    align-self: start;
+    margin-block-start: var(--space-4);
+    margin-inline-end: calc(var(--space-4) * -1);
   }
 
   .headline {

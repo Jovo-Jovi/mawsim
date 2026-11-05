@@ -10,6 +10,7 @@ import {
   type Produce,
   type ProducePhotoRow,
 } from "@/modules/produce";
+import { HeroSceneFrame } from "./HeroSceneFrame";
 import { SeasonDial } from "./SeasonDial";
 import styles from "./Hero.module.css";
 
@@ -48,6 +49,9 @@ export function Hero({
         />
       </div>
       <SeasonDial locale={locale} currentMonth={currentMonth} inSeasonCount={inSeasonCount} />
+      <div className={styles.scene}>
+        <HeroSceneFrame label={copy.home.sceneLabel} pause={copy.home.scenePause} play={copy.home.scenePlay} />
+      </div>
       <Link className={styles.guide} href={guideHref(locale, currentMonth, null)}>
         {copy.home.guideLink}
       </Link>

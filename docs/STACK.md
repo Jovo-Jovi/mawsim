@@ -69,7 +69,12 @@ module creates its folder and its entry.
   `scripts/images/generate.mjs`, which he runs on his own computer (OD-10 §3). No remote image host is configured.
 - **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state. `Reveal`
   (`src/modules/guide/Reveal.tsx`) is the first: it only adds an attribute and an observer and renders no state.
-  Every control is a link. The produce pages are generated for every slug × locale. "This month" is
+  `HeroSceneFrame` (`src/modules/home/HeroSceneFrame.tsx`) is the second and `HeroScene`
+  (`src/modules/home/HeroScene.tsx`) is the third. The frame is the client boundary. The scene is loaded late
+  through `next/dynamic` with `ssr: false`, in its own chunk. Both are decorative. The server HTML of the frame is
+  the still poster (`HeroScenePoster`); the canvas and its pause button appear only after the browser decides the
+  scene may run.
+  Every control is a link, except that pause button. The produce pages are generated for every slug × locale. "This month" is
   computed on the server in `Africa/Cairo` and cached for at most an hour (with Cache Components, a `"use cache"`
   function with `cacheLife("hours")`), so the content is never changed, only revealed.
 - **Data.** `content/produce.json` is imported once, in `src/modules/produce/`, and checked by a unit test (unique
