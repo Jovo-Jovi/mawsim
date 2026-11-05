@@ -11,30 +11,30 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 85 · Not reported: 32 · Last run: 2026-11-05T00:02:12.624Z
+Runs: 88 · Not reported: 32 · Last run: 2026-11-05T00:41:03.249Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 85 | 7,016,309 | 3,666,607 | 391,896,560 | 6,442,445 | $102.17 (30 without a price) |
+| 88 | 7,409,212 | 3,797,308 | 407,890,487 | 6,477,024 | $102.34 (32 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
 | claude | claude-opus-5-5 | 16 | 121,462 | 1,600,972 | 143,489,042 | 5,881,162 | $98.30 |
-| claude | claude-sonnet-5-5 | 7 | 202 | 108,716 | 6,141,278 | 561,283 | $3.86 |
+| claude | claude-sonnet-5-5 | 8 | 212 | 111,404 | 6,272,165 | 595,862 | $4.04 |
 | cursor | grok-4.7-xhigh-fast | 56 | 5,961,051 | 1,722,717 | 213,353,600 | 0 | — |
-| cursor | grok-4.7-high | 6 | 933,594 | 234,202 | 28,912,640 | 0 | — |
+| cursor | grok-4.7-high | 8 | 1,326,487 | 362,215 | 44,775,680 | 0 | — |
 
 ## By stage
 
 | Stage | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
-| builder | 62 | 6,894,645 | 1,956,919 | 242,266,240 | 0 | — |
-| reviewer | 21 | 2,958 | 1,428,522 | 125,786,331 | 5,691,130 | $86.86 |
+| builder | 64 | 7,287,538 | 2,084,932 | 258,129,280 | 0 | — |
+| reviewer | 22 | 2,968 | 1,431,210 | 125,917,218 | 5,725,709 | $87.04 |
 
 ## By task
 
@@ -51,3 +51,4 @@ Runs: 85 · Not reported: 32 · Last run: 2026-11-05T00:02:12.624Z
 | T08 | 2 | 439,918 | 121,288 | 15,275,312 | 65,916 | $0.47 (1 without a price) |
 | T09 | 6 | 725,519 | 533,060 | 57,894,031 | 1,015,211 | $16.73 (3 without a price) |
 | T10 | 8 | 933,676 | 284,798 | 31,785,813 | 225,103 | $1.61 (6 without a price) |
+| T11 | 3 | 392,903 | 130,701 | 15,993,927 | 34,579 | $0.18 (2 without a price) |
