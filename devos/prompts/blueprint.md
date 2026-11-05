@@ -75,6 +75,12 @@ Work in this order.
    `## Built with` (the stack and each chosen provider) and `## Status`
    (`In development: <n> tasks in <m> phases; see docs/PHASES.md.`). Write nothing after them: setup adds
    `## How this project is built`. Never a secret, a price or personal data.
+   When `devos/answers.json` has `visual_ambition`, the Direction of `DESIGN_SYSTEM.md` states it on one line,
+   `Visual ambition: <calm|expressive|showcase>`, and the direction follows it (`docs/method/DESIGN_METHOD.md` §8).
+   When `modules.media` is not `none`, also write `docs/design/media.json`, the media plan of §8 (PR-79): every
+   image, video and voice item of `media_kinds` the phases' screens need for that ambition, each with its use, its
+   file in the stack's static folder, its prompt (or, for voice, its text, language and voice) written from the
+   direction, and `status` `planned`; `DESIGN_SYSTEM.md` gives each a fallback. Nothing is generated in this run.
    Two formats are read by guards and must be exact:
    - `docs/PHASES.md`: the header `| Task | Phase | Station | Name | Risk | Gate | Done | Verdict |`, a separator
      row, then one row per task — `T01` first, ids ascending, Risk 1, 2 or 3, Done `[ ]`, Verdict `—`.
@@ -104,14 +110,14 @@ Work in this order.
    no Done-when asks for `README.md` to be absent. T01 is not a UI fence: it carries no `- Screens:` line.
    Every fence carries `- Layers: <layer> · <layer>` in its header: the layers of `devos/skills/INDEX.md` the task touches (`design`, `motion`, `frontend`, `accessibility`, `architecture`, `backend`, `api`, `database`, `security`, `reliability`, `testing`, `ops`); T01's are usually `ops · testing`. The runner gives the builder and the reviewer the skills of those layers, and a server-side or deep task always the security layer and a code task the testing layer (PR-55, PR-56, PR-57).
    Every fence also carries the builder line `- Builder: <an id of devos.config.json agents.pool> · Effort:
-   <low|medium|high|xhigh> · Fast: <yes|no>` (T01: `high`, `no`) and `- Paths: \`<glob>\` · …`: every file and
+   <low|medium|high|xhigh> · Fast: <yes|no>` (T01: `high`, `no`, or the builder's fixed `effort` and `fast` when `devos.config.json` gives it one, PR-78) and `- Paths: \`<glob>\` · …`: every file and
    folder the task may change, each in backticks (T01's are the scaffold's: `*` for the files at the root, and its
    folders such as `src/**`, `public/**` and the test folders). `guard:scope` fails a change outside them; the report,
    `docs/SESSION_CONTEXT.md`, `docs/DEVELOPMENT_JOURNAL.md` and a lockfile beside a listed manifest are always
    allowed. Before you finish, run `node scripts/devos/fence-check.mjs docs/fences/T01.md` and fix every finding
    (PR-58).
    Every later fence that builds a screen carries a `- Screens:` line and a `### Design specification`
-   (`docs/method/DESIGN_METHOD.md` §3).
+   (`docs/method/DESIGN_METHOD.md` §3), and, when the screen shows planned media, `- Media: \`<id>\` · …` (PR-81).
 7. **End with a summary** as your final message: the profile, the ODs the developer signs by approving, your
    assumptions, and the setup steps that change for this project.
 
