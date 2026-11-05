@@ -21,7 +21,7 @@ wait for the developer's merge.
 | T14 | P06 | J5 | Card hover and focus: photo zoom, mirrored tilt, season-ring glow | 2 | — | [x] | PASS a2 — docs/reviews/T14-a2.md |
 | T15 | P06 | J5 | Reveal on scroll once, and animated selected states for months and chips | 2 | — | [x] | PASS a1 — docs/reviews/T15-a1.md |
 | T16 | P06 | J5 | 3D hero scene: stylised produce in three.js / React Three Fiber, loaded late, with a still poster | 2 | — | [x] | PASS a4 — docs/reviews/T16-a4.md |
-| T17 | P06 | J5 | Showcase acceptance with the owner's images: every frame, credits, captures and the e2e | 2 | G-Showcase | [ ] | FAIL a1 — docs/reviews/T17-a1.md |
+| T17 | P06 | J5 | Showcase acceptance with the owner's images: every frame, credits, captures and the e2e | 2 | G-Showcase | [ ] | FAIL a2 — docs/reviews/T17-a2.md |
 
 ## Phases
 
