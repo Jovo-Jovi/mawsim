@@ -95,3 +95,193 @@ it("catches a @keyframes other than draw that animates a property other than opa
   expect(seen.has("settle")).toBe(true);
   expect(offenders).toEqual([]);
 });
+
+const CARD_MOTION = [
+  "modules/produce/ProduceCard.module.css",
+  "modules/produce/ProducePhoto.module.css",
+  "modules/produce/SeasonRing.module.css",
+] as const;
+
+function sheet(name: string): string {
+  const found = stylesheets.find((entry) => relative(entry.file) === name);
+  if (!found) throw new Error(`missing stylesheet ${name}`);
+  return found.css;
+}
+
+function blockAfter(css: string, needle: string): string[] {
+  const blocks: string[] = [];
+  let from = 0;
+  while (from < css.length) {
+    const at = css.indexOf(needle, from);
+    if (at === -1) break;
+    const open = css.indexOf("{", at);
+    let depth = 0;
+    let cursor = open;
+    for (; cursor < css.length; cursor += 1) {
+      if (css[cursor] === "{") depth += 1;
+      else if (css[cursor] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          cursor += 1;
+          break;
+        }
+      }
+    }
+    blocks.push(css.slice(open, cursor));
+    from = cursor;
+  }
+  return blocks;
+}
+
+function outsideHoverMedia(css: string): string {
+  const needle = "@media (hover: hover)";
+  let rest = css;
+  let from = 0;
+  while (from < rest.length) {
+    const at = rest.indexOf(needle, from);
+    if (at === -1) break;
+    const open = rest.indexOf("{", at);
+    let depth = 0;
+    let cursor = open;
+    for (; cursor < rest.length; cursor += 1) {
+      if (rest[cursor] === "{") depth += 1;
+      else if (rest[cursor] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          cursor += 1;
+          break;
+        }
+      }
+    }
+    rest = rest.slice(0, at) + rest.slice(cursor);
+    from = at;
+  }
+  return rest;
+}
+
+it("catches a new transition-property that animates something other than transform or opacity", () => {
+  const allowed = /^(?:transform|opacity)(?:\s*,\s*(?:transform|opacity))?$/;
+  const offenders: string[] = [];
+  let lift = 0;
+  for (const name of CARD_MOTION) {
+    const css = sheet(name);
+    for (const match of css.matchAll(/transition-property\s*:\s*([^;]+)/g)) {
+      const value = match[1].trim().replaceAll(/\s+/g, " ");
+      if (value === "transform, box-shadow") {
+        lift += 1;
+        if (name !== "modules/produce/ProduceCard.module.css") offenders.push(`${name} ${value}`);
+      } else if (!allowed.test(value)) {
+        offenders.push(`${name} ${value}`);
+      }
+    }
+  }
+  expect(lift).toBe(1);
+  expect(offenders).toEqual([]);
+});
+
+it("catches a :hover rule outside @media (hover: hover)", () => {
+  const bare: string[] = [];
+  for (const name of CARD_MOTION) {
+    const css = outsideHoverMedia(sheet(name));
+    const quiet = blockAfter(css, "@media (prefers-reduced-motion: reduce)").reduce(
+      (rest, block) => rest.replace(block, ""),
+      css,
+    );
+    if (quiet.includes(":hover")) bare.push(name);
+  }
+  const cardHover = blockAfter(sheet("modules/produce/ProduceCard.module.css"), "@media (hover: hover)").join("\n");
+  const photoHover = blockAfter(sheet("modules/produce/ProducePhoto.module.css"), "@media (hover: hover)").join("\n");
+  expect(cardHover).toContain(":hover");
+  expect(cardHover).toContain("rotateY(var(--tilt-card))");
+  expect(photoHover).toContain(":hover");
+  expect(photoHover).toContain("scale(var(--zoom-photo))");
+  expect(bare).toEqual([]);
+});
+
+it("catches a moving card stylesheet whose reduced-motion block omits transform none or glow opacity 0", () => {
+  const moves = CARD_MOTION.filter((name) => {
+    const css = sheet(name);
+    return css.includes("var(--tilt-card)") || css.includes("var(--zoom-photo)") || css.includes("var(--glow-ring-opacity)");
+  });
+  const bare: string[] = [];
+  for (const name of moves) {
+    const blocks = blockAfter(sheet(name), "@media (prefers-reduced-motion: reduce)");
+    const joined = blocks.join("\n");
+    if (!joined.includes("transform: none") || !joined.includes("opacity: 0")) bare.push(name);
+  }
+  expect(moves).toContain("modules/produce/ProduceCard.module.css");
+  expect(moves).toContain("modules/produce/ProducePhoto.module.css");
+  expect(bare).toEqual([]);
+});
+
+it("catches a tilt that is not var(--tilt-card) or whose rtl twin keeps the same sign", () => {
+  const css = sheet("modules/produce/ProduceCard.module.css");
+  const withoutRtl = css.replaceAll(/:dir\(rtl\)[^{]*\{[^}]*\}/g, "");
+  expect(css).toContain("rotateY(var(--tilt-card))");
+  expect(css).toContain("rotateY(calc(var(--tilt-card) * -1))");
+  expect(withoutRtl).toContain("rotateY(var(--tilt-card))");
+  expect(withoutRtl).not.toContain("rotateY(calc(var(--tilt-card) * -1))");
+});
+
+it("catches a raw angle, scale or colour in the card motion stylesheets", () => {
+  const rawAngle = /(?<![\w-])\d+(?:\.\d+)?(?:deg|rad|grad|turn)\b/;
+  const rawScale = /scale\(\s*(?!var\()/;
+  const rawColour = /#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?)\(/;
+  const offenders: string[] = [];
+  for (const name of CARD_MOTION) {
+    const css = sheet(name);
+    if (rawAngle.test(css) || rawScale.test(css) || rawColour.test(css)) offenders.push(name);
+  }
+  const photo = sheet("modules/produce/ProducePhoto.module.css");
+  expect(photo).toContain("scale(var(--zoom-photo))");
+  expect(photo).not.toMatch(/\.hero[^{]*\{[^}]*scale\(/);
+  expect(photo).not.toMatch(/\.page[^{]*\{[^}]*scale\(/);
+  expect(offenders).toEqual([]);
+});
+
+function beforeBodies(css: string): string[] {
+  const bodies: string[] = [];
+  let from = 0;
+  while (from < css.length) {
+    const at = css.indexOf("::before", from);
+    if (at === -1) break;
+    const open = css.indexOf("{", at);
+    let depth = 0;
+    let cursor = open;
+    for (; cursor < css.length; cursor += 1) {
+      if (css[cursor] === "{") depth += 1;
+      else if (css[cursor] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          cursor += 1;
+          break;
+        }
+      }
+    }
+    bodies.push(css.slice(open + 1, cursor - 1));
+    from = cursor;
+  }
+  return bodies;
+}
+
+it("catches a ::before halo placed with a percentage translate or a physical left or right, which shifts the ring off centre in rtl", () => {
+  const offenders: string[] = [];
+  for (const name of CARD_MOTION) {
+    for (const body of beforeBodies(sheet(name))) {
+      for (const raw of body.split(";")) {
+        const colon = raw.indexOf(":");
+        if (colon === -1) continue;
+        const prop = raw.slice(0, colon).trim().split(/\s+/).pop() ?? "";
+        const value = raw.slice(colon + 1).trim();
+        if ((prop === "left" || prop === "right") && value.length > 0) offenders.push(`${name} ${prop}`);
+        if (prop === "translate" && value.includes("%")) offenders.push(`${name} translate`);
+        if (prop === "transform" && /translate(?:3d|X|Y)?\(/.test(value) && value.includes("%")) {
+          offenders.push(`${name} transform`);
+        }
+      }
+    }
+  }
+  expect(sheet("modules/produce/ProducePhoto.module.css")).toContain(".dial::before");
+  expect(sheet("modules/produce/ProduceCard.module.css")).toContain(".badge::before");
+  expect(offenders).toEqual([]);
+});
