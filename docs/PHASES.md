@@ -16,6 +16,12 @@ wait for the developer's merge.
 | T09 | P04 | J5 | Home page: photo hero and in season this month; core-flow browser test | 2 | G-Public | [x] | PASS a2 — docs/reviews/T09-a2.md |
 | T10 | P05 | J5 | About page with photo credits | 2 | — | [x] | PASS a2 — docs/reviews/T10-a2.md |
 | T11 | P05 | J5 | Hero dial animation and motion pass with reduced motion | 2 | — | [x] | PASS a1 — docs/reviews/T11-a1.md |
+| T12 | P06 | J5 | Imagery pipeline: photo manifest v2, credits for every source, generator script with a mocked API | 2 | — | [ ] | — |
+| T13 | P06 | J5 | Showcase tokens and the market texture behind the hero and section bands | 2 | — | [ ] | — |
+| T14 | P06 | J5 | Card hover and focus: photo zoom, mirrored tilt, season-ring glow | 2 | — | [ ] | — |
+| T15 | P06 | J5 | Reveal on scroll once, and animated selected states for months and chips | 2 | — | [ ] | — |
+| T16 | P06 | J5 | 3D hero scene: stylised produce in three.js / React Three Fiber, loaded late, with a still poster | 2 | — | [ ] | — |
+| T17 | P06 | J5 | Showcase acceptance with the owner's images: every frame, credits, captures and the e2e | 2 | G-Showcase | [ ] | — |
 
 ## Phases
 
@@ -26,6 +32,7 @@ wait for the developer's merge.
 | P03 Guide | the guide: pick a month and a kind, see the matching produce, open one |
 | P04 Home and core flow | the home page with its photo hero and this month's produce; the whole core flow proven by a browser test on every run |
 | P05 About and motion | the about page with the photo credits, and the calm hero animation with reduced motion |
+| P06 Showcase (OD-10) | real imagery in every frame with its credits, the market texture, rich card and scroll motion, and the turning 3D hero scene with its still poster, signed off at G-Showcase |
 
 ## Phase outlines
 
@@ -127,3 +134,66 @@ and settle, the card rise with stagger, chip and month transitions, card hover; 
 `prefers-reduced-motion`. No dependency. Screens: `home-motion-ar /ar` · `home-motion-en /en` ·
 `card-hover-en /en/guide?month=8 hover a[href="/en/produce/mango"]`. Criteria: UA-01 … UA-03, UA-07, UA-08,
 UA-12. The core-flow test still passes.
+
+### P06 — Showcase (OD-10, issue #17)
+
+The tasks below implement `docs/DESIGN_SYSTEM.md` version 2. The builder never adds, replaces or deletes a file in
+`public/photos/**` and never edits `content/**`: the owner runs the generator and commits the images (OD-10 §3).
+
+### T12 — Imagery pipeline (risk 2, no UI; Stages: 2)
+`docs/fences/T12.md`. Layers: architecture · frontend · testing. Stage 1: `src/modules/produce/photos.ts` reads
+manifest version 2 (`docs/CONTENT_MODEL.md` §5): the `source` field (`generated` · `licensed` · `own`) with each
+source's fields, the `texture` key, `.png` files, and `getTexturePhoto()`. `PhotoCredits` credits every source, using
+new `about.*` catalogue strings in both languages. Fixture tests cover every rule. Stage 2: `scripts/images/generate.mjs`
+(one prompt per slot from `content/produce.json` and §11; `POST https://api.x.ai/v1/images/generations` with
+`grok-imagine-image-2.0`, `resolution: "2k"`, the slot's `aspect_ratio`, `response_format: "b64_json"`; the size read
+from the image header; the file saved under `public/photos/`; the row upserted). It refuses to run without
+`XAI_API_KEY` and never prints it. Tests in `tests/images/` mock `fetch` and write only to a temporary folder. No
+dependency, no screen.
+
+### T13 — Showcase tokens and the market texture (risk 2, UI)
+Layers: design · frontend · accessibility · testing. The new tokens of `DESIGN_SYSTEM.md` §2 version 2 (motion,
+tilt, zoom, glow, texture opacity) in `src/styles/tokens.css`, and `MarketTexture` (§12) behind the home hero and the
+section bands of home, guide and about. It shows the `texture` manifest image through `next/image` (`alt=""`,
+`aria-hidden`), or the SVG pattern drawn in code, at no more than `--texture-opacity`. A Playwright spec emulates
+light and dark, asserts the layer and its opacity, and runs axe in both themes. Screens: `home-ar /ar` · `home-en /en`
+· `guide-en /en/guide?month=8` · `about-ar /ar/about`. Criteria: UA-01 … UA-08, UA-11, UA-12, UA-17.
+
+### T14 — Card hover and focus (risk 2, UI)
+Layers: motion · design · accessibility. CSS only, in `src/modules/produce/ProduceCard.module.css` (and the
+`SeasonRing` badge). On `:hover` and `:focus-visible`: the photo or fallback zooms to `--zoom-photo` inside its frame,
+the card tilts by `--tilt-card` with the tilt mirrored in `rtl`, and the ring glows (`--glow-ring`, opacity only).
+Only `transform` and `opacity` animate. Nothing moves under reduced motion; the focus ring stays. Screens:
+`card-hover-en /en/guide?month=8 hover a[href="/en/produce/mango"]` · `card-hover-ar /ar/guide?month=8 hover
+a[href="/ar/produce/mango"]` · `card-focus-ar /ar/guide?month=8 focus a[href="/ar/produce/mango"]`. Criteria: UA-01
+… UA-04, UA-07, UA-08, UA-10, UA-12, UA-14.
+
+### T15 — Reveal on scroll and animated selected states (risk 2, UI)
+Layers: motion · frontend · accessibility · testing. One small client hook or component in `src/modules/guide/`
+(`IntersectionObserver`, no dependency) reveals the guide's sections and cards once as they enter the view (§7
+version 2). Content is visible without JavaScript and under reduced motion, and elements already in the first viewport
+are not hidden, so the captures and axe see them. The selected month and chip pills animate in (`--dur-2`, transform
+and opacity). A Playwright spec scrolls the guide and asserts each card ends visible and is never animated twice.
+Screens: `guide-ar /ar/guide?month=8` · `guide-en /en/guide?month=8` · `guide-chip-focus-en /en/guide?month=8&kind=fruit
+focus a[aria-current="true"]`. Criteria: UA-01 … UA-07, UA-10, UA-12, UA-14, UA-15.
+
+### T16 — 3D hero scene (risk 2, UI; package.json makes the review deep; Stages: 2)
+Layers: design · motion · frontend · accessibility · security · testing. Dependencies `three`, `@react-three/fiber`
+and `@types/three` (dev), each named by its fence line (PR-47), with the Boundary gate's evidence: no network call,
+no telemetry, no CSP change. Stage 1: `HeroScene` in `src/modules/home/`. It is code-built, stylised low-poly
+produce in the kind colours, turning slowly (§13), loaded through `next/dynamic` with `ssr: false` after the page is
+usable. It pauses off-screen and when the tab is hidden, and has a pause/play `<button>` (catalogue strings, WCAG
+2.2.2). It renders `HeroScenePoster` (the SVG still) under reduced motion, without WebGL, below 22.5rem, and on a
+low-power device (OD-10 §4), all in one reserved square frame. Stage 2: the hero layout of §6 version 2, and a
+Playwright spec: the poster under reduced motion, the scene chunk absent from the first HTML's scripts, no console
+error, and CLS 0. `docs/STACK.md` "Rendering" gains the client-component exception. Screens: `home-ar /ar` · `home-en
+/en` · `home-scene-pause-en /en click button[aria-pressed]`. Criteria: UA-01 … UA-12.
+
+### T17 — Showcase acceptance with the owner's images (risk 2, UI, G-Showcase)
+Layers: design · frontend · accessibility · testing. Precondition: the owner's image commit is on `main`, with
+`content/photos.json` holding 12 rows (hero, texture and the ten produce), counted by command. Otherwise the fence
+HALTs. `e2e/showcase.spec.ts`: every card, every produce page and the hero render an `<img>` from `/photos/` (none
+shows the fallback). The about page lists one credit per row in both languages. The texture image is used. The 3D
+chunk loads after the page is usable. The core-flow test still passes. Fixes only in code (badge clearance, crops
+through `object-position` tokens). Screens: every page in both locales (home, guide, produce mango and molokhia,
+about). Criteria: UA-01 … UA-20. The owner merges.

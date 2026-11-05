@@ -129,6 +129,64 @@ ring) in the same frame and size, so adding photographs needs no redesign and no
 **Basis of signature:** the developer decides; merging the blueprint is the confirming act.
 **Does not decide:** which images are chosen (the developer's selection, judged against `DESIGN_SYSTEM.md` §11).
 
+### OD-10 — The showcase visual layer
+**Status:** DRAFT — signed when the human merges the intake PR
+**Amends:** OD-08 (design contract version 2), OD-09 §2 and §3 (generated imagery joins the sources; how the owner
+adds files), OD-04 §4 (one 3D library for the hero scene), OD-06 §3 (the generator script writes the manifest on the
+owner's machine)
+**Requested by:** issue #17, with the owner's answer in its thread (2026-11-05)
+**1.** The design contract becomes version 2 (`docs/DESIGN_SYSTEM.md`, written by the intake PR that lands this OD):
+the Direction stays "Almanac in the sun" and gains four elements. These are real imagery in every frame, a slowly
+turning 3D produce scene beside the hero dial, a market texture behind the hero and the section bands, and richer
+state motion (card zoom, tilt and ring glow, a reveal on scroll once, animated selected states). Version 1 stays in
+git history. Merging the intake PR is the owner's approval of the new look. The rendered result is signed off at
+G-Showcase (T17).
+**2.** Image sources, in order of preference, each image with one row in `content/photos.json` and its `source`
+(`docs/CONTENT_MODEL.md` §5, version 2):
+- **C `generated`**, the first choice: images generated with xAI's `grok-imagine-image-2.0` in one consistent style
+  for all twelve slots (the hero, the ten produce and the background texture). Each row records the model id, the
+  prompt, the date and a link to xAI's terms.
+- **A `licensed`**: open photographs whose licence allows commercial use (Unsplash License, Pexels License, CC0 or
+  CC BY from Wikimedia Commons or Openverse). Never a share-alike, non-commercial or unclear licence, and never a
+  reference screenshot.
+- **B `own`**: Mawsim's own artwork (SVG illustrations in the product's colours, or still renders of its own 3D
+  models), for any slot that neither C nor A fills well.
+
+Every image is credited on the about page. Art direction is `DESIGN_SYSTEM.md` §11 version 2.
+**3.** T12 writes `scripts/images/generate.mjs`, which calls `POST https://api.x.ai/v1/images/generations` and saves
+each image under `public/photos/` with its manifest row. Its tests mock the API: no key and no network in tests or CI.
+**The owner** runs it on his own computer with his own `XAI_API_KEY` in the environment, reviews every image, and
+commits the files and rows himself, or saves images made in Cursor's editor under the same names and rows. The key is
+never committed, never a GitHub secret or variable, and never read by the product or the cycle, so it is not a setup
+item (`docs/setup-items.json` is not created). The builder still never adds, replaces or deletes a file in
+`public/photos/**` or edits `content/**` (OD-09 §3 stands for the builder). Because the runner owns task branches
+(PR-04), the owner's images land as his own commit or PR to `main`, not as a commit on a runner task branch. They
+must land after T12 merges (today's loader would refuse version 2 rows and `.png` files) and before T17 starts;
+T17's fence halts until they have.
+**4.** The 3D hero scene is built in code with three.js and React Three Fiber, as stylised low-poly produce in the
+kind colours. No model file is loaded, so no glTF and no new licence row is needed. The scene loads after the page is
+usable, in its own client chunk. It turns slowly, pauses when off-screen or when the tab is hidden, and has a
+pause/play button (WCAG 2.2.2). It shows a still poster drawn in SVG under reduced motion, without WebGL, on a viewport
+narrower than 22.5rem, and on a low-power device (`navigator.hardwareConcurrency` ≤ 2 or Save-Data on). These checks
+choose only how the decoration is drawn. They run in the browser, are never sent or stored, and change no text, link
+or data, so they are not "reading the device to change content" (`docs/BOUNDARY_MODEL.md` §2). The dependencies
+`three` and `@react-three/fiber` (and `@types/three` for development) join in T16, each named by its fence line
+(PR-47). Motion (`motion`) is not adopted: CSS and one `IntersectionObserver` cover the reveal and the selected
+states.
+**5.** The texture is decorative (`aria-hidden`, empty alt text), never more than 8% opaque over `--color-bg` in
+either theme, so every text token keeps at least 4.5:1 whatever the texture holds (`DESIGN_SYSTEM.md` §12, computed).
+It shows the manifest's `texture` image when that row exists, and an SVG pattern drawn in code otherwise.
+**6.** The boundary does not change. There is no new route, zone, form, cookie, storage or tracker, the CSP stays as
+it is, and the product calls no third-party host. xAI is called only by the owner's script on the owner's computer,
+with prompts built from the sample data and nothing about a visitor. The `devos:boundary` line is unchanged. The
+Boundary gate applies at T16 (dependencies) with its evidence.
+**7.** The work is six tasks, T12–T17 (`docs/PHASES.md`, phase P06), ending at the gate **G-Showcase** (T17), which
+the owner merges.
+**Basis of signature:** the owner decides; merging the intake PR for issue #17 is the confirming act.
+**Does not decide:** which generated or licensed images are kept (the owner's review against `DESIGN_SYSTEM.md` §11);
+a glTF or other model file (a new change request); the Motion library or the View Transitions API; any CSP, header or
+route change; a deploy; real farming or nutrition data.
+
 ## D-rows
 
 | D | Decision | Date |

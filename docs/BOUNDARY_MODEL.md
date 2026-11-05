@@ -15,7 +15,8 @@ at all.
 - Cookies (`document.cookie`, `cookies()`), `localStorage`, `sessionStorage`, `indexedDB`.
 - `sendBeacon`, analytics and trackers of any kind, third-party scripts, third-party hosts in source.
 - Hotlinked images: every photograph is a file in `public/photos/`, served from the site's own origin (OD-09); the
-  manifest's `source_url` and `licence_url` appear only as credit links on the about page.
+  manifest's `source_url`, `licence_url` and `terms_url` appear only as credit links on the about page. The image
+  generator (`scripts/images/generate.mjs`, OD-10 §3) runs only on the owner's computer; the product never calls its host.
 - Reading the visitor's language, location or device to change content (no `Accept-Language`, no geo-IP).
 - Logging an IP address, user agent, cookie, header dump or request body.
 

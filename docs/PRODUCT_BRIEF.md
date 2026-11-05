@@ -33,14 +33,18 @@ People in Egypt who shop at markets and want to know what is fresh now, on a pho
   right to left with its own typography, navigation, spacing and alignment; English is laid out left to right. Both
   are adapted designs, not translations of one layout. Switching language keeps the equivalent page. No broken link,
   wrong direction or redirect loop in either language.
-- **R-5** Motion is calm and purposeful, and it respects reduced motion.
+- **R-5** Motion is calm and purposeful, and it respects reduced motion. (Amended by OD-10, issue #17: purposeful
+  motion now includes a slowly turning 3D hero scene that can be paused, card hover and focus feedback, and a reveal
+  on scroll once. It stays calm.)
 - **R-6** Mobile-first; works at 390 and 1280 wide.
 - **R-7** Accessible to WCAG 2.2 AA.
 - **R-8** No layout shift.
 - **R-9** The data is sample data, not farming or nutrition advice, and the product says so.
 - **R-10** Licensed, high-quality fruit and vegetable photography is part of the visual identity: authentic, fresh,
   appetising, with consistent lighting and composition, optimised and responsive. Every image's licence allows
-  commercial use. Until a licensed image exists for a slot, the designed fallback shows in the same frame (OD-09).
+  commercial use. Until a licensed image exists for a slot, the designed fallback shows in the same frame (OD-09). (Amended by
+  OD-10, issue #17: images generated for Mawsim, open photographs whose licence allows commercial use, and Mawsim's
+  own artwork are all allowed, in that order of preference, each recorded in `content/photos.json`.)
 
 ## 5. The core flow
 
