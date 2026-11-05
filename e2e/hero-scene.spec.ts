@@ -90,6 +90,7 @@ async function shiftSum(page: Page): Promise<number> {
 }
 
 async function boxOf(locator: Locator): Promise<Box> {
+  await expect(locator).toBeVisible();
   const box = await locator.boundingBox();
   if (!box) throw new Error("missing box");
   return { x: box.x, y: box.y, width: box.width, height: box.height };
@@ -130,6 +131,7 @@ function overlaps(a: Box, b: Box): boolean {
 }
 
 async function settledMode(frame: Locator): Promise<string> {
+  await expect(frame).toBeVisible();
   await expect.poll(async () => frame.getAttribute("data-scene-mode")).toMatch(/^(scene|poster)$/);
   return (await frame.getAttribute("data-scene-mode")) ?? "";
 }
@@ -227,13 +229,16 @@ for (const locale of LOCALES) {
       const wideCaption = await boxOf(caption);
       const wideGuide = await boxOf(guide);
       const photoGap = widePhoto.y - (wideFrame.y + wideFrame.height);
+      const guideGap = wideGuide.y - (wideCaption.y + wideCaption.height);
       const dialGap = wideDial.y - (wideFrame.y + wideFrame.height);
       const startDelta = Math.abs(inlineStart(wideFrame, locale) - inlineStart(widePhoto, locale));
       console.log(
-        `layout-1280 ${locale} frame=${JSON.stringify(wideFrame)} photo=${JSON.stringify(widePhoto)} dial=${JSON.stringify(wideDial)} photoGap=${photoGap} dialGap=${dialGap} startDelta=${startDelta}`,
+        `layout-1280 ${locale} frame=${JSON.stringify(wideFrame)} photo=${JSON.stringify(widePhoto)} dial=${JSON.stringify(wideDial)} caption=${JSON.stringify(wideCaption)} guide=${JSON.stringify(wideGuide)} photoGap=${photoGap} guideGap=${guideGap} dialGap=${dialGap} startDelta=${startDelta}`,
       );
       expect(photoGap).toBeGreaterThanOrEqual(19);
       expect(photoGap).toBeLessThanOrEqual(21);
+      expect(guideGap).toBeGreaterThanOrEqual(19);
+      expect(guideGap).toBeLessThanOrEqual(21);
       expect(startDelta).toBeLessThanOrEqual(1);
       expect(dialGap).toBeLessThanOrEqual(64);
       expect(overlaps(wideFrame, wideHeadline)).toBe(false);
@@ -323,6 +328,7 @@ for (const locale of LOCALES) {
       for (const width of [1280, 390]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(`/${locale}`);
+        await expect(page.locator("[data-hero-scene]")).toBeVisible();
         const span = page.locator("[data-texture-band='hero'] h1 span");
         const readings: string[] = [];
         for (const name of months) {

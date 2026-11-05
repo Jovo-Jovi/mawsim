@@ -10,11 +10,13 @@ import styles from "./HeroScene.module.css";
 const BOB = 0.03;
 
 /**
- * Square-frame camera. The group stays inside the frame, with a margin, at every
- * angle of the turn and every point of the bob.
+ * Square-frame camera, looking along -Z so its height places the produce.
+ * Every produce stays wholly above the pause button's band — the frame's bottom
+ * `--target-min` + `--space-2` (3.25rem, 27.1% at 12rem) — and at least 6% inside
+ * the top and side edges, at every angle of the turn and every point of the bob.
  */
-const CAMERA_Y = -0.08;
-const CAMERA_Z = 5.6;
+const CAMERA_Y = -0.45;
+const CAMERA_Z = 6.4;
 
 /**
  * Highlight fill. MeshStandardMaterial scales irradiance by 1/π, so an unlit
@@ -237,7 +239,7 @@ export function HeroScene({ pauseLabel, onDrawn }: { pauseLabel: string; onDrawn
             frameloop="demand"
             dpr={[1, 2]}
             gl={{ alpha: true, antialias: true, premultipliedAlpha: false }}
-            camera={{ fov: 32, position: [0, CAMERA_Y, CAMERA_Z], near: 0.1, far: 20 }}
+            camera={{ fov: 32, position: [0, CAMERA_Y, CAMERA_Z], rotation: [0, 0, 0], near: 0.1, far: 20 }}
             onCreated={({ gl }) => gl.setClearAlpha(0)}
           >
             <ProduceScene paint={paint} running={running} onAngle={onAngle} />
