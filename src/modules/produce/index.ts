@@ -4,6 +4,7 @@ export { listProduce, getProduceBySlug, inSeasonIn } from "./catalogue";
 export { thisCalendarMonth } from "./this-month";
 export type { ProducePhotoRow } from "./photos";
 export { getProducePhoto, getHeroPhoto, listPhotoCredits } from "./photos";
+export { PhotoCredits } from "./PhotoCredits";
 export { ProducePhoto } from "./ProducePhoto";
 export { ProduceCard } from "./ProduceCard";
 export { SeasonBar } from "./SeasonBar";

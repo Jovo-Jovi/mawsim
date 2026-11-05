@@ -18,6 +18,7 @@ export function SiteHeader({
   const copy = messages(locale);
   const home = path === "";
   const guide = path === "/guide";
+  const about = path === "/about";
   return (
     <header className={styles.header}>
       <div className={styles.bar}>
@@ -38,6 +39,13 @@ export function SiteHeader({
             aria-current={guide ? "page" : undefined}
           >
             {copy.nav.guide}
+          </Link>
+          <Link
+            className={about ? `${styles.link} ${styles.current}` : styles.link}
+            href={localeHref(locale, "/about")}
+            aria-current={about ? "page" : undefined}
+          >
+            {copy.nav.about}
           </Link>
         </nav>
         <div className={styles.language}>

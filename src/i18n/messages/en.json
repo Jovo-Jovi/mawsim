@@ -14,7 +14,8 @@
   "nav": {
     "label": "Main",
     "home": "Home",
-    "guide": "Guide"
+    "guide": "Guide",
+    "about": "About"
   },
   "language": {
     "switch": "العربية"
@@ -89,5 +90,20 @@
     "guideLink": "See the whole guide",
     "inSeason": "In season this month",
     "dialCount": "In season this month: {count}"
+  },
+  "about": {
+    "title": "About Mawsim",
+    "whatTitle": "What Mawsim is",
+    "what": "Mawsim is a small guide to the fruit and vegetables in season in Egypt, month by month, for anyone on their way to the market. It is a test product: its seasons and storage tips are sample data, not farming or nutrition advice.",
+    "collectsTitle": "What Mawsim collects",
+    "collects": "Nothing. There are no accounts, forms, cookies, browser storage, analytics or trackers, and nothing about your visit is logged.",
+    "languagesTitle": "Two languages",
+    "languages": "The page address sets the language: Arabic reads right to left and English left to right, and Arabic is the default. Your device's language settings are never read. The language link at the top and bottom of every page keeps you on the same page.",
+    "photosTitle": "Photographs",
+    "photosNone": "No photographs are listed yet. Until one is, each frame shows a coloured tile with its season ring.",
+    "photoHero": "Home page",
+    "photoBy": "Photograph by {author}",
+    "photoSource": "Source",
+    "photoLicence": "Licence:"
   }
 }
