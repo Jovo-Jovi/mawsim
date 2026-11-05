@@ -49,8 +49,8 @@ export function SeasonDial({
               const d = arcPath(index);
               return (
                 <g key={calendarMonth} data-arc={calendarMonth} data-current={current ? "true" : "false"}>
-                  <path d={d} className={current ? styles.currentBed : styles.bed} />
-                  <path d={d} className={current ? styles.currentArc : styles.arc} />
+                  <path d={d} pathLength="1" className={current ? styles.currentBed : styles.bed} />
+                  <path d={d} pathLength="1" className={current ? styles.currentArc : styles.arc} />
                 </g>
               );
             })}
