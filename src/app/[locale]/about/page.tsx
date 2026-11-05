@@ -4,7 +4,7 @@ import { SampleDataNotice } from "@/components/SampleDataNotice";
 import { localeHref, otherLocale } from "@/i18n/href";
 import { localeParam } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
-import { listPhotoCredits, PhotoCredits } from "@/modules/produce";
+import { getTexturePhoto, listPhotoCredits, MarketTexture, PhotoCredits } from "@/modules/produce";
 import styles from "./page.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -28,7 +28,10 @@ export default async function AboutPage() {
   return (
     <PageShell locale={locale} path="/about">
       <div className={styles.page}>
-        <h1>{copy.about.title}</h1>
+        <div className={styles.header} data-texture-band="about">
+          <MarketTexture photo={getTexturePhoto()} />
+          <h1>{copy.about.title}</h1>
+        </div>
         <section className={styles.section}>
           <h2>{copy.about.whatTitle}</h2>
           <div className={styles.copy}>

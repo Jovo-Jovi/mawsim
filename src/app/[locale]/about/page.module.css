@@ -4,6 +4,12 @@
   min-inline-size: 0;
 }
 
+.header {
+  position: relative;
+  isolation: isolate;
+  min-inline-size: 0;
+}
+
 .section {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
