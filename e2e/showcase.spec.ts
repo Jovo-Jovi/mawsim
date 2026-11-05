@@ -34,6 +34,7 @@ type CreditProof = {
   hrefs: string[];
   urls: string[];
   stray: string[];
+  probe: string;
 };
 
 type FrameBorder = {
@@ -313,7 +314,9 @@ for (const locale of LOCALES) {
       expect(foreign).toEqual([]);
     });
 
-    test("drops a credited subject or leaves an https outside a credit href", async ({ page }) => {
+    test("drops a credited subject, leaves an https outside a credit href, or hides an https inside a script src", async ({
+      page,
+    }) => {
       const foreign = watch(page);
       const required = photos.filter((row) => row.credit_required).length;
       const expected = creditSubjects(locale);
@@ -324,15 +327,38 @@ for (const locale of LOCALES) {
         const pattern = /https:\/\/[^\s"'<>]*/g;
         const credits = document.querySelector("main section ul");
         if (!(credits instanceof HTMLElement)) {
-          return { subjects: [], hrefs: [], urls: ["missing-credit-list"], stray: [] };
+          return { subjects: [], hrefs: [], urls: ["missing-credit-list"], stray: [], probe: "" };
         }
         const subjects = [...credits.querySelectorAll(":scope > li")].map((row) => row.querySelector("p")?.textContent ?? "");
         const hrefs = [...credits.querySelectorAll("a[href]")].map((anchor) => anchor.getAttribute("href") ?? "");
-        const html = document.documentElement.innerHTML.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
+
+        const markupKeepingScriptSrc = (root: HTMLElement): { html: string; creditHtml: string } => {
+          const copy = root.cloneNode(true);
+          if (!(copy instanceof HTMLElement)) return { html: "", creditHtml: "" };
+          for (const script of copy.querySelectorAll("script")) {
+            if (!script.hasAttribute("src")) script.remove();
+          }
+          const clonedList = copy.querySelector("main section ul");
+          return {
+            html: copy.innerHTML,
+            creditHtml: clonedList instanceof HTMLElement ? clonedList.outerHTML : "",
+          };
+        };
+
+        const probeRoot = document.createElement("div");
+        const external = document.createElement("script");
+        external.setAttribute("src", "https://cdn.example/app.js");
+        const inline = document.createElement("script");
+        inline.textContent = "https://inline.example/x";
+        probeRoot.append(external, inline);
+
+        const pageMarkup = markupKeepingScriptSrc(document.documentElement);
+        const probe = markupKeepingScriptSrc(probeRoot).html;
+        const html = pageMarkup.html;
+        const without = pageMarkup.creditHtml === "" ? html : html.replace(pageMarkup.creditHtml, "");
         const urls = [...html.matchAll(pattern)].map((match) => (match[0] ?? "").replaceAll("&amp;", "&"));
-        const without = html.replace(credits.outerHTML, "");
         const stray = [...without.matchAll(pattern)].map((match) => (match[0] ?? "").replaceAll("&amp;", "&"));
-        return { subjects, hrefs, urls, stray };
+        return { subjects, hrefs, urls, stray, probe };
       });
       console.log(
         `showcase about ${locale} credits=${proof.subjects.length} manifest=${required} subjects=${proof.subjects.join("|")} foreign=${foreign.length}`,
@@ -341,6 +367,8 @@ for (const locale of LOCALES) {
       expect(proof.subjects).toHaveLength(required);
       expect(proof.hrefs).toEqual(proof.urls);
       expect(proof.stray).toEqual([]);
+      expect(proof.probe).toContain('src="https://cdn.example/app.js"');
+      expect(proof.probe).not.toContain("https://inline.example/x");
       expect(foreign).toEqual([]);
     });
 
