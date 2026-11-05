@@ -25,6 +25,12 @@ for photography (OD-09). Supplying the licensed image files is the developer's c
 
 None. Every feature the brief asks for is in the core flow above. New work is a change request.
 
+## 3. Amendments
+
+| # | Change | OD | Tasks |
+|---|---|---|---|
+| A-1 (issue #17) | Showcase visual layer: generated, licensed or own imagery in every photo frame with a generator script the owner runs; a market texture behind the hero and section bands; richer card hover and focus; reveal on scroll once and animated selected states; a slowly turning 3D produce scene beside the hero dial with a still poster; design contract version 2 | OD-10 | T12–T17 (G-Showcase) |
+
 ## Out of scope (the brief excludes it, or nothing asks for it)
 
 Accounts and sign-in · forms and any input · a search box · cookies and browser storage · analytics, trackers and
