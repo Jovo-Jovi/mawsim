@@ -12,6 +12,7 @@ export type {
 export { getHeroPhoto, getProducePhoto, getTexturePhoto, listPhotoCredits } from "./photos";
 export { PhotoCredits } from "./PhotoCredits";
 export { ProducePhoto } from "./ProducePhoto";
+export { MarketTexture } from "./MarketTexture";
 export { ProduceCard } from "./ProduceCard";
 export { SeasonBar } from "./SeasonBar";
 export { StorageTipPanel } from "./StorageTipPanel";
