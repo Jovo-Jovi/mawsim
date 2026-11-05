@@ -112,6 +112,9 @@ and `next/font`'s fallback metrics, so the swap causes no layout shift.
 | `--zoom-photo` / `--tilt-card` | `1.05` / `1.5deg` (version 2: card hover and focus; the tilt's sign flips in `rtl`) |
 | `--glow-ring-opacity` / `--glow-ring-spread` | `0.55` / `0.5rem` (version 2: the ring's glow, drawn in the card's kind colour) |
 | `--scene-turn` | `48s` (version 2: one full turn of the hero scene) |
+| `--scene-size` | `12rem` (below 40rem; the hero scene frame, §13) |
+| `--scene-size` | `14rem` (from 40rem; the hero scene frame, §13) |
+| `--scene-size` | `16rem` (from 64rem; the hero scene frame, §13) |
 
 ### Texture (version 2)
 

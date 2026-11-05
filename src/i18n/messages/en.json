@@ -89,7 +89,10 @@
     "headline": "What is fresh in Egypt in",
     "guideLink": "See the whole guide",
     "inSeason": "In season this month",
-    "dialCount": "In season this month: {count}"
+    "dialCount": "In season this month: {count}",
+    "sceneLabel": "Turning scene",
+    "scenePause": "Pause the scene",
+    "scenePlay": "Play the scene"
   },
   "about": {
     "title": "About Mawsim",
