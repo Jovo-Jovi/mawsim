@@ -112,6 +112,9 @@ and `next/font`'s fallback metrics, so the swap causes no layout shift.
 | `--zoom-photo` / `--tilt-card` | `1.05` / `1.5deg` (version 2: card hover and focus; the tilt's sign flips in `rtl`) |
 | `--glow-ring-opacity` / `--glow-ring-spread` | `0.55` / `0.5rem` (version 2: the ring's glow, drawn in the card's kind colour) |
 | `--scene-turn` | `48s` (version 2: one full turn of the hero scene) |
+| `--scene-size` | `12rem` (below 40rem; the hero scene frame, §13) |
+| `--scene-size` | `14rem` (from 40rem; the hero scene frame, §13) |
+| `--scene-size` | `16rem` (from 64rem; the hero scene frame, §13) |
 
 ### Texture (version 2)
 
@@ -161,8 +164,8 @@ width from 320. Every image or ring reserves its size (`aspect-ratio` or fixed b
 | `CardGrid` | guide, home | filled · **empty** ("Nothing of this kind is in season in {month}." with links to All and to this month) |
 | `SeasonBar` | produce | twelve cells with short month names beneath; in-season cells filled with the kind colour; this month outlined in accent with its label; a text list of the season below |
 | `StorageTipPanel` | produce | one state: overline "How to keep it", the tip in the page language |
-| `Hero` | home | the hero `ProducePhoto` (the only `priority` image), headline "What's fresh in Egypt this {month}" (month in accent), the `SeasonRing` dial overlapping the photo's inline-start edge with the count of produce in season in its centre, the `HeroScene` beside the dial (version 2), a link to the guide; the `MarketTexture` lies behind the whole hero band |
-| `HeroScene` | home hero (version 2) | turning · paused (by its button, off-screen or tab hidden) · poster (`HeroScenePoster`: reduced motion, no WebGL, viewport under 22.5rem, low power); one reserved square frame, size identical in every state; decorative (`aria-hidden` on the canvas and poster); the pause/play button is a real `<button>` with `aria-pressed` and a catalogue label, at least `--target-min`, shown only while the scene can turn (§13) |
+| `Hero` | home | the hero `ProducePhoto` (the only `priority` image), headline "What's fresh in Egypt this {month}" (month in accent), the `SeasonRing` dial overlapping the photo's inline-start edge with the count of produce in season in its centre, the `HeroScene` next to the dial (version 2, placed as in §13), a link to the guide; the `MarketTexture` lies behind the whole hero band |
+| `HeroScene` | home hero (version 2) | turning · paused (by its button, off-screen or tab hidden) · poster (`HeroScenePoster`: reduced motion, no WebGL, viewport under 22.5rem, low power); one reserved square frame, size identical in every state; decorative (`aria-hidden` on the canvas and poster); the pause/play button is a real `<button>` with `aria-pressed` and one fixed catalogue label, at least `--target-min`, shown only while the scene can turn (§13) |
 | `MarketTexture` | behind the home hero and the section bands of home, guide and about (version 2) | image (the manifest's `texture` row via `next/image`, `alt=""`) · pattern (the SVG pattern drawn in code); `aria-hidden`; opacity `--texture-opacity`; behind content, never above it, never under body paragraphs (§12) |
 | `PhotoCredits` | about | one credit per manifest row with `credit_required`, by source (version 2): generated (subject, "Generated for Mawsim with {model}", a link to the provider's terms) · licensed (subject, author, source link, licence link) · own (subject, "Artwork by {author}"); a plain sentence when none is listed yet |
 | `NotFound` | unknown slug or locale | localised message and links home and to the guide |
@@ -288,9 +291,7 @@ word; the reviewer reads both.
 - **What:** five to seven stylised low-poly produce built in code from simple geometry (a mango, an orange, a tomato,
   a date cluster, a leaf of molokhia), in the kind colours of §2 with soft warm lighting from one side, on a
   transparent background, so the sand or cabbage ground shows through. No model file, no texture image.
-- **Where:** a reserved square frame beside the dial, at its inline end, never covering the headline or the hero
-  image's subject. Its size is fixed by tokens at each breakpoint, so the poster, the canvas and the paused scene
-  occupy exactly the same box.
+- **Where:** a reserved square frame next to the dial, never covering the headline, the dial or the hero image: below the dial and centred where the hero is one column (below 64rem), and from 64rem directly above the hero image at its inline start, so that the dial sits just below the frame at the image's corner. Its size is fixed by tokens at each breakpoint, so the poster, the canvas and the paused scene occupy exactly the same box.
 - **Loading:** a client component loaded through `next/dynamic` with `ssr: false` after the page is usable. The first
   HTML carries only the poster, and the 3D code is in its own chunk.
 - **When it is a still:** under reduced motion, without WebGL, on a viewport narrower than 22.5rem, and on a low-power

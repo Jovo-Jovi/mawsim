@@ -10,6 +10,7 @@ import {
   type Produce,
   type ProducePhotoRow,
 } from "@/modules/produce";
+import { HeroSceneFrame } from "./HeroSceneFrame";
 import { SeasonDial } from "./SeasonDial";
 import styles from "./Hero.module.css";
 
@@ -37,7 +38,7 @@ export function Hero({
         {copy.home.headline}{" "}
         <span className={styles.month}>{monthName}</span>
       </h1>
-      <div className={styles.stage}>
+      <div className={styles.stage} data-hero-photo="">
         <ProducePhoto
           produce={produce}
           photo={photo}
@@ -48,6 +49,9 @@ export function Hero({
         />
       </div>
       <SeasonDial locale={locale} currentMonth={currentMonth} inSeasonCount={inSeasonCount} />
+      <div className={styles.scene}>
+        <HeroSceneFrame pauseLabel={copy.home.scenePause} />
+      </div>
       <Link className={styles.guide} href={guideHref(locale, currentMonth, null)}>
         {copy.home.guideLink}
       </Link>

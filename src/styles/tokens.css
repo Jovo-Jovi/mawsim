@@ -71,6 +71,7 @@
   --glow-ring-opacity: 0.55;
   --glow-ring-spread: 0.5rem;
   --scene-turn: 48s;
+  --scene-size: 12rem;
   --texture-opacity: 0.08;
   --texture-ink: #1F2A22;
   --texture-tile: 12rem;
@@ -105,5 +106,17 @@
     --color-track: #2A3D33;
     --color-hairline: rgb(243 235 221 / 0.16);
     --texture-ink: #F3EBDD;
+  }
+}
+
+@media (min-width: 40rem) {
+  :root {
+    --scene-size: 14rem;
+  }
+}
+
+@media (min-width: 64rem) {
+  :root {
+    --scene-size: 16rem;
   }
 }

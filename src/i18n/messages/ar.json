@@ -89,7 +89,8 @@
     "headline": "الطازج في مصر في",
     "guideLink": "تصفّح الدليل كاملًا",
     "inSeason": "في موسمه هذا الشهر",
-    "dialCount": "في موسمه هذا الشهر: {count}"
+    "dialCount": "في موسمه هذا الشهر: {count}",
+    "scenePause": "أوقف المشهد"
   },
   "about": {
     "title": "عن موسم",

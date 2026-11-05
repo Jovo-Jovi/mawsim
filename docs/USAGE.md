@@ -11,22 +11,22 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 104 · Not reported: 32 · Last run: 2026-11-05T14:01:47.897Z
+Runs: 118 · Not reported: 32 · Last run: 2026-11-05T21:38:02.766Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 104 | 9,370,161 | 4,621,735 | 485,792,965 | 7,212,054 | $110.57 (41 without a price) |
+| 118 | 10,512,311 | 5,593,092 | 572,185,428 | 9,485,299 | $145.52 (47 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 17 | 121,626 | 1,689,383 | 150,339,167 | 6,117,534 | $103.05 |
-| claude | claude-sonnet-5-5 | 14 | 400 | 212,304 | 11,832,166 | 1,094,520 | $7.52 |
+| claude | claude-opus-5-5 | 24 | 122,806 | 2,247,460 | 197,875,503 | 8,358,234 | $137.80 |
+| claude | claude-sonnet-5-5 | 15 | 414 | 216,428 | 12,098,725 | 1,127,065 | $7.72 |
 | cursor | grok-4.7-xhigh-fast | 56 | 5,961,051 | 1,722,717 | 213,353,600 | 0 | — |
-| cursor | grok-4.7-high | 17 | 3,287,084 | 997,331 | 110,268,032 | 0 | — |
+| cursor | grok-4.7-high | 23 | 4,428,040 | 1,406,487 | 148,857,600 | 0 | — |
 
 ## By stage
 
@@ -34,8 +34,9 @@ Runs: 104 · Not reported: 32 · Last run: 2026-11-05T14:01:47.897Z
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
 | intake | 1 | 164 | 88,411 | 6,850,125 | 236,372 | $4.74 |
-| builder | 73 | 9,248,135 | 2,720,048 | 323,621,632 | 0 | — |
-| reviewer | 28 | 3,156 | 1,532,110 | 131,477,219 | 6,224,367 | $90.52 |
+| revise | 1 | 62 | 24,159 | 1,164,892 | 109,905 | $1.46 |
+| builder | 79 | 10,389,091 | 3,129,204 | 362,211,200 | 0 | — |
+| reviewer | 35 | 4,288 | 2,070,152 | 178,115,222 | 8,387,707 | $124.01 |
 
 ## By task
 
@@ -58,3 +59,4 @@ Runs: 104 · Not reported: 32 · Last run: 2026-11-05T14:01:47.897Z
 | T13 | 5 | 586,724 | 187,745 | 26,632,853 | 102,779 | $0.71 (3 without a price) |
 | T14 | 4 | 466,878 | 178,667 | 18,650,584 | 212,124 | $1.58 (2 without a price) |
 | T15 | 3 | 551,435 | 207,820 | 14,988,071 | 89,718 | $0.63 (2 without a price) |
+| T16 | 14 | 1,142,150 | 971,357 | 86,392,463 | 2,273,245 | $34.95 (6 without a price) |
