@@ -238,3 +238,50 @@ it("catches a raw angle, scale or colour in the card motion stylesheets", () => 
   expect(photo).not.toMatch(/\.page[^{]*\{[^}]*scale\(/);
   expect(offenders).toEqual([]);
 });
+
+function beforeBodies(css: string): string[] {
+  const bodies: string[] = [];
+  let from = 0;
+  while (from < css.length) {
+    const at = css.indexOf("::before", from);
+    if (at === -1) break;
+    const open = css.indexOf("{", at);
+    let depth = 0;
+    let cursor = open;
+    for (; cursor < css.length; cursor += 1) {
+      if (css[cursor] === "{") depth += 1;
+      else if (css[cursor] === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          cursor += 1;
+          break;
+        }
+      }
+    }
+    bodies.push(css.slice(open + 1, cursor - 1));
+    from = cursor;
+  }
+  return bodies;
+}
+
+it("catches a ::before halo placed with a percentage translate or a physical left or right, which shifts the ring off centre in rtl", () => {
+  const offenders: string[] = [];
+  for (const name of CARD_MOTION) {
+    for (const body of beforeBodies(sheet(name))) {
+      for (const raw of body.split(";")) {
+        const colon = raw.indexOf(":");
+        if (colon === -1) continue;
+        const prop = raw.slice(0, colon).trim().split(/\s+/).pop() ?? "";
+        const value = raw.slice(colon + 1).trim();
+        if ((prop === "left" || prop === "right") && value.length > 0) offenders.push(`${name} ${prop}`);
+        if (prop === "translate" && value.includes("%")) offenders.push(`${name} translate`);
+        if (prop === "transform" && /translate(?:3d|X|Y)?\(/.test(value) && value.includes("%")) {
+          offenders.push(`${name} transform`);
+        }
+      }
+    }
+  }
+  expect(sheet("modules/produce/ProducePhoto.module.css")).toContain(".dial::before");
+  expect(sheet("modules/produce/ProduceCard.module.css")).toContain(".badge::before");
+  expect(offenders).toEqual([]);
+});

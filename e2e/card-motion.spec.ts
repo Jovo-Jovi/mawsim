@@ -17,6 +17,12 @@ type Reading = {
   frameHeight: number;
   layoutWidth: number;
   layoutHeight: number;
+  haloDx: number;
+  haloDy: number;
+  haloWidth: number;
+  haloHeight: number;
+  dialWidth: number;
+  dialHeight: number;
 };
 
 function rememberForeign(raw: string, foreign: string[]): void {
@@ -68,6 +74,13 @@ function outlineVisible(style: string, width: string): boolean {
 
 async function readMotion(card: Locator): Promise<Reading> {
   return card.evaluate((anchor) => {
+    const lengthPx = (value: string, size: number): number | null => {
+      const trimmed = value.trim();
+      if (trimmed === "" || trimmed === "auto" || trimmed === "none") return null;
+      const n = Number.parseFloat(trimmed);
+      if (!Number.isFinite(n)) return null;
+      return trimmed.endsWith("%") ? (n / 100) * size : n;
+    };
     const tile = anchor.querySelector("div[data-kind]");
     if (!(tile instanceof HTMLElement)) throw new Error("missing tile");
     const frame = tile.parentElement;
@@ -77,6 +90,55 @@ async function readMotion(card: Locator): Promise<Reading> {
     const cardStyle = getComputedStyle(anchor);
     const tileStyle = getComputedStyle(tile);
     const glow = getComputedStyle(dial, "::before");
+    let block: HTMLElement | null = dial.parentElement;
+    while (block) {
+      const parent = getComputedStyle(block);
+      const shifted = parent.transform !== "none" || (parent.translate !== "none" && parent.translate !== "");
+      if (parent.position !== "static" || shifted) break;
+      block = block.parentElement;
+    }
+    const host = block ?? document.documentElement;
+    const hostStyle = getComputedStyle(host);
+    const width = lengthPx(glow.width, host.clientWidth) ?? 0;
+    const height = lengthPx(glow.height, host.clientHeight) ?? 0;
+    const translate = glow.translate.trim();
+    const parts = translate === "" || translate === "none" ? [] : translate.split(/\s+/);
+    const shiftX = lengthPx(parts[0] ?? "0", width) ?? 0;
+    const shiftY = lengthPx(parts[1] ?? "0", height) ?? 0;
+    const left = lengthPx(glow.left, host.clientWidth);
+    const right = lengthPx(glow.right, host.clientWidth);
+    const top = lengthPx(glow.top, host.clientHeight);
+    const bottom = lengthPx(glow.bottom, host.clientHeight);
+    const marginLeftRaw = lengthPx(glow.marginLeft, host.clientWidth);
+    const marginRightRaw = lengthPx(glow.marginRight, host.clientWidth);
+    const marginTopRaw = lengthPx(glow.marginTop, host.clientHeight);
+    const marginBottomRaw = lengthPx(glow.marginBottom, host.clientHeight);
+    let marginLeft = marginLeftRaw ?? 0;
+    let marginRight = marginRightRaw ?? 0;
+    let marginTop = marginTopRaw ?? 0;
+    let marginBottom = marginBottomRaw ?? 0;
+    if (left !== null && right !== null && marginLeftRaw === null && marginRightRaw === null) {
+      const spare = (host.clientWidth - left - right - width) / 2;
+      marginLeft = spare;
+      marginRight = spare;
+    }
+    if (top !== null && bottom !== null && marginTopRaw === null && marginBottomRaw === null) {
+      const spare = (host.clientHeight - top - bottom - height) / 2;
+      marginTop = spare;
+      marginBottom = spare;
+    }
+    const paddingX = left !== null ? left + marginLeft + width / 2 : host.clientWidth - (right ?? 0) - marginRight - width / 2;
+    const paddingY = top !== null ? top + marginTop + height / 2 : host.clientHeight - (bottom ?? 0) - marginBottom - height / 2;
+    const borderLeft = lengthPx(hostStyle.borderLeftWidth, host.clientWidth) ?? 0;
+    const borderTop = lengthPx(hostStyle.borderTopWidth, host.clientHeight) ?? 0;
+    const fromBorderX = borderLeft + paddingX + shiftX;
+    const fromBorderY = borderTop + paddingY + shiftY;
+    const hostBox = host.getBoundingClientRect();
+    const dialBox = dial.getBoundingClientRect();
+    const scaleX = host.offsetWidth === 0 ? 1 : hostBox.width / host.offsetWidth;
+    const scaleY = host.offsetHeight === 0 ? 1 : hostBox.height / host.offsetHeight;
+    const haloX = hostBox.left + hostBox.width / 2 + (fromBorderX - host.offsetWidth / 2) * scaleX;
+    const haloY = hostBox.top + hostBox.height / 2 + (fromBorderY - host.offsetHeight / 2) * scaleY;
     const box = frame.getBoundingClientRect();
     return {
       transform: cardStyle.transform,
@@ -89,6 +151,12 @@ async function readMotion(card: Locator): Promise<Reading> {
       frameHeight: box.height,
       layoutWidth: frame.offsetWidth,
       layoutHeight: frame.offsetHeight,
+      haloDx: haloX - (dialBox.left + dialBox.width / 2),
+      haloDy: haloY - (dialBox.top + dialBox.height / 2),
+      haloWidth: width,
+      haloHeight: height,
+      dialWidth: dial.offsetWidth,
+      dialHeight: dial.offsetHeight,
     };
   });
 }
@@ -122,7 +190,7 @@ async function pollMotion(card: Locator, ready: (reading: Reading) => boolean): 
 function line(label: string, reading: Reading): string {
   const pair = scalePair(reading.tile);
   const scale = pair ? `${pair.x},${pair.y}` : reading.tile;
-  return `${label} transform=${reading.transform} tile=${reading.tile} scale=${scale} glow=${reading.glowOpacity} glowTransform=${reading.glowTransform} outline=${reading.outlineStyle}/${reading.outlineWidth} frame=${reading.frameWidth}x${reading.frameHeight} layout=${reading.layoutWidth}x${reading.layoutHeight}`;
+  return `${label} transform=${reading.transform} tile=${reading.tile} scale=${scale} glow=${reading.glowOpacity} glowTransform=${reading.glowTransform} outline=${reading.outlineStyle}/${reading.outlineWidth} frame=${reading.frameWidth}x${reading.frameHeight} layout=${reading.layoutWidth}x${reading.layoutHeight} haloDx=${reading.haloDx.toFixed(2)} haloDy=${reading.haloDy.toFixed(2)} halo=${reading.haloWidth.toFixed(2)}x${reading.haloHeight.toFixed(2)} dial=${reading.dialWidth}x${reading.dialHeight}`;
 }
 
 async function openGuide(page: Page, locale: "en" | "ar", foreign: string[]): Promise<Locator> {
@@ -148,7 +216,7 @@ async function tabTo(page: Page, href: string): Promise<void> {
 for (const locale of ["en", "ar"] as const) {
   const sign = locale === "en" ? 1 : -1;
 
-  test(`hover on /${locale}/guide tilts ${sign > 0 ? "positive" : "negative"}, zooms the tile and lights the halo`, async ({ page }) => {
+  test(`hover on /${locale}/guide tilts ${sign > 0 ? "positive" : "negative"}, zooms the tile, and fails when the halo centre leaves the dial by more than 1px`, async ({ page }) => {
     const foreign: string[] = [];
     const card = await openGuide(page, locale, foreign);
     const before = await readMotion(card);
@@ -169,6 +237,8 @@ for (const locale of ["en", "ar"] as const) {
     expect(after.frameHeight).toBe(before.frameHeight);
     expect(after.frameWidth).toBeCloseTo(before.frameWidth, 0);
     expect(Math.abs(after.frameWidth - before.frameWidth)).toBeLessThan(1);
+    expect(Math.abs(after.haloDx)).toBeLessThanOrEqual(1);
+    expect(Math.abs(after.haloDy)).toBeLessThanOrEqual(1);
     expect(foreign).toEqual([]);
 
     const violations = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
@@ -176,7 +246,7 @@ for (const locale of ["en", "ar"] as const) {
     expect(violations.violations).toEqual([]);
   });
 
-  test(`Tab focus on /${locale}/guide shows the same tilt, zoom, halo and a 2px outline`, async ({ page }) => {
+  test(`Tab focus on /${locale}/guide shows the same tilt, zoom, a 2px outline, and fails when the halo centre leaves the dial by more than 1px`, async ({ page }) => {
     const foreign: string[] = [];
     const href = `/${locale}/produce/mango`;
     await openGuide(page, locale, foreign);
@@ -193,6 +263,8 @@ for (const locale of ["en", "ar"] as const) {
     expect(Number(after.glowOpacity)).toBeCloseTo(GLOW_OPACITY, 5);
     expect(after.outlineStyle).not.toBe("none");
     expect(Number.parseFloat(after.outlineWidth)).toBeGreaterThanOrEqual(2);
+    expect(Math.abs(after.haloDx)).toBeLessThanOrEqual(1);
+    expect(Math.abs(after.haloDy)).toBeLessThanOrEqual(1);
     expect(foreign).toEqual([]);
   });
 }
