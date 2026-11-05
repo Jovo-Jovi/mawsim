@@ -50,7 +50,7 @@ export function Hero({
       </div>
       <SeasonDial locale={locale} currentMonth={currentMonth} inSeasonCount={inSeasonCount} />
       <div className={styles.scene}>
-        <HeroSceneFrame label={copy.home.sceneLabel} pause={copy.home.scenePause} play={copy.home.scenePlay} />
+        <HeroSceneFrame pauseLabel={copy.home.scenePause} />
       </div>
       <Link className={styles.guide} href={guideHref(locale, currentMonth, null)}>
         {copy.home.guideLink}

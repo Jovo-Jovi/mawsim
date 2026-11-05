@@ -1,13 +1,26 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { addAfterEffect, Canvas, useThree } from "@react-three/fiber";
 import { Mesh, type Group } from "three";
 import { nextScenePressed, sceneTurnMs } from "./scene-mode";
 import styles from "./HeroScene.module.css";
 
 /** Vertical bob, about 1% of the framed height: under the 2% cap in DESIGN_SYSTEM §7. */
 const BOB = 0.03;
+
+/**
+ * Square-frame camera. The group stays inside the frame, with a margin, at every
+ * angle of the turn and every point of the bob.
+ */
+const CAMERA_Y = -0.08;
+const CAMERA_Z = 5.6;
+
+/**
+ * Highlight fill. MeshStandardMaterial scales irradiance by 1/π, so an unlit
+ * face stays a darker tone of its kind colour.
+ */
+const FILL = 1.2;
 
 type ScenePaint = {
   fruit: string;
@@ -42,53 +55,107 @@ function Skin({ color }: { color: string }) {
   return <meshStandardMaterial color={color} roughness={0.84} metalness={0} flatShading />;
 }
 
+function DrawnOnce({ onDrawn }: { onDrawn: () => void }) {
+  const invalidate = useThree((state) => state.invalidate);
+
+  useLayoutEffect(() => {
+    let reported = false;
+    const stop = addAfterEffect(() => {
+      if (reported) return;
+      reported = true;
+      stop();
+      onDrawn();
+    });
+    invalidate();
+    return stop;
+  }, [invalidate, onDrawn]);
+
+  return null;
+}
+
 function ProduceScene({
   paint,
-  runningRef,
+  running,
   onAngle,
 }: {
   paint: ScenePaint;
-  runningRef: { current: boolean };
+  running: boolean;
   onAngle: (angle: number) => void;
 }) {
   const groupRef = useRef<Group>(null);
-  const { invalidate } = useThree();
+  const invalidate = useThree((state) => state.invalidate);
+  const runningRef = useRef(running);
+  const onAngleRef = useRef(onAngle);
+  const syncRef = useRef<() => void>(() => {});
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    onAngleRef.current = onAngle;
+  }, [onAngle]);
+
+  useLayoutEffect(() => {
     const group = groupRef.current;
     if (!group) return;
-    let frame = 0;
-    let previous = 0;
+    let frameId = 0;
+    let previous: number | null = null;
     let angle = 0;
-    const tick = (now: number) => {
-      if (previous === 0) previous = now;
-      const delta = now - previous;
-      previous = now;
-      if (runningRef.current) {
-        angle += (delta / paint.turnMs) * Math.PI * 2;
-        group.rotation.y = angle;
-        group.position.y = Math.sin(angle) * BOB;
-        onAngle(angle);
-        invalidate();
+    let alive = true;
+
+    const stop = () => {
+      if (frameId !== 0) {
+        cancelAnimationFrame(frameId);
+        frameId = 0;
       }
-      frame = requestAnimationFrame(tick);
     };
-    invalidate();
-    frame = requestAnimationFrame(tick);
+
+    const tick = (now: number) => {
+      frameId = 0;
+      if (!alive || !runningRef.current) return;
+      const delta = previous === null ? 0 : now - previous;
+      previous = now;
+      angle += (delta / paint.turnMs) * Math.PI * 2;
+      group.rotation.y = angle;
+      group.position.y = Math.sin(angle) * BOB;
+      onAngleRef.current(angle);
+      invalidate();
+      if (alive && runningRef.current) frameId = requestAnimationFrame(tick);
+    };
+
+    const sync = () => {
+      if (!alive) return;
+      if (runningRef.current) {
+        if (frameId === 0) {
+          previous = null;
+          frameId = requestAnimationFrame(tick);
+        }
+        return;
+      }
+      stop();
+    };
+
+    syncRef.current = sync;
+    sync();
+
     return () => {
-      cancelAnimationFrame(frame);
+      alive = false;
+      syncRef.current = () => {};
+      stop();
       group.traverse((object) => {
         if (!(object instanceof Mesh)) return;
         object.geometry.dispose();
         const materials = Array.isArray(object.material) ? object.material : [object.material];
         for (const material of materials) material.dispose();
       });
-      // The canvas root then releases the renderer (WebGLRenderer.dispose and context loss).
     };
-  }, [invalidate, onAngle, paint.turnMs, runningRef]);
+  }, [invalidate, paint.turnMs]);
+
+  useLayoutEffect(() => {
+    runningRef.current = running;
+    syncRef.current();
+  }, [running]);
 
   return (
     <>
+      <ambientLight color={paint.light} intensity={FILL} />
       <directionalLight color={paint.light} intensity={2.6} position={[2.1, 1.8, 2.6]} />
       <group ref={groupRef}>
         <mesh position={[-0.72, -0.06, 0.16]} scale={[0.72, 1.18, 0.64]}>
@@ -122,18 +189,14 @@ function ProduceScene({
   );
 }
 
-export function HeroScene({ label, pause, play }: { label: string; pause: string; play: string }) {
+export function HeroScene({ pauseLabel, onDrawn }: { pauseLabel: string; onDrawn: () => void }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const runningRef = useRef(false);
   const [pressed, setPressed] = useState(false);
   const [onScreen, setOnScreen] = useState(true);
   const [hidden, setHidden] = useState(false);
   const [paint, setPaint] = useState<ScenePaint | null>(null);
 
   const running = !pressed && onScreen && !hidden && paint !== null;
-  useLayoutEffect(() => {
-    runningRef.current = running;
-  }, [running]);
 
   useEffect(() => {
     const node = rootRef.current;
@@ -174,10 +237,11 @@ export function HeroScene({ label, pause, play }: { label: string; pause: string
             frameloop="demand"
             dpr={[1, 2]}
             gl={{ alpha: true, antialias: true, premultipliedAlpha: false }}
-            camera={{ fov: 32, position: [0, 0.28, 4.6], near: 0.1, far: 20 }}
+            camera={{ fov: 32, position: [0, CAMERA_Y, CAMERA_Z], near: 0.1, far: 20 }}
             onCreated={({ gl }) => gl.setClearAlpha(0)}
           >
-            <ProduceScene paint={paint} runningRef={runningRef} onAngle={onAngle} />
+            <ProduceScene paint={paint} running={running} onAngle={onAngle} />
+            <DrawnOnce onDrawn={onDrawn} />
           </Canvas>
         ) : null}
       </div>
@@ -187,8 +251,7 @@ export function HeroScene({ label, pause, play }: { label: string; pause: string
         aria-pressed={pressed}
         onClick={() => setPressed((current) => nextScenePressed(current))}
       >
-        <span>{label}</span>
-        <span className={styles.action}>{pressed ? play : pause}</span>
+        {pauseLabel}
       </button>
     </div>
   );

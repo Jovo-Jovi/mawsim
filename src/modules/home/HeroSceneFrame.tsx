@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { HeroScenePoster } from "./HeroScenePoster";
 import { SCENE_MIN_WIDTH_REM, sceneMode, type SceneSignals } from "./scene-mode";
 import styles from "./HeroScene.module.css";
@@ -31,8 +31,17 @@ function readSignals(): SceneSignals {
   };
 }
 
-export function HeroSceneFrame({ label, pause, play }: { label: string; pause: string; play: string }) {
+export function HeroSceneFrame({ pauseLabel }: { pauseLabel: string }) {
+  const frameRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<"scene" | "poster" | null>(null);
+
+  const onDrawn = useCallback(() => {
+    frameRef.current?.setAttribute("data-scene-drawn", "");
+  }, []);
+
+  useLayoutEffect(() => {
+    if (mode !== "scene") frameRef.current?.removeAttribute("data-scene-drawn");
+  }, [mode]);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -40,24 +49,19 @@ export function HeroSceneFrame({ label, pause, play }: { label: string; pause: s
     const apply = () => {
       setMode(sceneMode(readSignals()));
     };
-    const onVisibility = () => {
-      void document.visibilityState;
-    };
     apply();
     reduced.addEventListener("change", apply);
     wide.addEventListener("change", apply);
-    document.addEventListener("visibilitychange", onVisibility);
     return () => {
       reduced.removeEventListener("change", apply);
       wide.removeEventListener("change", apply);
-      document.removeEventListener("visibilitychange", onVisibility);
     };
   }, []);
 
   return (
-    <div className={styles.frame} data-hero-scene="" data-scene-mode={mode ?? undefined}>
+    <div ref={frameRef} className={styles.frame} data-hero-scene="" data-scene-mode={mode ?? undefined}>
       <HeroScenePoster />
-      {mode === "scene" ? <HeroScene label={label} pause={pause} play={play} /> : null}
+      {mode === "scene" ? <HeroScene pauseLabel={pauseLabel} onDrawn={onDrawn} /> : null}
     </div>
   );
 }

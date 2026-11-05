@@ -4,7 +4,7 @@ import { HeroSceneFrame } from "./HeroSceneFrame";
 
 function serverHtml(): string {
   return renderToStaticMarkup(
-    <HeroSceneFrame label="Turning scene" pause="Pause the scene" play="Play the scene" />,
+    <HeroSceneFrame pauseLabel="Pause the scene" />,
   );
 }
 
@@ -19,4 +19,5 @@ it("puts a button or a canvas in the server HTML, so the still is no longer the 
   expect(html).not.toContain("Pause the scene");
   expect(html).not.toContain("Play the scene");
   expect(html).not.toContain("data-scene-mode");
+  expect(html).not.toContain("data-scene-drawn");
 });

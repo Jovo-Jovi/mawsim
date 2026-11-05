@@ -90,9 +90,7 @@
     "guideLink": "تصفّح الدليل كاملًا",
     "inSeason": "في موسمه هذا الشهر",
     "dialCount": "في موسمه هذا الشهر: {count}",
-    "sceneLabel": "المشهد الدائر",
-    "scenePause": "أوقف المشهد",
-    "scenePlay": "شغّل المشهد"
+    "scenePause": "أوقف المشهد"
   },
   "about": {
     "title": "عن موسم",
