@@ -34,7 +34,9 @@
   text-align: center;
   text-decoration: none;
   white-space: nowrap;
-  transition-property: none;
+  transition-property: background-color, color;
+  transition-duration: var(--dur-2), var(--dur-1);
+  transition-timing-function: var(--ease-out), var(--ease-out);
 }
 
 .chip:hover {
@@ -54,4 +56,13 @@
 .chip:focus-visible {
   outline: var(--focus-ring-width) solid var(--color-primary);
   outline-offset: var(--focus-ring-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip {
+    animation: none;
+    transition-property: background-color, color;
+    transition-duration: var(--dur-2), var(--dur-1);
+    transition-timing-function: var(--ease-out), var(--ease-out);
+  }
 }

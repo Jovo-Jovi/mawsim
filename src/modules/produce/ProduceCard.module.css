@@ -11,16 +11,23 @@
   background-color: var(--color-surface);
   color: var(--color-ink);
   text-decoration: none;
-  transition-property: none;
+  transform: translateY(0);
+  transition-property: transform, box-shadow;
+  transition-duration: var(--dur-2), var(--dur-2);
+  transition-timing-function: var(--ease-out), var(--ease-out);
 }
 
-.card:hover {
-  color: var(--color-ink);
-  box-shadow: var(--shadow-2);
+@media (hover: hover) {
+  .card:hover {
+    color: var(--color-ink);
+    box-shadow: var(--shadow-2);
+    transform: translateY(calc(var(--space-1) / 2 * -1));
+  }
 }
 
 .card:active {
   box-shadow: none;
+  transform: none;
 }
 
 .card:focus-visible {
@@ -128,4 +135,11 @@
   line-height: var(--leading-body);
   letter-spacing: 0;
   text-wrap: pretty;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    animation: none;
+    transition: none;
+  }
 }

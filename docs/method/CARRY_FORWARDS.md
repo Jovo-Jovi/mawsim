@@ -41,7 +41,7 @@ An item marked "Owner: none" or "no action" is not a row. `closed` only where a 
 | CF-31 | The name pill in the card tile hides the counter-name below an 8rem frame, and the fallback pill sits over the ring's 3 and 9 o'clock arcs. The card text repeats the name. | T11 | open | T11 |
 | CF-32 | Home card names were restyled by a `.season h2` selector, so "Pomegranate" crossed its card border. | builder | closed | T09 |
 | CF-33 | At 1280 the `home.dialCount` sentence sits under the headline, far from the dial. | T11 | open | T11 |
-| CF-34 | `globals.css` sets a colour transition on `a`. | T11 | open | T11 |
+| CF-34 | `globals.css` sets a colour transition on `a`. `DESIGN_SYSTEM.md` §7 ("links' colour, `--dur-1`"): `globals.css` keeps its `a` transition and its reduced-motion block. | T11 | closed | T11 |
 | CF-35 | Synthetic photo fixtures used `author: "Huda N."`, which reads as a person's name. | builder | closed | T10 |
 | CF-36 | `src/app/[locale]/page.tsx` throws when a month has no produce (none today). | developer | open | — |
 | CF-37 | `card-names.spec.ts` runs only in the optional `e2e` check (`test:e2e` runs `core-flow.spec.ts` only), so a failure there would not override a PASS (PR-08). | reviewer | open | T11 |

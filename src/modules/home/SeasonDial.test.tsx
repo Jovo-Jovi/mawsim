@@ -23,10 +23,17 @@ it("draws fewer or more than twelve arcs, marks another month, drops the count, 
   expect(january).not.toContain('data-arc="8" data-current="true"');
   expect(january).toContain("في موسمه هذا الشهر: 4");
 
+  expect(august.match(/pathLength="1"/g)?.length).toBe(24);
+  expect(january.match(/pathLength="1"/g)?.length).toBe(24);
+
   const css = readFileSync(new URL("./SeasonDial.module.css", import.meta.url), "utf8");
   expect(css).toContain(":dir(rtl)");
   expect(css).toContain("scaleX(-1)");
   expect(css).toContain("var(--color-highlight)");
   expect(css).toContain("var(--color-ink)");
   expect(css).toContain("prefers-color-scheme: dark");
+  expect(css).toContain("@keyframes draw");
+  expect(css).toContain("@keyframes settle");
+  expect(css).not.toContain("infinite");
+  expect(css).toContain("prefers-reduced-motion: reduce");
 });
