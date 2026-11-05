@@ -12,8 +12,9 @@
   color: var(--color-ink);
   text-decoration: none;
   transform: translateY(0);
+  transform-origin: center;
   transition-property: transform, box-shadow;
-  transition-duration: var(--dur-2), var(--dur-2);
+  transition-duration: var(--dur-3), var(--dur-2);
   transition-timing-function: var(--ease-out), var(--ease-out);
 }
 
@@ -21,18 +22,38 @@
   .card:hover {
     color: var(--color-ink);
     box-shadow: var(--shadow-2);
-    transform: translateY(calc(var(--space-1) / 2 * -1));
+    transform: translateY(calc(var(--space-1) / 2 * -1)) rotateY(var(--tilt-card));
   }
-}
 
-.card:active {
-  box-shadow: none;
-  transform: none;
+  :dir(rtl) .card:hover {
+    transform: translateY(calc(var(--space-1) / 2 * -1)) rotateY(calc(var(--tilt-card) * -1));
+  }
+
+  .card:hover .badge::before {
+    opacity: var(--glow-ring-opacity);
+  }
 }
 
 .card:focus-visible {
   outline: var(--focus-ring-width) solid var(--color-primary);
   outline-offset: var(--focus-ring-offset);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-2);
+  transform: translateY(calc(var(--space-1) / 2 * -1)) rotateY(var(--tilt-card));
+}
+
+:dir(rtl) .card:focus-visible {
+  transform: translateY(calc(var(--space-1) / 2 * -1)) rotateY(calc(var(--tilt-card) * -1));
+}
+
+.card:focus-visible .badge::before {
+  opacity: var(--glow-ring-opacity);
+}
+
+.card:active,
+:dir(rtl) .card:active {
+  box-shadow: none;
+  transform: none;
 }
 
 .frame {
@@ -51,6 +72,30 @@
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-pill);
   background-color: var(--color-surface);
+}
+
+.badge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: var(--dur-3);
+  transition-timing-function: var(--ease-out);
+}
+
+.badge:has([data-kind="fruit"])::before {
+  box-shadow: 0 0 var(--glow-ring-spread) var(--glow-ring-spread) var(--color-kind-fruit);
+}
+
+.badge:has([data-kind="vegetable"])::before {
+  box-shadow: 0 0 var(--glow-ring-spread) var(--glow-ring-spread) var(--color-kind-vegetable);
+}
+
+.badge:has([data-kind="leafy"])::before {
+  box-shadow: 0 0 var(--glow-ring-spread) var(--glow-ring-spread) var(--color-kind-leafy);
 }
 
 .copy {
@@ -138,8 +183,24 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card {
+  .card,
+  .badge::before {
     animation: none;
     transition: none;
+  }
+
+  .card:hover,
+  .card:focus-visible,
+  :dir(rtl) .card:hover,
+  :dir(rtl) .card:focus-visible,
+  .card:active,
+  :dir(rtl) .card:active {
+    transform: none;
+  }
+
+  .card:hover .badge::before,
+  .card:focus-visible .badge::before {
+    opacity: 0;
+    transform: none;
   }
 }
