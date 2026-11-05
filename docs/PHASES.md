@@ -17,7 +17,7 @@ wait for the developer's merge.
 | T10 | P05 | J5 | About page with photo credits | 2 | — | [x] | PASS a2 — docs/reviews/T10-a2.md |
 | T11 | P05 | J5 | Hero dial animation and motion pass with reduced motion | 2 | — | [x] | PASS a1 — docs/reviews/T11-a1.md |
 | T12 | P06 | J5 | Imagery pipeline: photo manifest v2, credits for every source, generator script with a mocked API | 2 | — | [x] | PASS a1 — docs/reviews/T12-a1.md |
-| T13 | P06 | J5 | Showcase tokens and the market texture behind the hero and section bands | 2 | — | [ ] | FAIL a1 — docs/reviews/T13-a1.md |
+| T13 | P06 | J5 | Showcase tokens and the market texture behind the hero and section bands | 2 | — | [x] | PASS a2 — docs/reviews/T13-a2.md |
 | T14 | P06 | J5 | Card hover and focus: photo zoom, mirrored tilt, season-ring glow | 2 | — | [ ] | — |
 | T15 | P06 | J5 | Reveal on scroll once, and animated selected states for months and chips | 2 | — | [ ] | — |
 | T16 | P06 | J5 | 3D hero scene: stylised produce in three.js / React Three Fiber, loaded late, with a still poster | 2 | — | [ ] | — |
