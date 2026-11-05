@@ -38,7 +38,7 @@ export function Hero({
         {copy.home.headline}{" "}
         <span className={styles.month}>{monthName}</span>
       </h1>
-      <div className={styles.stage}>
+      <div className={styles.stage} data-hero-photo="">
         <ProducePhoto
           produce={produce}
           photo={photo}
