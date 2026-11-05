@@ -317,10 +317,17 @@ Rules for every fence:
 - **Self-contained.** Everything it refers to is inside it, or attached with a verifiable hash.
 - **Checked by machine.** `scripts/devos/fence-check.mjs` passes before the fence is issued, and
   `guard:scope` holds the task to its Paths (PR-58).
+- **A fixed effort is kept (PR-78).** When `devos.config.json` gives a pool builder a fixed `effort` (and,
+  for Cursor, `fast`), every fence for it says exactly that `Effort:` and `Fast:`; `fence-check.mjs`
+  refuses another. Otherwise the reviewer picks the effort for each task.
 - **The README is kept (PR-77).** A fence that builds a feature or changes what a user sees ends with
   a step that updates `README.md` (`## Features`, and for a screen `## Screenshots` from
   `docs/screenshots/`), and names it in its Paths. No fence deletes or empties `README.md`, and no
   Done-when checks that it is absent.
+- **Media is planned (PR-79).** With generated media chosen, `docs/design/media.json` plans every image,
+  video and voice item (`DESIGN_METHOD.md` §8). A fence whose screen shows one names it in its header,
+  `- Media: \`<id>\` · …` (PR-81): the cycle makes those items before the builder, within `DEVOS_MEDIA_BUDGET`.
+  The screen uses each item's `file` path and draws its fallback until the file exists.
 - **Preconditions first.** The previous task merged (`git merge-base --is-ancestor`), a clean
   tree, the live counts it builds on.
 - **Byte-exact payloads** are staged outside the working tree and verified by
