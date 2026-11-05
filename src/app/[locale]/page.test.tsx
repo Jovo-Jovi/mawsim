@@ -60,6 +60,8 @@ it("writes another month into the heading, adds a second h1, or fills the grid w
   expect(arabic).toContain("بيانات تجريبية لمنتج قيد التجربة — وليست نصيحة زراعية أو غذائية.");
 });
 
+const TEXTURE_FILE = "/photos/texture/texture.webp";
+
 function elementByAttr(html: string, attr: string): string {
   const attrAt = html.indexOf(attr);
   if (attrAt < 0) return "";
@@ -79,29 +81,51 @@ function elementByAttr(html: string, attr: string): string {
   return "";
 }
 
-it("leaves the hero or the in-season heading without a weave, or paints that weave behind a card or the sample-data notice", async () => {
+function imageFile(tag: string): string {
+  const src = (/src="([^"]*)"/.exec(tag)?.[1] ?? "").replaceAll("&amp;", "&");
+  return new URL(src, "http://localhost").searchParams.get("url") ?? "";
+}
+
+function filesWithAlt(html: string, alt: string): string[] {
+  return [...html.matchAll(/<img\b[^>]*>/g)].flatMap((match) => {
+    const tag = match[0];
+    const found = /alt="([^"]*)"/.exec(tag)?.[1];
+    if (found !== alt) return [];
+    return [imageFile(tag)];
+  });
+}
+
+it("leaves the hero or the in-season heading without its texture photograph, or paints that photograph behind a card or the sample-data notice", async () => {
   localeState.value = "en";
   const english = renderToStaticMarkup(await HomePage());
   const hero = elementByAttr(english, 'data-texture-band="hero"');
   const heading = elementByAttr(english, 'data-texture-band="heading"');
   expect(hero).toContain("<h1");
-  expect(hero).toContain("<pattern");
+  expect(filesWithAlt(hero, "")).toEqual([TEXTURE_FILE]);
+  expect(hero).not.toContain("<pattern");
   expect(hero).not.toContain("<h2");
   expect(hero).not.toContain("/produce/");
   expect(heading).toContain("<h2");
   expect(heading).toContain("In season this month");
-  expect(heading).toContain("<pattern");
+  expect(filesWithAlt(heading, "")).toEqual([TEXTURE_FILE]);
+  expect(heading).not.toContain("<pattern");
   expect(heading).not.toContain("/produce/");
   expect(heading).not.toContain("Sample data");
-  expect(english.match(/<pattern\b/g)?.length).toBe(2);
+  expect(english.match(/<pattern\b/g) ?? []).toHaveLength(0);
+  expect(filesWithAlt(english, "")).toEqual([TEXTURE_FILE, TEXTURE_FILE]);
   expect(english.slice(english.indexOf("<h2"))).not.toContain("<pattern");
+  expect(filesWithAlt(english.slice(english.indexOf("<h2")), "")).toEqual([]);
 
   localeState.value = "ar";
   const arabic = renderToStaticMarkup(await HomePage());
+  const arabicHero = elementByAttr(arabic, 'data-texture-band="hero"');
   const arabicHeading = elementByAttr(arabic, 'data-texture-band="heading"');
-  expect(elementByAttr(arabic, 'data-texture-band="hero"')).toContain("<pattern");
+  expect(filesWithAlt(arabicHero, "")).toEqual([TEXTURE_FILE]);
+  expect(arabicHero).not.toContain("<pattern");
   expect(arabicHeading).toContain("في موسمه هذا الشهر");
-  expect(arabicHeading).toContain("<pattern");
+  expect(filesWithAlt(arabicHeading, "")).toEqual([TEXTURE_FILE]);
+  expect(arabicHeading).not.toContain("<pattern");
   expect(arabicHeading).not.toContain("/produce/");
-  expect(arabic.match(/<pattern\b/g)?.length).toBe(2);
+  expect(arabic.match(/<pattern\b/g) ?? []).toHaveLength(0);
+  expect(filesWithAlt(arabic, "")).toEqual([TEXTURE_FILE, TEXTURE_FILE]);
 });

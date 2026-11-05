@@ -15,6 +15,76 @@ vi.mock("next/root-params", () => ({
 
 import { generateMetadata, default as AboutPage } from "./page";
 
+const TEXTURE_FILE = "/photos/texture/texture.webp";
+const TERMS_URL = "https://x.ai/legal/terms-of-service";
+const EMPTY_CREDITS_EN =
+  "No photographs are listed yet. Until one is, each frame shows a coloured tile with its season ring.";
+const EMPTY_CREDITS_AR = "لم تُدرَج أي صورة بعد. وحتى تُدرَج، يعرض كل إطار مساحة ملوّنة عليها حلقة الموسم.";
+const SUBJECTS_EN = [
+  "Home page",
+  "Background texture",
+  "Tomato",
+  "Mango",
+  "Orange",
+  "Strawberry",
+  "Watermelon",
+  "Guava",
+  "Pomegranate",
+  "Okra",
+  "Molokhia",
+  "Dates",
+];
+const SUBJECTS_AR = [
+  "الصفحة الرئيسية",
+  "خلفية الصفحة",
+  "طماطم",
+  "مانجو",
+  "برتقال",
+  "فراولة",
+  "بطيخ",
+  "جوافة",
+  "رمان",
+  "بامية",
+  "ملوخية",
+  "بلح",
+];
+
+function imageFile(tag: string): string {
+  const src = (/src="([^"]*)"/.exec(tag)?.[1] ?? "").replaceAll("&amp;", "&");
+  return new URL(src, "http://localhost").searchParams.get("url") ?? "";
+}
+
+function filesWithAlt(html: string, alt: string): string[] {
+  return [...html.matchAll(/<img\b[^>]*>/g)].flatMap((match) => {
+    const tag = match[0];
+    const found = /alt="([^"]*)"/.exec(tag)?.[1];
+    if (found !== alt) return [];
+    return [imageFile(tag)];
+  });
+}
+
+function creditList(html: string): string {
+  return /<ul\b[^>]*>[\s\S]*?<\/ul>/.exec(html)?.[0] ?? "";
+}
+
+function creditSubjects(html: string): string[] {
+  return [...creditList(html).matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/g)].map((match) => {
+    const subject = /<p\b[^>]*>([\s\S]*?)<\/p>/.exec(match[1] ?? "")?.[1] ?? "";
+    return subject.replace(/<[^>]+>/g, "");
+  });
+}
+
+function httpsOutsideScript(html: string): string[] {
+  const plain = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
+  return [...plain.matchAll(/https:\/\/[^\s"'<>]*/g)].map((match) => match[0].replaceAll("&amp;", "&"));
+}
+
+function creditHrefs(html: string): string[] {
+  return [...creditList(html).matchAll(/<a\b[^>]*\bhref="([^"]*)"/g)].map((match) =>
+    (match[1] ?? "").replaceAll("&amp;", "&"),
+  );
+}
+
 function elementByAttr(html: string, attr: string): string {
   const attrAt = html.indexOf(attr);
   if (attrAt < 0) return "";
@@ -53,13 +123,14 @@ function languageHrefs(html: string, lang: string): string[] {
   });
 }
 
-it("leaves the about header without a weave, or paints that weave inside a body section, the credits, or the sample-data notice", async () => {
+it("leaves the about header without its texture photograph, or paints that photograph inside a body section, the credits, or the sample-data notice", async () => {
   localeState.value = "en";
   const english = await renderToStaticMarkup(await AboutPage());
   const band = elementByAttr(english, 'data-texture-band="about"');
   expect(band).toContain("<h1");
   expect(band).toContain("About Mawsim");
-  expect(band).toContain("<pattern");
+  expect(filesWithAlt(band, "")).toEqual([TEXTURE_FILE]);
+  expect(band).not.toContain("<pattern");
   expect(band).not.toContain("<h2");
   expect(band).not.toContain("<section");
   expect(band).not.toMatch(/<p[\s>]/);
@@ -68,24 +139,29 @@ it("leaves the about header without a weave, or paints that weave inside a body 
   expect(body).toContain("<h2");
   expect(body).toContain("Photographs");
   expect(body).not.toContain("<pattern");
+  expect(filesWithAlt(body, "")).toEqual([]);
   expect(body).not.toContain("data-texture-band");
   expect(english.slice(english.indexOf("<h1"))).not.toContain("<pattern");
-  expect(english.match(/<pattern\b/g)?.length).toBe(1);
+  expect(english.match(/<pattern\b/g) ?? []).toHaveLength(0);
+  expect(filesWithAlt(english, "")).toEqual([TEXTURE_FILE]);
   expect(english).toContain("Sample data for a test product — not farming or nutrition advice.");
 
   localeState.value = "ar";
   const arabic = await renderToStaticMarkup(await AboutPage());
   const arabicBand = elementByAttr(arabic, 'data-texture-band="about"');
   expect(arabicBand).toContain("عن موسم");
-  expect(arabicBand).toContain("<pattern");
+  expect(filesWithAlt(arabicBand, "")).toEqual([TEXTURE_FILE]);
+  expect(arabicBand).not.toContain("<pattern");
   expect(arabicBand).not.toContain("<section");
   const arabicBody = arabic.slice(arabic.indexOf("<section"), arabic.lastIndexOf("</section>") + "</section>".length);
   expect(arabicBody).toContain("الصور");
   expect(arabicBody).not.toContain("<pattern");
-  expect(arabic.match(/<pattern\b/g)?.length).toBe(1);
+  expect(filesWithAlt(arabicBody, "")).toEqual([]);
+  expect(arabic.match(/<pattern\b/g) ?? []).toHaveLength(0);
+  expect(filesWithAlt(arabic, "")).toEqual([TEXTURE_FILE]);
 });
 
-it("adds a second h1, reorders the sections, or drops the empty-credits or sample-data sentence", async () => {
+it("adds a second h1, reorders the sections, drops a credited subject, or places an https outside a credit href", async () => {
   localeState.value = "en";
   const english = await renderToStaticMarkup(await AboutPage());
   expect(texts(english, "h1")).toEqual(["About Mawsim"]);
@@ -95,20 +171,28 @@ it("adds a second h1, reorders the sections, or drops the empty-credits or sampl
     "Two languages",
     "Photographs",
   ]);
-  expect(mainHtml(english)).toContain(
-    "No photographs are listed yet. Until one is, each frame shows a coloured tile with its season ring.",
-  );
+  expect(mainHtml(english)).not.toContain(EMPTY_CREDITS_EN);
+  expect(creditSubjects(english)).toEqual(SUBJECTS_EN);
   expect(mainHtml(english)).toContain("Sample data for a test product — not farming or nutrition advice.");
   expect(english).toContain("Sample data for a test product — not farming or nutrition advice.");
-  expect(english).not.toContain("https://");
+  const englishUrls = httpsOutsideScript(english);
+  const englishHrefs = creditHrefs(english);
+  expect(englishUrls).toEqual(englishHrefs);
+  expect(englishHrefs).toEqual(Array.from({ length: SUBJECTS_EN.length }, () => TERMS_URL));
+  expect(httpsOutsideScript(english.replace(creditList(english), ""))).toEqual([]);
 
   localeState.value = "ar";
   const arabic = await renderToStaticMarkup(await AboutPage());
   expect(texts(arabic, "h1")).toEqual(["عن موسم"]);
   expect(texts(arabic, "h2")).toEqual(["ما هو موسم", "ما الذي يجمعه موسم", "لغتان", "الصور"]);
-  expect(mainHtml(arabic)).toContain("لم تُدرَج أي صورة بعد. وحتى تُدرَج، يعرض كل إطار مساحة ملوّنة عليها حلقة الموسم.");
+  expect(mainHtml(arabic)).not.toContain(EMPTY_CREDITS_AR);
+  expect(creditSubjects(arabic)).toEqual(SUBJECTS_AR);
   expect(mainHtml(arabic)).toContain("بيانات تجريبية لمنتج قيد التجربة — وليست نصيحة زراعية أو غذائية.");
-  expect(arabic).not.toContain("https://");
+  const arabicUrls = httpsOutsideScript(arabic);
+  const arabicHrefs = creditHrefs(arabic);
+  expect(arabicUrls).toEqual(arabicHrefs);
+  expect(arabicHrefs).toEqual(Array.from({ length: SUBJECTS_AR.length }, () => TERMS_URL));
+  expect(httpsOutsideScript(arabic.replace(creditList(arabic), ""))).toEqual([]);
 });
 
 it("points a language link at another page", async () => {

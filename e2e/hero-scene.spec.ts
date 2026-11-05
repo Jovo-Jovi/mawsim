@@ -218,7 +218,7 @@ for (const locale of LOCALES) {
       const photo = page.locator("[data-hero-photo]");
       const caption = page.locator("[data-season-dial] + p");
       const guide = page.locator("[data-texture-band='hero'] a[href*='/guide']");
-      const subject = page.locator("[data-texture-band='hero'] div[data-kind]");
+      const subject = page.locator("[data-hero-photo] img");
 
       await page.setViewportSize({ width: 1280, height: 900 });
       await page.goto(`/${locale}`);

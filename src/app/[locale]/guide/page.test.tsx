@@ -49,6 +49,22 @@ function chipHrefs(html: string, label: string): string[] {
   return [...nav.matchAll(/href="([^"]*)"/g)].map((match) => (match[1] ?? "").replaceAll("&amp;", "&"));
 }
 
+const TEXTURE_FILE = "/photos/texture/texture.webp";
+
+function imageFile(tag: string): string {
+  const src = (/src="([^"]*)"/.exec(tag)?.[1] ?? "").replaceAll("&amp;", "&");
+  return new URL(src, "http://localhost").searchParams.get("url") ?? "";
+}
+
+function filesWithAlt(html: string, alt: string): string[] {
+  return [...html.matchAll(/<img\b[^>]*>/g)].flatMap((match) => {
+    const tag = match[0];
+    const found = /alt="([^"]*)"/.exec(tag)?.[1];
+    if (found !== alt) return [];
+    return [imageFile(tag)];
+  });
+}
+
 function elementByAttr(html: string, attr: string): string {
   const attrAt = html.indexOf(attr);
   if (attrAt < 0) return "";
@@ -84,27 +100,32 @@ async function render(query: { month?: string | string[]; kind?: string | string
   return renderToStaticMarkup(await GuidePage({ searchParams: Promise.resolve(query) }));
 }
 
-it("leaves the guide header without a weave, or paints that weave behind a card or the sample-data notice", async () => {
+it("leaves the guide header without its texture photograph, or paints that photograph behind a card or the sample-data notice", async () => {
   localeState.value = "en";
   const english = await render({ month: "8" });
   const band = elementByAttr(english, 'data-texture-band="guide"');
   expect(band).toContain("<h1");
   expect(band).toContain('aria-label="Months"');
   expect(band).toContain('aria-label="Kinds"');
-  expect(band).toContain("<pattern");
+  expect(filesWithAlt(band, "")).toEqual([TEXTURE_FILE]);
+  expect(band).not.toContain("<pattern");
   expect(band).not.toContain("/produce/");
   expect(band).not.toContain("Sample data");
-  expect(english.match(/<pattern\b/g)?.length).toBe(1);
+  expect(english.match(/<pattern\b/g) ?? []).toHaveLength(0);
+  expect(filesWithAlt(english, "")).toEqual([TEXTURE_FILE]);
   expect(english.slice(english.indexOf("<h1"))).not.toContain("<pattern");
+  expect(filesWithAlt(english.slice(english.indexOf("<h1")), "")).toEqual([]);
 
   localeState.value = "ar";
   const arabic = await render({ month: "8" });
   const arabicBand = elementByAttr(arabic, 'data-texture-band="guide"');
   expect(arabicBand).toContain('aria-label="الشهور"');
   expect(arabicBand).toContain('aria-label="الأنواع"');
-  expect(arabicBand).toContain("<pattern");
+  expect(filesWithAlt(arabicBand, "")).toEqual([TEXTURE_FILE]);
+  expect(arabicBand).not.toContain("<pattern");
   expect(arabicBand).not.toContain("/produce/");
-  expect(arabic.match(/<pattern\b/g)?.length).toBe(1);
+  expect(arabic.match(/<pattern\b/g) ?? []).toHaveLength(0);
+  expect(filesWithAlt(arabic, "")).toEqual([TEXTURE_FILE]);
 });
 
 it("writes the wrong month into the heading or adds a second h1", async () => {
