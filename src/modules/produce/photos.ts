@@ -3,19 +3,40 @@ import path from "node:path";
 import rawPhotoRows from "../../../content/photos.json";
 import { listProduce } from "./catalogue";
 
-export interface ProducePhotoRow {
+interface PhotoRowCommon {
   readonly key: string;
   readonly file: string;
   readonly width: number;
   readonly height: number;
   readonly alt_en: string;
   readonly alt_ar: string;
+  readonly credit_required: boolean;
+}
+
+export interface GeneratedPhotoRow extends PhotoRowCommon {
+  readonly source: "generated";
+  readonly model: string;
+  readonly prompt: string;
+  readonly generated_on: string;
+  readonly terms_url: string;
+}
+
+export interface LicensedPhotoRow extends PhotoRowCommon {
+  readonly source: "licensed";
   readonly author: string;
   readonly source_url: string;
   readonly licence: string;
   readonly licence_url: string;
-  readonly credit_required: boolean;
 }
+
+export interface OwnPhotoRow extends PhotoRowCommon {
+  readonly source: "own";
+  readonly author: string;
+}
+
+export type PhotoSource = "generated" | "licensed" | "own";
+
+export type ProducePhotoRow = GeneratedPhotoRow | LicensedPhotoRow | OwnPhotoRow;
 
 type PhotoField =
   | "key"
@@ -24,15 +45,22 @@ type PhotoField =
   | "height"
   | "alt_en"
   | "alt_ar"
+  | "source"
+  | "credit_required"
+  | "model"
+  | "prompt"
+  | "generated_on"
+  | "terms_url"
   | "author"
   | "source_url"
   | "licence"
-  | "licence_url"
-  | "credit_required";
+  | "licence_url";
 
-type TextField = "alt_en" | "alt_ar" | "author" | "licence";
+type TextField = "alt_en" | "alt_ar" | "author" | "licence" | "model" | "prompt";
 
-type HttpsField = "source_url" | "licence_url";
+type HttpsField = "source_url" | "licence_url" | "terms_url";
+
+const FILE_SUFFIXES = [".avif", ".webp", ".jpg", ".png"] as const;
 
 function isPlainRow(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -51,8 +79,8 @@ function readKey(
 ): string {
   const value = readField(row, "key", index);
   if (typeof value !== "string") throw new Error(`photo row ${index}: key must be a string`);
-  if (value !== "hero" && !slugs.includes(value)) {
-    throw new Error(`photo row ${index}: key must be hero or a produce slug`);
+  if (value !== "hero" && value !== "texture" && !slugs.includes(value)) {
+    throw new Error(`photo row ${index}: key must be hero, texture or a produce slug`);
   }
   if (seen.has(value)) throw new Error(`photo row ${index}: key must be unique`);
   seen.add(value);
@@ -67,8 +95,8 @@ function readFile(
   const value = readField(row, "file", index);
   if (typeof value !== "string") throw new Error(`photo row ${index}: file must be a string`);
   if (!value.startsWith("/photos/")) throw new Error(`photo row ${index}: file must start with /photos/`);
-  if (!value.endsWith(".avif") && !value.endsWith(".webp") && !value.endsWith(".jpg")) {
-    throw new Error(`photo row ${index}: file must end with .avif, .webp or .jpg`);
+  if (!FILE_SUFFIXES.some((suffix) => value.endsWith(suffix))) {
+    throw new Error(`photo row ${index}: file must end with .avif, .webp, .jpg or .png`);
   }
   if (value.includes("..")) throw new Error(`photo row ${index}: file must not contain ..`);
   if (!fileExists(value)) throw new Error(`photo row ${index}: file does not exist in public`);
@@ -83,9 +111,15 @@ function readPositiveInteger(row: Record<string, unknown>, field: "width" | "hei
   return value;
 }
 
+function minimumWidth(key: string): number {
+  if (key === "hero") return 1600;
+  if (key === "texture") return 1024;
+  return 1200;
+}
+
 function readWidth(row: Record<string, unknown>, index: number, key: string): number {
   const width = readPositiveInteger(row, "width", index);
-  const minimum = key === "hero" ? 1600 : 1200;
+  const minimum = minimumWidth(key);
   if (width < minimum) throw new Error(`photo row ${index}: width must be at least ${minimum}`);
   return width;
 }
@@ -106,10 +140,76 @@ function readHttps(row: Record<string, unknown>, field: HttpsField, index: numbe
   return value;
 }
 
+function readSource(row: Record<string, unknown>, index: number): PhotoSource {
+  const value = readField(row, "source", index);
+  if (typeof value !== "string") throw new Error(`photo row ${index}: source must be a string`);
+  if (value !== "generated" && value !== "licensed" && value !== "own") {
+    throw new Error(`photo row ${index}: source must be generated, licensed or own`);
+  }
+  return value;
+}
+
+function isRealCalendarDate(value: string): boolean {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+}
+
+function readGeneratedOn(row: Record<string, unknown>, index: number): string {
+  const value = readField(row, "generated_on", index);
+  if (typeof value !== "string") throw new Error(`photo row ${index}: generated_on must be a string`);
+  if (!isRealCalendarDate(value)) {
+    throw new Error(`photo row ${index}: generated_on must be a date YYYY-MM-DD`);
+  }
+  return value;
+}
+
 function readCreditRequired(row: Record<string, unknown>, index: number): boolean {
   const value = readField(row, "credit_required", index);
   if (typeof value !== "boolean") throw new Error(`photo row ${index}: credit_required must be a boolean`);
   return value;
+}
+
+function parseOne(row: Record<string, unknown>, index: number, key: string, file: string): ProducePhotoRow {
+  const common = {
+    key,
+    file,
+    width: readWidth(row, index, key),
+    height: readPositiveInteger(row, "height", index),
+    alt_en: readText(row, "alt_en", index),
+    alt_ar: readText(row, "alt_ar", index),
+    credit_required: readCreditRequired(row, index),
+  };
+  const source = readSource(row, index);
+  if (source === "generated") {
+    return {
+      ...common,
+      source,
+      model: readText(row, "model", index),
+      prompt: readText(row, "prompt", index),
+      generated_on: readGeneratedOn(row, index),
+      terms_url: readHttps(row, "terms_url", index),
+    };
+  }
+  if (source === "licensed") {
+    return {
+      ...common,
+      source,
+      author: readText(row, "author", index),
+      source_url: readHttps(row, "source_url", index),
+      licence: readText(row, "licence", index),
+      licence_url: readHttps(row, "licence_url", index),
+    };
+  }
+  return {
+    ...common,
+    source,
+    author: readText(row, "author", index),
+  };
 }
 
 export function parsePhotoRows(
@@ -124,28 +224,7 @@ export function parsePhotoRows(
     if (!isPlainRow(value)) throw new Error(`photo row ${index}: not an object`);
     const key = readKey(value, index, context.slugs, seen);
     const file = readFile(value, index, context.fileExists);
-    const width = readWidth(value, index, key);
-    const height = readPositiveInteger(value, "height", index);
-    const altEn = readText(value, "alt_en", index);
-    const altAr = readText(value, "alt_ar", index);
-    const author = readText(value, "author", index);
-    const sourceUrl = readHttps(value, "source_url", index);
-    const licence = readText(value, "licence", index);
-    const licenceUrl = readHttps(value, "licence_url", index);
-    const creditRequired = readCreditRequired(value, index);
-    rows.push({
-      key,
-      file,
-      width,
-      height,
-      alt_en: altEn,
-      alt_ar: altAr,
-      author,
-      source_url: sourceUrl,
-      licence,
-      licence_url: licenceUrl,
-      credit_required: creditRequired,
-    });
+    rows.push(parseOne(value, index, key, file));
   }
   return rows;
 }
@@ -173,6 +252,10 @@ export function getProducePhoto(slug: string): ProducePhotoRow | undefined {
 
 export function getHeroPhoto(): ProducePhotoRow | undefined {
   return loadedPhotos.find((row) => row.key === "hero");
+}
+
+export function getTexturePhoto(): ProducePhotoRow | undefined {
+  return loadedPhotos.find((row) => row.key === "texture");
 }
 
 export function listPhotoCredits(): readonly ProducePhotoRow[] {

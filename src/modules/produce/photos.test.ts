@@ -6,6 +6,7 @@ import { listProduce } from "./catalogue";
 import {
   getHeroPhoto,
   getProducePhoto,
+  getTexturePhoto,
   listPhotoCredits,
   parsePhotoRows,
   photoCreditsInOrder,
@@ -14,6 +15,8 @@ import {
 const tempRoot = mkdtempSync(path.join(tmpdir(), "mawsim-photos-"));
 const publicRoot = path.join(tempRoot, "public");
 const heroFile = "/photos/hero/stall.avif";
+const pngFile = "/photos/hero/stall.png";
+const textureFile = "/photos/texture/linen.webp";
 const mangoFile = "/photos/produce/mango.jpg";
 const datesFile = "/photos/produce/dates.webp";
 const okraFile = "/photos/produce/okra.avif";
@@ -25,6 +28,8 @@ function writePhoto(file: string): void {
 }
 
 writePhoto(heroFile);
+writePhoto(pngFile);
+writePhoto(textureFile);
 writePhoto(mangoFile);
 writePhoto(datesFile);
 writePhoto(okraFile);
@@ -52,6 +57,7 @@ function photoRow(overrides: Record<string, unknown> = {}) {
     height: 1200,
     alt_en: "Market stall",
     alt_ar: "كشك السوق",
+    source: "licensed",
     author: "Fixture Studio",
     source_url: "https://localhost/source",
     licence: "Commercial use",
@@ -80,6 +86,7 @@ it("drops a row from the real photo manifest or invents one", () => {
   expect(rows).toHaveLength(raw.length);
   expect(getHeroPhoto()).toEqual(rows.find((row) => row.key === "hero"));
   expect(getProducePhoto("mango")).toEqual(rows.find((row) => row.key === "mango"));
+  expect(getTexturePhoto()).toEqual(rows.find((row) => row.key === "texture"));
   expect(listPhotoCredits()).toEqual(photoCreditsInOrder(rows));
 });
 
@@ -138,7 +145,7 @@ it("copies an extra key onto a parsed photo row", () => {
 
 it("accepts an unknown photo key", () => {
   const message = thrownMessage([photoRow({ key: "kiwi" })]);
-  expect(message).toBe("photo row 0: key must be hero or a produce slug");
+  expect(message).toBe("photo row 0: key must be hero, texture or a produce slug");
   expect(message).not.toContain("kiwi");
 });
 
@@ -160,10 +167,11 @@ it("accepts a file that climbs out of /photos/", () => {
   );
 });
 
-it("accepts a png photograph", () => {
-  expect(thrownMessage([photoRow({ file: "/photos/hero/stall.png" })])).toBe(
-    "photo row 0: file must end with .avif, .webp or .jpg",
-  );
+it("rejects a png photograph or accepts a gif", () => {
+  expect(parsePhotoRows([photoRow({ file: pngFile })], context)).toEqual([photoRow({ file: pngFile })]);
+  const message = thrownMessage([photoRow({ file: "/photos/hero/stall.gif" })]);
+  expect(message).toBe("photo row 0: file must end with .avif, .webp, .jpg or .png");
+  expect(message).not.toContain("gif");
 });
 
 it("accepts a photograph that is not in public", () => {
@@ -223,4 +231,151 @@ it("keeps an uncredited row or reorders the credits", () => {
     JSON.parse(readFileSync(path.join(process.cwd(), "content/photos.json"), "utf8")),
     { slugs, fileExists: realFileExists },
   )));
+});
+
+const generatedRow = {
+  key: "hero",
+  file: heroFile,
+  width: 1600,
+  height: 1200,
+  alt_en: "Market stall",
+  alt_ar: "كشك السوق",
+  source: "generated" as const,
+  model: "grok-imagine-image-2.0",
+  prompt: "A fresh mango on linen",
+  generated_on: "2026-11-05",
+  terms_url: "https://localhost/terms",
+  credit_required: true,
+};
+
+const licensedRow = {
+  key: "mango",
+  file: mangoFile,
+  width: 1200,
+  height: 900,
+  alt_en: "Mango on linen",
+  alt_ar: "مانجو على قماش",
+  source: "licensed" as const,
+  author: "Fixture Studio",
+  source_url: "https://localhost/source",
+  licence: "CC0",
+  licence_url: "https://localhost/licence",
+  credit_required: true,
+};
+
+const ownRow = {
+  key: "dates",
+  file: datesFile,
+  width: 1200,
+  height: 900,
+  alt_en: "Dates on wood",
+  alt_ar: "بلح على خشب",
+  source: "own" as const,
+  author: "Mawsim",
+  credit_required: true,
+};
+
+const textureRow = {
+  key: "texture",
+  file: textureFile,
+  width: 1024,
+  height: 1024,
+  alt_en: "Linen texture",
+  alt_ar: "نسيج من الكتان",
+  source: "own" as const,
+  author: "Mawsim",
+  credit_required: true,
+};
+
+it("rejects a valid generated, licensed, own or texture row", () => {
+  expect(parsePhotoRows([generatedRow, licensedRow, ownRow, textureRow], context)).toEqual([
+    generatedRow,
+    licensedRow,
+    ownRow,
+    textureRow,
+  ]);
+});
+
+it("accepts an unknown photo source", () => {
+  const message = thrownMessage([photoRow({ source: "stock" })]);
+  expect(message).toBe("photo row 0: source must be generated, licensed or own");
+  expect(message).not.toContain("stock");
+});
+
+it("accepts a generated_on that is not a real calendar date", () => {
+  const month = thrownMessage([{ ...generatedRow, generated_on: "2026-13-01" }]);
+  expect(month).toBe("photo row 0: generated_on must be a date YYYY-MM-DD");
+  expect(month).not.toContain("2026-13-01");
+  const day = thrownMessage([{ ...generatedRow, generated_on: "2026-02-30" }]);
+  expect(day).toBe("photo row 0: generated_on must be a date YYYY-MM-DD");
+  expect(day).not.toContain("2026-02-30");
+  const words = thrownMessage([{ ...generatedRow, generated_on: "5 Nov" }]);
+  expect(words).toBe("photo row 0: generated_on must be a date YYYY-MM-DD");
+  expect(words).not.toContain("Nov");
+  const commonYear = thrownMessage([{ ...generatedRow, generated_on: "2026-02-29" }]);
+  expect(commonYear).toBe("photo row 0: generated_on must be a date YYYY-MM-DD");
+  expect(parsePhotoRows([{ ...generatedRow, generated_on: "2024-02-29" }], context)).toEqual([
+    { ...generatedRow, generated_on: "2024-02-29" },
+  ]);
+});
+
+it("accepts a terms link that is not https", () => {
+  const message = thrownMessage([{ ...generatedRow, terms_url: "http://localhost/terms" }]);
+  expect(message).toBe("photo row 0: terms_url must begin with https://");
+  expect(message).not.toContain("localhost");
+});
+
+it("accepts an empty model or prompt", () => {
+  expect(thrownMessage([{ ...generatedRow, model: "" }])).toBe("photo row 0: model must be non-empty");
+  expect(thrownMessage([{ ...generatedRow, prompt: "" }])).toBe("photo row 0: prompt must be non-empty");
+});
+
+it("accepts an own row with an empty author", () => {
+  expect(thrownMessage([{ ...ownRow, author: "" }])).toBe("photo row 0: author must be non-empty");
+});
+
+it("accepts a texture narrower than 1024", () => {
+  expect(thrownMessage([{ ...textureRow, width: 1023 }])).toBe("photo row 0: width must be at least 1024");
+});
+
+it("accepts a licensed row that omits licence_url", () => {
+  const { licence_url: omitted, ...withoutLicenceUrl } = licensedRow;
+  expect(omitted).toBe("https://localhost/licence");
+  expect(thrownMessage([withoutLicenceUrl])).toBe("photo row 0: missing licence_url");
+});
+
+it("copies a field that belongs to another source", () => {
+  const parsed = parsePhotoRows(
+    [
+      {
+        ...generatedRow,
+        author: "Fixture Studio",
+        source_url: "https://localhost/source",
+        licence: "CC0",
+        licence_url: "https://localhost/licence",
+      },
+      {
+        ...licensedRow,
+        model: "grok-imagine-image-2.0",
+        prompt: "A fresh mango on linen",
+        generated_on: "2026-11-05",
+        terms_url: "https://localhost/terms",
+      },
+      {
+        ...ownRow,
+        model: "grok-imagine-image-2.0",
+        licence_url: "https://localhost/licence",
+      },
+    ],
+    context,
+  );
+  expect(parsed).toEqual([generatedRow, licensedRow, ownRow]);
+  expect(Object.hasOwn(parsed[0], "author")).toBe(false);
+  expect(Object.hasOwn(parsed[0], "licence_url")).toBe(false);
+  expect(Object.hasOwn(parsed[1], "model")).toBe(false);
+  expect(Object.hasOwn(parsed[1], "prompt")).toBe(false);
+  expect(Object.hasOwn(parsed[1], "generated_on")).toBe(false);
+  expect(Object.hasOwn(parsed[1], "terms_url")).toBe(false);
+  expect(Object.hasOwn(parsed[2], "model")).toBe(false);
+  expect(Object.hasOwn(parsed[2], "licence_url")).toBe(false);
 });

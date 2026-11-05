@@ -22,9 +22,13 @@ const catalogueKeys = [
   "about.languages",
   "about.languagesTitle",
   "about.photoBy",
+  "about.photoGenerated",
   "about.photoHero",
   "about.photoLicence",
+  "about.photoOwn",
   "about.photoSource",
+  "about.photoTerms",
+  "about.photoTexture",
   "about.photosNone",
   "about.photosTitle",
   "about.title",
@@ -148,5 +152,5 @@ it("drops a produce-page string or copies the English into Arabic", () => {
 it("adds a key the fence does not name, or loses one", () => {
   expect(flatKeys(messages("en")).sort()).toEqual([...catalogueKeys]);
   expect(flatKeys(messages("ar")).sort()).toEqual([...catalogueKeys]);
-  expect(catalogueKeys).toHaveLength(77);
+  expect(catalogueKeys).toHaveLength(81);
 });
