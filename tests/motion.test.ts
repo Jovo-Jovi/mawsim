@@ -386,6 +386,41 @@ it("catches a raw scale() in a guide stylesheet, so a pill scale stays on the --
   expect(offenders).toEqual([]);
 });
 
+it("catches a reveal stylesheet that hides a pending cell under reduced motion or animates a property other than transform and opacity", () => {
+  const name = "modules/guide/Reveal.module.css";
+  const css = sheet(name);
+  const reducedBlocks = blockAfter(css, "@media (prefers-reduced-motion: reduce)");
+  expect(reducedBlocks.length).toBeGreaterThan(0);
+  const reduced = reducedBlocks.join("\n");
+  expect(reduced).toContain("opacity: 1");
+  expect(reduced).toContain("transform: none");
+  expect(reduced).toContain("transition: none");
+  expect(reduced).not.toContain("opacity: 0");
+
+  let outer = css;
+  for (const block of reducedBlocks) outer = outer.replace(block, "");
+  expect(outer).toContain('data-reveal="pending"');
+  expect(outer).toContain("opacity: 0");
+  expect(outer).toContain("transform: translateY(var(--reveal-rise))");
+  expect(outer).toContain("transition-property: opacity, transform");
+  expect(outer).toContain("transition-duration: var(--dur-reveal)");
+  expect(outer).toContain("transition-timing-function: var(--ease-out)");
+
+  const allowed = /^(?:opacity|transform)(?:\s*,\s*(?:opacity|transform))?$/;
+  const offenders: string[] = [];
+  for (const match of css.matchAll(/transition-property\s*:\s*([^;]+)/g)) {
+    const value = match[1].trim().replaceAll(/\s+/g, " ");
+    if (value === "none") continue;
+    if (!allowed.test(value)) offenders.push(value);
+  }
+  for (const block of keyframeBodies(css)) {
+    for (const match of block.body.matchAll(/(?:^|[\s;{])([a-zA-Z-]+)\s*:/g)) {
+      if (match[1] !== "opacity" && match[1] !== "transform") offenders.push(`${block.name} ${match[1]}`);
+    }
+  }
+  expect(offenders).toEqual([]);
+});
+
 it("catches an infinite animation anywhere in a stylesheet, because a loop never stops", () => {
   const files = cssFiles(srcRoot).map((file) => relative(file)).sort();
   expect(files).toContain("styles/tokens.css");
