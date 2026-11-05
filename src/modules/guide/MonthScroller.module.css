@@ -42,7 +42,9 @@
   line-height: var(--leading-tight);
   text-decoration: none;
   touch-action: manipulation;
-  transition-property: none;
+  transition-property: color;
+  transition-duration: var(--dur-1);
+  transition-timing-function: var(--ease-out);
 }
 
 .link[aria-current="true"] {
@@ -73,6 +75,9 @@
   border-radius: var(--radius-pill);
   text-align: center;
   white-space: nowrap;
+  transition-property: background-color, color;
+  transition-duration: var(--dur-2), var(--dur-1);
+  transition-timing-function: var(--ease-out), var(--ease-out);
 }
 
 .link[aria-current="true"] .label {
@@ -138,5 +143,21 @@
     inline-size: 100%;
     padding-inline: var(--space-1);
     font-size: var(--text-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    animation: none;
+    transition-property: color;
+    transition-duration: var(--dur-1);
+    transition-timing-function: var(--ease-out);
+  }
+
+  .label {
+    animation: none;
+    transition-property: background-color, color;
+    transition-duration: var(--dur-2), var(--dur-1);
+    transition-timing-function: var(--ease-out), var(--ease-out);
   }
 }

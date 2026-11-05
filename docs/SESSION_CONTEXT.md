@@ -1,6 +1,6 @@
 # MAWSIM — Session context
 
-**Phase:** P05 About and motion · **Station:** J5 · **Next task:** T11 (hero dial animation and motion pass) · **Profile:** A, adapted (no personal
+**Phase:** P05 About and motion (complete) · **Station:** J5 · **Next task:** none · **Profile:** A, adapted (no personal
 data, no database) · **Scope:** mvp
 
 ## Done steps
@@ -13,9 +13,9 @@ data, no database) · **Scope:** mvp
 
 ## Open carry-forwards
 
-30 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-39. Developer content pending: the licensed photographs and their manifest rows
-(`docs/OPEN_QUESTIONS.md`); every frame shows its fallback until then. The doubled sample-data notice stays (CF-24). CF-15 is closed (T10, step 7).
+29 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-39. Developer content pending: the licensed photographs and their manifest rows
+(`docs/OPEN_QUESTIONS.md`); every frame shows its fallback until then. The doubled sample-data notice stays (CF-24). CF-15 is closed (T10, step 7). CF-34 is closed (T11).
 
 ## Next action
 
-T11 is next (hero dial animation and the motion pass). T10 built the about page. CF-15 is closed: IBM Plex Sans Arabic uses `subsets: ["arabic", "latin"]`, and all four about captures record layout shift 0. The ledger stands at 30 open, live maximum CF-39.
+P05 is complete. T11 built the hero dial animation and the motion pass. No next task. CF-34 is closed: `globals.css` keeps its `a` colour transition (`DESIGN_SYSTEM.md` §7, `--dur-1`) and its reduced-motion block. The ledger stands at 29 open, live maximum CF-39.
