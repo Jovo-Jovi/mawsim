@@ -14,7 +14,7 @@ wait for the developer's merge.
 | T07 | P03 | J5 | Guide page: card grid and kind chips | 2 | — | [x] | PASS a2 — docs/reviews/T07-a2.md |
 | T08 | P03 | J5 | Guide page: twelve-month scroller | 2 | — | [x] | PASS a1 — docs/reviews/T08-a1.md |
 | T09 | P04 | J5 | Home page: photo hero and in season this month; core-flow browser test | 2 | G-Public | [x] | PASS a2 — docs/reviews/T09-a2.md |
-| T10 | P05 | J5 | About page with photo credits | 2 | — | [ ] | FAIL a1 — docs/reviews/T10-a1.md |
+| T10 | P05 | J5 | About page with photo credits | 2 | — | [x] | PASS a2 — docs/reviews/T10-a2.md |
 | T11 | P05 | J5 | Hero dial animation and motion pass with reduced motion | 2 | — | [ ] | — |
 
 ## Phases
