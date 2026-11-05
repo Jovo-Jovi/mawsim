@@ -82,9 +82,8 @@ function creditSubjects(html: string): string[] {
   });
 }
 
-function httpsOutsideScript(html: string): string[] {
-  const plain = html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
-  return [...plain.matchAll(/https:\/\/[^\s"'<>]*/g)].map((match) => match[0].replaceAll("&amp;", "&"));
+function httpsInMarkup(html: string): string[] {
+  return [...html.matchAll(/https:\/\/[^\s"'<>]*/g)].map((match) => match[0].replaceAll("&amp;", "&"));
 }
 
 function creditHrefs(html: string): string[] {
@@ -169,7 +168,7 @@ it("leaves the about header without its texture photograph, or paints that photo
   expect(filesWithAlt(arabic, "")).toEqual([TEXTURE_FILE]);
 });
 
-it("adds a second h1, reorders the sections, drops a credited subject, or places an https outside a credit href", async () => {
+it("adds a second h1, reorders the sections, drops a credited subject, places an https outside a credit href, or emits a script", async () => {
   localeState.value = "en";
   const english = await renderToStaticMarkup(await AboutPage());
   expect(texts(english, "h1")).toEqual(["About Mawsim"]);
@@ -183,12 +182,13 @@ it("adds a second h1, reorders the sections, drops a credited subject, or places
   expect(creditSubjects(english)).toEqual(SUBJECTS_EN);
   expect(mainHtml(english)).toContain("Sample data for a test product — not farming or nutrition advice.");
   expect(english).toContain("Sample data for a test product — not farming or nutrition advice.");
-  const englishUrls = httpsOutsideScript(english);
+  expect(english).not.toMatch(/<script/i);
+  const englishUrls = httpsInMarkup(english);
   const englishHrefs = creditHrefs(english);
   expect(englishUrls).toEqual(englishHrefs);
   expect(TERMS_URLS).toHaveLength(SUBJECTS_EN.length);
   expect(englishHrefs).toEqual(TERMS_URLS);
-  expect(httpsOutsideScript(english.replace(creditList(english), ""))).toEqual([]);
+  expect(httpsInMarkup(english.replace(creditList(english), ""))).toEqual([]);
 
   localeState.value = "ar";
   const arabic = await renderToStaticMarkup(await AboutPage());
@@ -197,12 +197,13 @@ it("adds a second h1, reorders the sections, drops a credited subject, or places
   expect(mainHtml(arabic)).not.toContain(EMPTY_CREDITS_AR);
   expect(creditSubjects(arabic)).toEqual(SUBJECTS_AR);
   expect(mainHtml(arabic)).toContain("بيانات تجريبية لمنتج قيد التجربة — وليست نصيحة زراعية أو غذائية.");
-  const arabicUrls = httpsOutsideScript(arabic);
+  expect(arabic).not.toMatch(/<script/i);
+  const arabicUrls = httpsInMarkup(arabic);
   const arabicHrefs = creditHrefs(arabic);
   expect(arabicUrls).toEqual(arabicHrefs);
   expect(TERMS_URLS).toHaveLength(SUBJECTS_AR.length);
   expect(arabicHrefs).toEqual(TERMS_URLS);
-  expect(httpsOutsideScript(arabic.replace(creditList(arabic), ""))).toEqual([]);
+  expect(httpsInMarkup(arabic.replace(creditList(arabic), ""))).toEqual([]);
 });
 
 it("points a language link at another page", async () => {
