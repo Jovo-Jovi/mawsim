@@ -614,6 +614,7 @@ test.describe("season arc without javascript", () => {
         await page.setViewportSize(viewportFor(width));
         await page.goto(`/${locale}/produce/mango`);
         await expect.poll(async () => page.locator("[data-arc-label]").count()).toBe(12);
+        await expect(page.locator("[data-kind]:has([data-arc-label])")).toHaveCount(1);
         const reading = await page.evaluate(() => {
           const label = document.querySelector("[data-arc-label]");
           const arc = label?.closest("[data-kind]");
@@ -648,6 +649,7 @@ test.describe("season arc without javascript", () => {
         console.log(
           `season-arc ${locale} ${width} nojs drawn=${reading.drawn} scale=${fixed(reading.scale, 3)} list=${reading.list} hiddenSlot=${reading.hiddenSlot}`,
         );
+        expect(reading.hiddenSlot).toBe(false);
         expect(reading.drawn).toBe(true);
         expect(Math.abs(reading.scale - 1)).toBeLessThanOrEqual(0.0005);
         expect(reading.list).toBe(12);

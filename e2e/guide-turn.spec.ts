@@ -344,6 +344,13 @@ async function waitStable(page: Page): Promise<void> {
             return opacity >= 0.99;
           });
           if (!faded) return false;
+          // The load-time rise no longer keeps the page busy until Reveal marks
+          // cards below the viewport. An unmarked card there has not been classified yet.
+          const unclassified = cards.some((element) => {
+            if (element.getAttribute("data-reveal")) return false;
+            return element.getBoundingClientRect().top >= window.innerHeight;
+          });
+          if (unclassified) return false;
           const read = () =>
             cards
               .map((element) => {
@@ -821,6 +828,7 @@ test.describe("guide turn without javascript", () => {
         const visible = await page.locator("li[data-flip-id]:not([hidden])").evaluateAll((elements) =>
           elements.map((element) => element.getAttribute("data-flip-id") ?? ""),
         );
+        expect(visible.length).toBeGreaterThan(0);
         const held = await page.evaluate(
           () =>
             [...document.querySelectorAll("li[data-flip-id]:not([hidden])")].some(
@@ -828,6 +836,7 @@ test.describe("guide turn without javascript", () => {
             ),
         );
         console.log(`${locale} ${viewport.name} nojs slugs=${visible.join(",")} hiddenSlot=${held}`);
+        expect(held).toBe(false);
         expect(visible).toEqual([...expected]);
         await expect(page.locator('a[data-month="9"]')).toHaveAttribute("aria-current", "true");
         expect(foreign).toEqual([]);

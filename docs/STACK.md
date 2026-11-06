@@ -11,6 +11,8 @@ The chosen stack in one page (PR-47). Every builder follows it; a fence may narr
 | `typescript` | the version `create-next-app` pins | types |
 | `eslint` + `eslint-config-next` | the versions `create-next-app` pins | lint (flat config, `eslint.config.mjs`) |
 | `pino` | 10.4.x | the one structured logger |
+| `gsap` | 3.15.x (3.15.1) | scroll-scrubbed motion (ScrollTrigger) and the guide's shared-layout re-sort (Flip) |
+| `lenis` | 1.3.x (1.3.27) | smooth scroll for the home story only |
 | `vitest` | 5.0.x | unit and architecture tests |
 | `@playwright/test` | 1.64.x | browser tests and the runner's captures (dev) |
 | `@axe-core/playwright` | 4.14.x | accessibility checks in the runner's captures (dev) |
@@ -68,13 +70,12 @@ module creates its folder and its entry.
   only `priority` image; the rest load lazily. The owner generates a file and its manifest row with
   `scripts/images/generate.mjs`, which he runs on his own computer (OD-10 §3). No remote image host is configured.
 - **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state. `Reveal`
-  (`src/modules/guide/Reveal.tsx`) is the first: it only adds an attribute and an observer and renders no state.
-  `HeroSceneFrame` (`src/modules/home/HeroSceneFrame.tsx`) is the second and `HeroScene`
-  (`src/modules/home/HeroScene.tsx`) is the third. The frame is the client boundary. The scene is loaded late
-  through `next/dynamic` with `ssr: false`, in its own chunk. Both are decorative. The server HTML of the frame is
-  the still poster (`HeroScenePoster`); the canvas and its pause button appear only after the browser decides the
-  scene may run.
-  Every control is a link, except that pause button. The produce pages are generated for every slug × locale. "This month" is
+  (`src/modules/guide/Reveal.tsx`) adds an attribute and an observer and renders no state. `YearStoryMotion`
+  (`src/modules/home/YearStoryMotion.tsx`) scrubs the home story with `gsap` ScrollTrigger and, only while motion
+  is allowed, smooths that scroll with `lenis`. `GuideMotion` (`src/modules/guide/GuideMotion.tsx`) re-sorts the
+  guide cards with `gsap` Flip. `SeasonArcMotion` (`src/modules/produce/SeasonArcMotion.tsx`) scrubs the produce
+  photograph with `gsap` ScrollTrigger. The hero scene and its canvas are not part of the build. Every control is
+  a link. The produce pages are generated for every slug × locale. "This month" is
   computed on the server in `Africa/Cairo` and cached for at most an hour (with Cache Components, a `"use cache"`
   function with `cacheLife("hours")`), so the content is never changed, only revealed.
 - **Data.** `content/produce.json` is imported once, in `src/modules/produce/`, and checked by a unit test (unique

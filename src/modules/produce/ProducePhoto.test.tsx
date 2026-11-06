@@ -69,7 +69,7 @@ it("renders no image, the wrong alt, or the wrong pixel size when a photograph i
 it("lazy-loads a photograph marked priority", () => {
   const html = markup("en", "hero", photo, true);
   expect(html).not.toContain('loading="lazy"');
-  expect(html).toContain('sizes="100vw"');
+  expect(html).toContain('sizes="(min-width: 64rem) 11rem, (min-width: 40rem) 10rem, 7rem"');
 });
 
 it("omits lazy loading when a photograph is not priority", () => {
@@ -186,7 +186,7 @@ it("leaves the hero frame rectangular or draws the season ring on the centre dis
   expect(fallback).not.toContain("data-in=");
   expect(fallback).toContain(fruit.en);
   const photographed = markup("en", "hero", photo, true);
-  expect(photographed).toContain('sizes="100vw"');
+  expect(photographed).toContain('sizes="(min-width: 64rem) 11rem, (min-width: 40rem) 10rem, 7rem"');
   expect(photographed).not.toContain('loading="lazy"');
   expect(photographed).not.toContain('aria-hidden="true"');
 });

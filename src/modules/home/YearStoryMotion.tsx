@@ -44,18 +44,18 @@ function clearPaint(node: Element): void {
 export function YearStoryMotion({
   dialTurnDegrees,
   guideHrefs,
-  seasons,
+  seasonMonths,
   children,
 }: {
   dialTurnDegrees: readonly number[];
   guideHrefs: readonly string[];
-  seasons: readonly (readonly number[])[];
+  seasonMonths: readonly (readonly number[])[];
   children: ReactNode;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const turnKey = dialTurnDegrees.join(",");
   const hrefKey = guideHrefs.join("|");
-  const seasonKey = seasons.map((row) => row.join(".")).join("|");
+  const seasonKey = seasonMonths.map((row) => row.join(".")).join("|");
 
   useLayoutEffect(() => {
     const root = rootRef.current;

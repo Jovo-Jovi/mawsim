@@ -435,14 +435,18 @@ test.describe("year story without javascript", () => {
         const copy = catalogue(locale);
         await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
         await page.goto(`/${locale}`);
-        await expect.poll(async () => page.locator("[data-texture-band='hero']").count()).toBe(1);
+        const band = page.locator("[data-texture-band='hero']");
+        await expect.poll(async () => band.count()).toBe(1);
+        await expect(band.locator("> :not([aria-hidden='true'])").first()).toBeAttached();
 
         const reading = await bandAgainstStage(page);
         console.log(
           `year-story ${locale} ${width} nojs hiddenSlot=${reading.hiddenSlot} height=${reading.height} band=${reading.band.toFixed(1)} stage=${reading.stage.toFixed(1)}`,
         );
-        if (reading.hiddenSlot) expect(reading.height).toBe("auto");
-        else expect(Math.abs(reading.band - reading.stage)).toBeLessThanOrEqual(0.5);
+        expect(reading.band).toBeGreaterThan(0);
+        expect(reading.stage).toBeGreaterThan(0);
+        expect(reading.hiddenSlot).toBe(false);
+        expect(Math.abs(reading.band - reading.stage)).toBeLessThanOrEqual(0.5);
         expect(reading.inline).toEqual([]);
         expect(reading.lenis).toBe(false);
 

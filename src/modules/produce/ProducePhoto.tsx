@@ -3,7 +3,14 @@ import type { Locale } from "@/i18n/config";
 import { otherLocale } from "@/i18n/href";
 import type { CalendarMonth } from "../../domain";
 import type { Produce } from "./catalogue";
-import { arcDiscShare, arcRingDiameterShare } from "./dial-geometry";
+import {
+  arcDiscShare,
+  arcRingDiameterShare,
+  ringInnerEdgeRadius,
+  ringOuterEdgeRadius,
+  storyOrbitBandRatio,
+  storyOrbitBandRatioWide,
+} from "./dial-geometry";
 import type { ProducePhotoRow } from "./photos";
 import styles from "./ProducePhoto.module.css";
 
@@ -15,10 +22,22 @@ function wholeRem(value: number): number {
 const pageDiscNarrow = wholeRem(18 * arcRingDiameterShare * arcDiscShare);
 const pageDiscWide = wholeRem(24 * arcRingDiameterShare * arcDiscShare);
 
+/**
+ * The hero disc is the story dial's centre (`YearDial.module.css`): the ring is 58% of the
+ * dial, then the centre sits inside the inner edge by half the 1.6 tick and 0.25% of the dial.
+ * `--dial-size` is 20rem, 28rem from 40rem, and 34rem from 64rem. The story dial keeps the
+ * orbit band outside that. Rounded up to a whole rem, the same way as the page disc.
+ */
+const heroCentreShare =
+  0.58 * ((ringInnerEdgeRadius - 1.6 / 2) / ringOuterEdgeRadius) - 0.0025;
+const heroDiscNarrow = wholeRem(20 * (1 - 2 * storyOrbitBandRatio) * heroCentreShare);
+const heroDiscMid = wholeRem(28 * (1 - 2 * storyOrbitBandRatio) * heroCentreShare);
+const heroDiscWide = wholeRem(34 * (1 - 2 * storyOrbitBandRatioWide) * heroCentreShare);
+
 const sizesBySlot = {
   card: "(min-width: 64rem) 20vw, 40vw",
   page: `(min-width: 64rem) ${pageDiscWide}rem, ${pageDiscNarrow}rem`,
-  hero: "100vw",
+  hero: `(min-width: 64rem) ${heroDiscWide}rem, (min-width: 40rem) ${heroDiscMid}rem, ${heroDiscNarrow}rem`,
   orbit: "6rem",
 } as const;
 
