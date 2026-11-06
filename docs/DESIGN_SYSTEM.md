@@ -187,7 +187,7 @@ in both.
   theme: components read tokens only.
 - **Remembered.** The choice is kept in `localStorage` under `mawsim-theme` (`light` · `dark` · `system`), only in the
   zone `theme-preference` (`docs/BOUNDARY_MODEL.md`), and applied before first paint by `public/theme-init.js`. A stored
-  choice never shows the other theme first. Without storage, the choice lasts for the page in view.
+  choice never shows the other theme first. Without storage, the choice lasts until the next document load (a reload or a new visit).
 - **The switch's pressed look** comes from the `<html>` attribute, so it is right at first paint. `aria-pressed`
   follows once the switch hydrates.
 

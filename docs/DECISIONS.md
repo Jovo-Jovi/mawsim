@@ -256,11 +256,14 @@ removes it. Every control is still a link or a button (R-2).
 `system`. Nothing else is stored, and nothing is stored before a visitor presses a button. The value is a display
 preference the visitor sets, not data about the visitor. It never leaves the browser: no request, route, header, log,
 cookie or server code reads or carries it. It is not a cookie and never becomes one. An unknown value is read as
-System. If storage is unavailable or throws, the switch still changes the theme of the page in view, and the next page
-starts at System.
+System. If storage is unavailable or throws, the switch still changes the theme of the page in view, and the next document
+load (a reload or a new visit) starts at System. A link inside the site does not reload the document, so it may keep
+the choice.
 **3.** The `devos:boundary` line of `docs/BOUNDARY_MODEL.md` gains the zone **`theme-preference`**
-(`personal_data: false`, no URL). Its source is only `src/components/theme/theme-storage.ts` (with its test) and
-`public/theme-init.js`, the only files that may touch `localStorage`. Everything else keeps the full rule. Cookies,
+(`personal_data: false`, no URL). Its shipped source is only `src/components/theme/theme-storage.ts` and
+`public/theme-init.js`, the only shipped files that may touch `localStorage`. Three test files are in the zone as
+evidence only, and may name the key only to stub or read it: `src/components/theme/theme-storage.test.ts`,
+`tests/theme-init.test.ts` and `e2e/theme-switch.spec.ts`. Everything else keeps the full rule. Cookies,
 `sessionStorage`, `indexedDB`, forms, beacons, analytics and trackers stay forbidden everywhere, this zone included.
 The Boundary gate is not waived. It holds, and its evidence is required at every task of this OD that touches the
 theme's storage, the layout's `<head>` or the headers. No personal data is held, so no Protection model is needed and

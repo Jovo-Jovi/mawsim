@@ -77,8 +77,8 @@ Judged done on the preview at 1280 and 390 in `en` and `ar`:
   own browser, never sent, logged or read by the server. It is not data about the visitor, so the zone has
   `personal_data: false`. No Protection model is needed, and the repository may stay public.
 
-  The zone is the mechanism the method gives for this (PR-19). Its exception is limited to three named files and one
-  key. Everywhere else, `guard:boundary` still fails on any `localStorage`, and cookies, `sessionStorage` and
+  The zone is the mechanism the method gives for this (PR-19). Its exception is limited to one key and two shipped
+  files, plus three test files that may name the key only to stub or read it as evidence. Everywhere else, `guard:boundary` still fails on any `localStorage`, and cookies, `sessionStorage` and
   `indexedDB` stay forbidden everywhere. Because the guard does not scan `public/`, `public/theme-init.js` gets its own
   test and the deep review reads every line of it.
 - **Nothing is stored until a visitor presses a button.** System is the default and needs no storage.
@@ -122,7 +122,21 @@ Judged done on the preview at 1280 and 390 in `en` and `ar`:
 - `.cursor/rules/10-security-data.mdc` also says "Every control is a link (or a button for retry)". The T24 fence
   names the three theme buttons as the exception. `docs/design/UI_ACCEPTANCE.md` UA-06 ("No … storage") is outside
   intake's surface too: `guard:boundary` already decides it with the zone, but its wording could cite OD-12.
-- The T24 fence was checked by `fence-check.mjs` and audited by the `fence-auditor` agent. The audit found one
-  blocker: `src/modules/produce/messages.test.ts` counts the catalogue keys, so the fence now lets T24 extend it to 91.
-  The audit's defects and notes were fixed in the fence before this PR.
+- The T24 fence was checked by `fence-check.mjs` and audited by the `fence-auditor` agent in two passes. The first
+  pass found that `src/modules/produce/messages.test.ts` counts the catalogue keys, so the fence now lets T24 extend it
+  to 91.
+
+  The second pass, in the run that completed this plan, found nine more problems, all fixed before this PR:
+  - the vitest baseline was a precondition of every stage;
+  - the no-storage fallback was looser than OD-12;
+  - the test files' use of the key was not in the zone;
+  - nothing checked that Light overrides a dark system;
+  - the layout-shift check ignored shifts that follow a click;
+  - the not-found head check never reached `global-not-found.tsx`;
+  - the placement check sat exactly on its tolerance;
+  - the counts were not exact;
+  - the case of a `localStorage` getter that throws was missing.
+
+  OD-12 §2 now says that without storage, the next document load starts at System. §3 names the zone's two shipped
+  files and its three evidence-only test files.
 - No setting outside the repository is needed: no account, key or variable.
