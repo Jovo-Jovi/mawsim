@@ -329,22 +329,37 @@ async function cardRects(page: Page): Promise<Record<string, Point>> {
 
 async function waitStable(page: Page): Promise<void> {
   await expect
-    .poll(async () =>
-      page.evaluate(() => {
-        const read = () =>
-          [...document.querySelectorAll("li[data-flip-id]:not([hidden])")]
-            .map((element) => {
-              const box = element.getBoundingClientRect();
-              return `${element.getAttribute("data-flip-id")}:${box.x.toFixed(1)}:${box.y.toFixed(1)}:${box.width.toFixed(1)}:${box.height.toFixed(1)}`;
-            })
-            .join("|");
-        const first = read();
-        return new Promise<boolean>((resolve) => {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => resolve(read() === first && first.length > 0));
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          const cards = [...document.querySelectorAll("li[data-flip-id]:not([hidden])")];
+          if (cards.length === 0) return false;
+          // Opacity 0 is the fade's first frame, and a partial opacity fails contrast.
+          // A below-fold card may stay at 0 once Reveal has marked it pending.
+          const faded = cards.every((element) => {
+            const opacity = Number(getComputedStyle(element).opacity);
+            const pending = element.getAttribute("data-reveal") === "pending";
+            if (opacity > 0.01 && opacity < 0.99) return false;
+            if (pending) return opacity <= 0.01 || opacity >= 0.99;
+            return opacity >= 0.99;
           });
-        });
-      }),
+          if (!faded) return false;
+          const read = () =>
+            cards
+              .map((element) => {
+                const box = element.getBoundingClientRect();
+                const opacity = Number(getComputedStyle(element).opacity).toFixed(2);
+                return `${element.getAttribute("data-flip-id")}:${box.x.toFixed(1)}:${box.y.toFixed(1)}:${box.width.toFixed(1)}:${box.height.toFixed(1)}:${opacity}`;
+              })
+              .join("|");
+          const first = read();
+          return new Promise<boolean>((resolve) => {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => resolve(read() === first && first.length > 0));
+            });
+          });
+        }),
+      { timeout: 10_000 },
     )
     .toBe(true);
 }
