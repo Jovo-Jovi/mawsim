@@ -26,9 +26,13 @@ People in Egypt who shop at markets and want to know what is fresh now, on a pho
 
 ## 4. Standing rules (from the brief)
 
-- **R-1** No accounts, forms, search box, cookies, browser storage, analytics or trackers.
+- **R-1** No accounts, forms, search box, cookies, browser storage, analytics or trackers. (Amended by OD-12, issue
+  #36: one exception, the `localStorage` key `mawsim-theme` holding the visitor's theme choice in their own browser.
+  It is never sent anywhere and is kept in the zone `theme-preference`. Everything else on this list stands.)
 - **R-2** Every control is a button or a link.
-- **R-3** The colour theme follows the system (light and dark).
+- **R-3** The colour theme follows the system (light and dark). (Amended by OD-12, issue #36: following the system is
+  the default, "System". A header switch also offers Light and Dark, revealed as a circle from the switch, and the
+  choice is remembered across pages and visits.)
 - **R-4** The language comes from the URL (`/ar/…`, `/en/…`). Arabic is the default (`/` → `/ar`) and is laid out
   right to left with its own typography, navigation, spacing and alignment; English is laid out left to right. Both
   are adapted designs, not translations of one layout. Switching language keeps the equivalent page. No broken link,

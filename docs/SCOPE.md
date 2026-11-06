@@ -31,6 +31,7 @@ None. Every feature the brief asks for is in the core flow above. New work is a 
 |---|---|---|---|
 | A-1 (issue #17) | Showcase visual layer: generated, licensed or own imagery in every photo frame with a generator script the owner runs; a market texture behind the hero and section bands; richer card hover and focus; reveal on scroll once and animated selected states; a slowly turning 3D produce scene beside the hero dial with a still poster; design contract version 2 | OD-10 | T12–T17 (G-Showcase) |
 | A-2 (issue #28) | "The year turns": one twelve-month year dial across the site; a scroll-driven year story on home (sticky, scrubbed, Lenis on home only) with the hero photograph at the dial's centre; the dial as the guide's month picker with shared-layout card motion (GSAP Flip) and a year chart view (`view=chart`); circular card photographs inside their season rings (closes CF-49); the produce page's season arc with a scroll zoom; three.js and the 3D hero scene removed (closes CF-43); design contract version 3 | OD-11 | T18–T23 (G-YearTurns) |
+| A-3 (issue #36) | A theme switch: System (default) · Light · Dark in the header of every page. The choice is kept in one `localStorage` key, `mawsim-theme`, inside the declared zone `theme-preference`, and is never sent anywhere. It is applied before first paint by a same-origin script, with the CSP unchanged. A circular reveal from the switch (View Transitions API), a cross-fade fallback and an instant change under reduced motion. Both themes proven to WCAG 2.2 AA on every screen. Twelve one-screen README screenshots (home, guide, produce × `en`/`ar` × light/dark). Design contract version 4 | OD-12 | T24–T26 (G-Theme) |
 
 ## Out of scope (the brief excludes it, or nothing asks for it)
 
@@ -38,3 +39,7 @@ Accounts and sign-in · forms and any input · a search box · cookies and brows
 third-party scripts · a database or CMS · hotlinked or unlicensed images · a deploy, domain or hosting ·
 error-tracking provider · a theme toggle (the theme follows the system) · notifications · real farming or nutrition
 data.
+
+A-3 (OD-12) moves two narrow things out of this list. The first is a theme switch, with System as its default. The
+second is one `localStorage` key for its choice, in the zone `theme-preference`. Every other cookie and every other
+kind of browser storage stays out of scope.

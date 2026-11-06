@@ -33,6 +33,13 @@ Set for every route in `next.config.ts` `headers()`:
 `poweredByHeader: false`. `'unsafe-inline'` in `script-src` is accepted because Next.js inlines its bootstrap scripts
 and a nonce would make every page dynamic; the CSP's job here is to refuse every third-party origin (R-1).
 
+**The theme's pre-paint script (OD-12 §4).** `public/theme-init.js` is a same-origin file loaded synchronously from the
+root layout's `<head>`, so `script-src 'self'` allows it and the CSP does not change. No hash or nonce is added for it:
+a hash or nonce in `script-src` makes CSP Level 2+ browsers ignore `'unsafe-inline'`, and that would block Next.js's
+inline bootstrap. The script reads one `localStorage` key (`mawsim-theme`), accepts only `light` or `dark`, sets
+`data-theme` on `<html>`, and catches every error. It makes no request and defines no global. The stored value is
+parsed against its closed set (`light` · `dark` · `system`) wherever it is read. Any other value is System.
+
 ## 5. Errors
 
 Thrown errors are logged through `logger` and the visitor sees a safe message (`docs/STACK.md` §4, §6). No stack

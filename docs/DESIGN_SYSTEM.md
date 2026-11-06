@@ -1,9 +1,11 @@
 # MAWSIM — Design system
 
-Precedence 8. The design contract of `docs/method/DESIGN_METHOD.md` §1, signed by OD-08. **Version 3** (OD-11,
+Precedence 8. The design contract of `docs/method/DESIGN_METHOD.md` §1, signed by OD-08. **Version 4** (OD-12,
+issue #36) keeps version 3 whole and adds the **theme switch**: System · Light · Dark in the header, its circular
+reveal, the remembered choice, and both themes proven equal (§2, §4, §5, §6, §7, §9, §10). **Version 3** (OD-11,
 issue #28): "The year turns". One twelve-month **year dial** is the spine of the site: the home page's scroll-driven
 year story, the guide's month picker, every card's season ring and the produce page's season arc. The 3D hero scene
-and three.js are removed. Versions 1 and 2 are in git history. Build tasks compose this contract. A gap goes back to
+and three.js are removed. Versions 1 to 3 are in git history. Build tasks compose this contract. A gap goes back to
 the reviewer as a design change and is never improvised in a feature task.
 
 ## 1. Direction — "Almanac in the sun"
@@ -40,6 +42,8 @@ scroll scrubs). See `docs/design/REFERENCES.md`.
   month's produce comes forward. On the guide the dial turns to the chosen month and the cards re-sort, sliding,
   fading and rising (§7). On a produce page the season arc draws its months in once. Scroll drives the motion and
   nothing loops or plays by itself. With reduced motion, or without JavaScript, every screen is its settled state.
+  Version 4: a theme chosen in the header arrives as a circle of the new colours growing from the switch, like dawn
+  or dusk crossing the almanac. Only colour changes.
 
 Imagery is part of the identity (OD-09, OD-10, OD-11). Every photo frame has a fixed size and a designed fallback of
 the same size: the kind-colour disc with the produce's names, shown until the image for that slot lands. Adding an
@@ -70,7 +74,26 @@ image changes no layout and no code.
 Contrast (computed from relative luminance, WCAG 2.2): ink on bg ≥ 12:1; muted on bg ≥ 6:1; primary on bg ≥ 6.5:1;
 accent on bg ≥ 5:1; on-primary on primary ≥ 7:1; on-highlight on highlight ≥ 8:1; every kind fill ≥ 3:1 against
 `--color-surface` in its theme (non-text contrast). Kind fills never carry text. The theme follows
-`prefers-color-scheme`; `color-scheme: light dark` is set on `:root`. Version 3 adds no colour.
+`prefers-color-scheme` unless the visitor chose Light or Dark (§4); `color-scheme: light dark` is set on `:root`.
+Versions 3 and 4 add no colour.
+
+**The contrast pairs (version 4, OD-12 §6).** Each pair below holds in **both** themes. A test computes them from
+`src/styles/tokens.css` (`tests/theme-contrast.test.ts`, T26); nobody asserts them by hand.
+
+| Pair (foreground / ground) | Minimum | Where |
+|---|---|---|
+| ink / bg · ink / surface · ink / track | 4.5:1 | body text, cards, the fallback disc's names (ink on surface), the sample-data band |
+| ink-muted / bg · ink-muted / surface · ink-muted / track | 4.5:1 | counter-names, season sentences, month labels |
+| primary / bg · primary / surface | 4.5:1 | links, the selected month's name, chip text |
+| accent / bg · accent / surface | 4.5:1 | "this month" text |
+| on-primary / primary · on-highlight / highlight | 4.5:1 | text on the pressed pill, the current-month tag |
+| primary / bg · primary / surface | 3:1 | the focus ring (non-text) |
+| kind fill (fruit · vegetable · leafy) / surface | 3:1 | lit season cells on cards, the arc and the chart (non-text) |
+| accent / surface · accent / track | 3:1 | the this-month tick (non-text) |
+
+A lit season cell is told apart from an empty one by colour and by the empty cell's 1px `--color-ink-muted` hairline.
+The season is also always given in text (UA-13), so a kind fill against `--color-track` is reported but not held to
+3:1. Light fruit against track computes to 2.78:1 today.
 
 ### Type
 
@@ -125,6 +148,7 @@ and `next/font`'s fallback metrics, so the swap causes no layout shift.
 | `--story-back-scale` / `--story-back-opacity` | `0.72` / `0.35` (version 3: a produce circle out of the shown month) |
 | `--dur-flip` / `--flip-stagger` | `560ms` / `40ms` (version 3: the guide's cards re-sorting, at most 8 staggered) |
 | `--zoom-scroll` | `1.08` (version 3: the produce page photograph at the end of its scroll zoom) |
+| `--dur-theme` | `500ms` (version 4: the theme reveal's circle, on `--ease-in-out`, §7) |
 
 Version 3 removes `--scene-turn` and `--scene-size` with the hero scene (OD-11 §6).
 
@@ -150,8 +174,22 @@ sticky header is glass (`--color-surface-glass` + `backdrop-filter: blur(var(--b
 
 ## 4. Themes
 
-Light and dark, from `prefers-color-scheme` only (R-3). No toggle, no stored choice. Every component is checked in
-both.
+Light and dark (version 4, OD-12). Both are finished and equal: every component is designed, checked and captured
+in both.
+
+- **The choice.** The header's `ThemeSwitch` offers System, Light and Dark. **System** is the default and follows
+  `prefers-color-scheme`, live. Light or Dark sets `data-theme="light"` or `data-theme="dark"` on `<html>`, and System
+  removes the attribute.
+- **The tokens.** `src/styles/tokens.css` holds the dark values once per selector that needs them:
+  `@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { … } }` and `:root[data-theme="dark"] { … }`.
+  `color-scheme` follows each: `light dark` on `:root`, `light` with `data-theme="light"` and `dark` with
+  `data-theme="dark"`. Every `--color-*` token and `--texture-ink` has a value in each theme. No component reads the
+  theme: components read tokens only.
+- **Remembered.** The choice is kept in `localStorage` under `mawsim-theme` (`light` · `dark` · `system`), only in the
+  zone `theme-preference` (`docs/BOUNDARY_MODEL.md`), and applied before first paint by `public/theme-init.js`. A stored
+  choice never shows the other theme first. Without storage, the choice lasts for the page in view.
+- **The switch's pressed look** comes from the `<html>` attribute, so it is right at first paint. `aria-pressed`
+  follows once the switch hydrates.
 
 ## 5. Breakpoints and responsive rules
 
@@ -166,6 +204,12 @@ adaptation with Inter's own scale, not a mirrored copy. Mobile-first, with break
   The guide's dial sits beside the title, chips and view links. The year chart puts the name in a column at the
   inline start of each row.
 
+- The header (version 4). DOM order: the wordmark, the nav, then the tools (the language link, then the theme
+  switch). From 40rem it is one row: the brand at the inline start, the nav in the middle, and the tools at the
+  inline end, with the switch last. Below 40rem the first row holds the brand at the inline start and the tools at
+  the inline end, and the nav takes the second row, as today. Below 22.5rem the tools wrap under the brand, still at
+  the inline end, so nothing scrolls at 320. In Arabic all of it mirrors: the switch sits at the left edge.
+
 No horizontal page scroll at any width from 320, and nothing scrolls inline. Every image, ring, dial and chart
 reserves its size (`aspect-ratio` or fixed block size) so nothing shifts.
 
@@ -173,7 +217,8 @@ reserves its size (`aspect-ratio` or fixed block size) so nothing shifts.
 
 | Component | Where | States |
 |---|---|---|
-| `SiteHeader` | every page | default · link hover · `focus-visible` · current page (`aria-current="page"`, pill in primary tint) · glass over scrolled content |
+| `SiteHeader` | every page | default · link hover · `focus-visible` · current page (`aria-current="page"`, pill in primary tint) · glass over scrolled content; version 4: the `ThemeSwitch` at the inline end (§5) |
+| `ThemeSwitch` (version 4) | header, every page | a segmented control: one group (`role="group"`, its name from the catalogue, "Theme" / "المظهر") of three `<button type="button">`s, System (the auto glyph), Light (sun) and Dark (moon), in that order from the inline start. Each is icon-only, at least `--target-min` square, with its accessible name from the catalogue and `data-theme-choice="system|light|dark"`. States: default (icon in `--color-ink-muted` on the track pill) · hover (icon in `--color-ink`) · `focus-visible` (the 2px primary ring with 2px offset) · pressed (`aria-pressed="true"`, the primary pill of `KindChips` with the icon in `--color-on-primary`; the pill shows the choice from the `<html>` attribute at first paint) · without JavaScript (`visibility: hidden`, its space kept, because a button that cannot act is not shown) |
 | `Wordmark` | header | "Mawsim" with "موسم" as its counter-name (order follows the locale) |
 | `LanguageLink` | header, footer | default · hover · focus; label in the target language, `hreflang` and `lang` set, keeps path and query (`month`, `kind`, `view`) |
 | `SampleDataNotice` | home, guide, produce, about, footer | one state; text from the catalogue (OD-06) |
@@ -195,8 +240,9 @@ reserves its size (`aspect-ratio` or fixed block size) so nothing shifts.
 | `ErrorState` | error boundary | safe localised message and a link home (a button only to retry) |
 | `SiteFooter` | every page | sample-data notice, "Mawsim collects nothing", about link, language link |
 
-Icons: three inline SVGs (arrow, info, leaf) in one `Icon` component, mirrored in `rtl` where they point. The arrow
-serves the previous and next month links.
+Icons: six inline SVGs in one `Icon` component (arrow, info, leaf; version 4 adds sun, moon and auto, the auto glyph
+a circle half filled), mirrored in `rtl` only where they point. The arrow serves the previous and next month links.
+The sun, moon and auto glyphs serve the `ThemeSwitch` and are never mirrored.
 
 Removed in version 3: `HeroScene`, `HeroSceneFrame`, `HeroScenePoster` (OD-11 §6), `MonthScroller` (replaced by
 `MonthPicker`), `SeasonBar` (replaced by `SeasonArc`) and the static `SeasonDial` (replaced by `YearDial`).
@@ -229,13 +275,21 @@ own, nothing loops, and nothing moves after the visitor stops (WCAG 2.2.2 needs 
 - **Card hover and focus:** lift `translateY(-2px)` and shadow, photo zoom to `--zoom-photo` inside its circle, tilt
   `--tilt-card` (mirrored in `rtl`), ring glow fading in to `--glow-ring-opacity`; `--dur-3`, `--ease-out`; the same on
   `:focus-visible`.
-- Only `transform` and `opacity` animate, plus the colour of links and pills and the arc's `stroke-dashoffset`.
+- **Theme reveal (version 4, every page):** pressing Light, Dark or System when it changes the painted theme reveals
+  the new theme as a circle. The circle is centred on the pressed button and grows to the farthest corner of the
+  viewport over `--dur-theme` on `--ease-in-out`. It runs through `document.startViewTransition`, with a `clip-path`
+  `circle()` animated on `::view-transition-new(root)`; the old snapshot stays still and the default cross-fade is
+  off. Where `startViewTransition` is missing, the colours cross-fade over `--dur-2` for that one change only. The
+  same press during a reveal finishes the running one first. Focus stays on the pressed button. Nothing moves,
+  resizes or reflows: before and after differ only in colour.
+- Only `transform` and `opacity` animate, plus the colour of links and pills, the arc's `stroke-dashoffset`, and the
+  theme reveal's `clip-path` on the view-transition snapshot and its colour cross-fade fallback (version 4).
   Nothing animates layout, so nothing shifts. The story's scroll length is reserved by CSS, never added by script
   (§13).
 - **Reduced motion** (`prefers-reduced-motion: reduce`), and **without JavaScript**: no animation or transition beyond
   colour. The story is its settled state for this month at its natural height, with no scroll length and no Lenis.
   The guide's dial stands at the selected month and the cards are in place. The arc is drawn and the photograph is
-  at scale 1. Hover and focus keep only the shadow and the focus ring.
+  at scale 1. Hover and focus keep only the shadow and the focus ring. A theme change is instant (version 4).
 
 ## 8. Writing
 
@@ -246,8 +300,9 @@ word; the reviewer reads both.
 ## 9. Accessibility floor (WCAG 2.2 AA)
 
 - Contrast as in §2; focus always visible (2px `--color-primary` ring with 2px offset, never removed).
-- Every control is a link (or a button for retry), reachable and operable by keyboard in visual order; a "Skip to
-  content" link first. The dial's month links follow calendar order in the DOM, whatever the dial's turn.
+- Every control is a link (or a button for retry, and the three theme buttons with `aria-pressed`, version 4),
+  reachable and operable by keyboard in visual order; a "Skip to content" link first. The theme buttons are pressed
+  with Enter or Space. Their group has an accessible name, and each button names its choice, not its icon. The dial's month links follow calendar order in the DOM, whatever the dial's turn.
 - Targets at least `--target-min` (above WCAG 2.2's 24px minimum), the dial's month links included.
 - One `h1` per page; landmarks `header`, `nav`, `main`, `footer`; `aria-current` on the current page, chip, view and
   month.
@@ -269,7 +324,7 @@ word; the reviewer reads both.
 | GSAP (`gsap`: core, ScrollTrigger, Flip; GreenSock's Standard "no charge" licence) | **adopt** (version 3, OD-11 §5) | the story's scrubbed timeline (ScrollTrigger) and the guide's shared-layout re-sort (Flip); only in client components of the home, guide and produce modules; registered once per component; reverted on unmount; `gsap.matchMedia` keeps reduced motion settled |
 | `@gsap/react` | reject | `gsap.context` and its `revert` in an effect do the clean-up; lean (PR-47) |
 | Lenis (`lenis`, MIT) | **adopt, narrowly** (version 3) | smooth scroll for the home page's story only; created only with motion allowed, destroyed on leaving the page; never on the guide, produce or about pages |
-| View Transitions API | reject | Next.js's integration is experimental; Flip covers the re-sort |
+| View Transitions API | **adopt, narrowly** (version 4, OD-12 §5) | `document.startViewTransition` for the theme reveal only, with no dependency; never for page navigation (Next.js's integration stays experimental) and never for the re-sort (Flip covers it) |
 | Motion (`motion`) | reject | GSAP covers the story and the re-sort; one animation library (DESIGN_METHOD §5.1: never two on one element) |
 | AutoAnimate | reject | Flip covers the re-sort |
 | anime.js / React Spring | reject | GSAP is the one library |

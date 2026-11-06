@@ -37,3 +37,11 @@ libraries. Nothing was fetched. Each is recorded with what Mawsim takes and what
 | L8 | DESIGN_METHOD §5.1: Lenis (`lenis`, MIT) | smooth scrolling for the home page's story, off under reduced motion | Lenis on any other page; scroll-jacking of any kind (snap, inertia that keeps moving, hijacked keys) |
 
 L5 (three.js and React Three Fiber) is retired in version 3: the hero scene is removed (OD-11 §6).
+
+**Version 4 (OD-12, issue #36).** The request names the theme changes of two families of apps, with no link or image,
+and one web platform API. Nothing was fetched.
+
+| Ref | Source | What we take | What we leave |
+|---|---|---|---|
+| R10 | Apple's and Telegram's apps, named in issue #36 (their animated theme change) | the idea that the new theme spreads out from the control that chose it, as one circle, quick and quiet, with nothing else moving | their icons, timing and curves, sounds, wallpapers and day-and-night artwork, any layout or code; the reveal's length and curve are Mawsim's own tokens (`--dur-theme`, `--ease-in-out`) |
+| L9 | DESIGN_METHOD §5.1: the View Transitions API (`document.startViewTransition`, the web platform, no dependency) | one root snapshot revealed by an animated `clip-path` circle for the theme change, with a colour cross-fade where the API is missing (`DESIGN_SYSTEM.md` §7) | page-navigation transitions, Next.js's experimental integration, named element transitions, any demo's code |

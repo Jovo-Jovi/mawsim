@@ -28,6 +28,9 @@ wait for the developer's merge.
 | T21 | P07 | J5 | Home: the scroll-driven year story with Lenis; the 3D hero scene and three.js removed | 2 | — | [x] | PASS a2 — docs/reviews/T21-a2.md |
 | T22 | P07 | J5 | Produce page: the season arc around the circular photograph, drawn on entry, with the scroll zoom | 2 | — | [x] | PASS a1 — docs/reviews/T22-a1.md |
 | T23 | P07 | J5 | "The year turns" acceptance: every screen in both locales, the site-wide e2e and the captures | 2 | G-YearTurns | [x] | PASS a3 — docs/reviews/T23-a3.md |
+| T24 | P08 | J5 | Theme switch: System · Light · Dark in the header, the choice kept in one storage key and applied before first paint | 3 | — | [ ] | — |
+| T25 | P08 | J5 | The theme reveal: a circle from the switch through the View Transitions API, a cross-fade fallback, instant under reduced motion | 2 | — | [ ] | — |
+| T26 | P08 | J5 | Both themes proven on every screen, and the README screenshots in light and dark | 2 | G-Theme | [ ] | — |
 
 ## Phases
 
@@ -40,6 +43,7 @@ wait for the developer's merge.
 | P05 About and motion | the about page with the photo credits, and the calm hero animation with reduced motion |
 | P06 Showcase (OD-10) | real imagery in every frame with its credits, the market texture, rich card and scroll motion, and the turning 3D hero scene with its still poster, signed off at G-Showcase |
 | P07 The year turns (OD-11) | one year dial across the site: the scroll-driven year story on home, the dial as the guide's month picker with re-sorting cards and the year chart, circular card photographs in their rings, the produce page's season arc, and no three.js, signed off at G-YearTurns |
+| P08 Theme switch (OD-12) | a System · Light · Dark switch in the header of every page, remembered across pages and visits with no flash, revealed as a circle from the switch, both themes proven to WCAG 2.2 AA on every screen, and README screenshots in light and dark, signed off at G-Theme |
 
 ## Phase outlines
 
@@ -281,3 +285,59 @@ nothing covering it. Every produce page draws its arc. No built chunk holds thre
 and card specs pass, updated only where version 3 changed what they assert. `DESIGN_SYSTEM.md` and `docs/STACK.md`
 ("Rendering", dependencies) match the build. Fixes are in code only. Screens: every page in both locales (home, the
 story mid-scroll, guide cards and chart, produce mango and molokhia, about). Criteria: UA-01 … UA-20. The owner merges.
+
+### P08 — Theme switch (OD-12, issue #36)
+
+The tasks below implement `docs/DESIGN_SYSTEM.md` version 4. The builder never adds, replaces or deletes a file in
+`public/photos/**` and never edits `content/**`. `localStorage` exists only in the zone `theme-preference`
+(`docs/BOUNDARY_MODEL.md`), under one key, `mawsim-theme`. The CSP and every header stay as T02 set them. No task adds
+a dependency. T24 starts once this plan is merged, so the zone is on `main` before its code is.
+
+### T24 — Theme switch and the remembered choice (risk 3, UI; Stages: 3; deep review, the developer merges)
+`docs/fences/T24.md`. Layers: design · frontend · accessibility · security · testing. Stage 1: the tokens' dark values
+under `:root:not([data-theme="light"])` in the media query and under `:root[data-theme="dark"]`. The zone's module
+`src/components/theme/theme-storage.ts` (the key, `ThemeChoice`, `currentThemeChoice`, `chooseTheme`,
+`subscribeThemeChoice`, never throwing). `public/theme-init.js` loaded synchronously from the `<head>` of both documents
+that render the header, with the CSP unchanged. Stage 2: `ThemeSwitch` (three `aria-pressed` buttons, sun, moon and auto
+glyphs, catalogue names, pressed look from the `<html>` attribute, hidden without JavaScript) at the header's inline
+end, and the about page's new "What Mawsim collects" text. Stage 3: `e2e/theme-switch.spec.ts`: placement, targets,
+keyboard, persistence across reload, navigation, back and language, no first-frame flash, the no-storage fallback, no
+request carrying the value, and CLS 0. Then the boundary evidence. Screens: home in both locales, dark chosen on home,
+guide and produce, and the switch's focus. Criteria: UA-01 … UA-07, UA-10, UA-11, UA-14, UA-15, UA-18.
+
+### T25 — The theme reveal (risk 2, UI)
+Layers: motion · frontend · accessibility · testing. The `--dur-theme` token (500ms). In `ThemeSwitch`, a press that
+changes the painted theme runs `document.startViewTransition`. The new root snapshot is revealed by a `clip-path`
+`circle()` from the pressed button's centre to the farthest viewport corner, over `--dur-theme` on `--ease-in-out`. The
+old snapshot is still and the default cross-fade is off (`src/app/globals.css`). Without the API, a colour cross-fade
+over `--dur-2` runs for that change only. Under reduced motion the change is instant. A press during a reveal finishes
+the running one first, and focus stays on the button. A Playwright spec covers:
+- the transition's origin at the button's centre, its duration and easing, read from `document.getAnimations()`;
+- instant under reduced motion (no transition started);
+- the fallback with `startViewTransition` removed;
+- every element's box identical before and after, and CLS 0;
+- both locales.
+
+Screens: `theme-reveal-en /en click [data-theme-choice="dark"]`, `theme-reveal-ar /ar click [data-theme-choice="dark"]`
+and the guide in Arabic with the same click. The filmstrip shows the circle. Criteria: UA-01 … UA-04, UA-07, UA-10 …
+UA-12.
+
+### T26 — Both themes proven and the README screenshots (risk 2, UI, G-Theme; Stages: 2)
+Layers: design · frontend · accessibility · testing.
+
+Stage 1: `tests/theme-contrast.test.ts` computes every pair of `DESIGN_SYSTEM.md` §2's contrast table in both themes
+from `src/styles/tokens.css`, and logs the report-only pairs. `e2e/themes.spec.ts` runs over home, guide cards, guide
+chart, produce mango and molokhia, and about. It covers both locales at 390 and 1280, in light and dark, chosen with
+the switch and through System with `emulateMedia`. On each it checks axe 0 and the focus ring's contrast against the
+ground (≥ 3:1), and it confirms the photo frames' hairline. Every finding is fixed in component CSS with tokens. A
+token that fails its pair is a HALT for the reviewer's design amendment.
+
+Stage 2: `scripts/readme/screenshots.mjs`, run by hand against the production build, takes twelve viewport-only
+captures at 1280 × 800: home, `guide?month=8` and `produce/mango`, in `en` and `ar`, in light and dark. Each waits until
+every `img` in view is complete and decoded with a natural width, under reduced motion so the story is settled. They
+are saved as `docs/screenshots/<page>-<locale>-<light|dark>.png`. The three old full-page captures go, and `README.md`
+shows the twelve, keeping every other line (PR-77). `tests/readme-screenshots.test.ts` checks that each of the twelve
+files exists at 1280 × 800 (read from the PNG header) and that the README references each one and no missing file.
+
+Then the captures, the e2e run in full, and the ledger rows. Screens: every page in both locales with Dark chosen with
+the switch, and home and guide in light. Criteria: UA-01 … UA-20. The owner merges (G-Theme).
