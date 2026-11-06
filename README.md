@@ -6,6 +6,7 @@ Mawsim (موسم) is a bilingual guide to which fruits and vegetables are in sea
 
 - [x] The guide's year dial
 - [x] The guide's year chart
+- [x] The guide's motion: the dial turns and the cards re-sort
 
 ## Screenshots
 

@@ -86,6 +86,8 @@ it("steps previous and next into the neighbouring month, or fails to wrap Decemb
   const january = monthsNav(markup("en", 1, 6, null));
   expect(namedHref(january, "Previous month")).toBe("/en/guide?month=12");
   expect(namedHref(january, "Next month")).toBe("/en/guide?month=2");
+  expect(january).toContain('data-month-step="previous"');
+  expect(january).toContain('data-month-step="next"');
 
   const december = monthsNav(markup("ar", 12, 6, null));
   expect(namedHref(december, "الشهر السابق")).toBe("/ar/guide?month=11");

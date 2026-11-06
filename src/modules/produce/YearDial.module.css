@@ -57,3 +57,9 @@
   transform-origin: center;
   transform: rotate(var(--dial-turn)) translate(var(--dial-x), var(--dial-y)) rotate(calc(var(--dial-turn) * -1));
 }
+
+.label {
+  display: flex;
+  inline-size: 100%;
+  block-size: 100%;
+}

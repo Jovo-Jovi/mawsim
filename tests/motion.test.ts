@@ -470,6 +470,56 @@ it("catches a home stylesheet that loops, animates something other than transfor
   expect(scene).toContain("prefers-reduced-motion: reduce");
 });
 
+it("adds a keyframe, animation or transition to the guide motion or the dial stylesheet", () => {
+  for (const name of ["modules/guide/GuideMotion.module.css", "modules/produce/YearDial.module.css"]) {
+    const css = sheet(name);
+    expect(css).not.toMatch(/@keyframes|\banimation\b|\btransition\b/);
+  }
+  expect(sheet("modules/guide/GuideMotion.module.css")).toContain("display: contents");
+});
+
+it("names an animated property other than rotation, x, y, scale or opacity in GuideMotion", () => {
+  const allowed = new Set(["rotation", "x", "y", "scale", "opacity"]);
+  const animated = new Set([
+    ...allowed,
+    "width",
+    "height",
+    "top",
+    "left",
+    "right",
+    "bottom",
+    "autoAlpha",
+    "skewX",
+    "skewY",
+    "xPercent",
+    "yPercent",
+    "rotationX",
+    "rotationY",
+    "z",
+    "backgroundColor",
+    "color",
+    "fontSize",
+    "margin",
+    "padding",
+    "zIndex",
+    "filter",
+    "clipPath",
+    "visibility",
+    "display",
+    "transform",
+    "willChange",
+  ]);
+  const source = stripComments(readFileSync(path.join(srcRoot, "modules/guide/GuideMotion.tsx"), "utf8")).replace(
+    /\/\/.*$/gm,
+    "",
+  );
+  const keys = [...source.matchAll(/[{,]\s*([A-Za-z][\w-]*)\s*:/g)].map((match) => match[1] ?? "");
+  expect(source).toContain("rotation:");
+  expect(source).toContain("opacity:");
+  expect(source).toContain("y:");
+  expect(keys.filter((key) => animated.has(key) && !allowed.has(key))).toEqual([]);
+});
+
 it("catches an infinite animation anywhere in a stylesheet, because a loop never stops", () => {
   const files = cssFiles(srcRoot).map((file) => relative(file)).sort();
   expect(files).toContain("styles/tokens.css");

@@ -183,7 +183,7 @@ function screensFor(locale: LocaleCode): { name: string; path: string }[] {
 }
 
 async function frameBorder(page: Page, path: string): Promise<FrameBorder> {
-  const images = page.locator("main img[alt]:not([alt=''])");
+  const images = page.locator("main img[alt]:not([alt='']):visible");
   const frames = await images.count();
   if (frames === 0) {
     expect(path).toContain("/about");
@@ -245,7 +245,7 @@ for (const locale of LOCALES) {
       expect(await hero.getAttribute("alt")).toBe(heroAlt);
       expect(await loadedFile(hero)).toBe(heroPhoto.file);
 
-      const cards = page.locator("main a[href*='/produce/']");
+      const cards = page.locator("main a[href*='/produce/']:visible");
       const cardCount = await cards.count();
       expect(cardCount).toBeGreaterThan(0);
       const checked: string[] = [];
@@ -273,7 +273,7 @@ for (const locale of LOCALES) {
       const seen = new Set<string>();
       for (let month = 1; month <= 12; month += 1) {
         await openPage(page, `/${locale}/guide?month=${month}`);
-        const cards = page.locator("main a[href*='/produce/']");
+        const cards = page.locator("main a[href*='/produce/']:visible");
         const cardCount = await cards.count();
         expect(cardCount).toBeGreaterThan(0);
         for (let index = 0; index < cardCount; index += 1) {
