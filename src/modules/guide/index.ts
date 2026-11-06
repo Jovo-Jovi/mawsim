@@ -1,5 +1,6 @@
 export { KindChips } from "./KindChips";
-export { MonthScroller } from "./MonthScroller";
+export { MonthPicker } from "./MonthPicker";
 export { CardGrid } from "./CardGrid";
 export { Reveal } from "./Reveal";
-export { guideQuery, guideHref } from "./guide-query";
+export { guideQuery, guideHref, parseGuideView } from "./guide-query";
+export type { GuideView } from "./guide-query";

@@ -96,7 +96,11 @@ function anchors(html: string): { href: string; current: string | null; lang: st
 
 const augustAll = ["tomato", "mango", "watermelon", "guava", "okra", "molokhia", "dates"];
 
-async function render(query: { month?: string | string[]; kind?: string | string[] }): Promise<string> {
+async function render(query: {
+  month?: string | string[];
+  kind?: string | string[];
+  view?: string | string[];
+}): Promise<string> {
   return renderToStaticMarkup(await GuidePage({ searchParams: Promise.resolve(query) }));
 }
 
@@ -238,11 +242,29 @@ it("places Kinds before Months, or leaves a junk month on the scroller", async (
       (match[1] ?? "").includes('aria-current="true"'),
     );
     expect(current).toHaveLength(1);
-    expect((current[0]?.[2] ?? "").replace(/<[^>]+>/g, "")).toContain("August");
+    expect(current[0]?.[1] ?? "").toContain('data-month="8"');
+    expect((current[0]?.[2] ?? "").replace(/<[^>]+>/g, "").replace("This month", "").trim()).toBe("Aug");
     expect(html).not.toContain("month=13");
     expect(html).not.toContain("nuts");
     expect(html).not.toContain("8,9");
   }
+});
+
+it("drops view=chart from a month, kind or language link", async () => {
+  localeState.value = "ar";
+  const html = await render({ month: "8", kind: "fruit", view: "chart" });
+  const links = anchors(html).filter((anchor) => anchor.lang === "en").map((anchor) => anchor.href);
+  expect(links).toEqual([
+    "/en/guide?month=8&kind=fruit&view=chart",
+    "/en/guide?month=8&kind=fruit&view=chart",
+  ]);
+  expect(chipHrefs(html, "الأنواع")).toEqual([
+    "/ar/guide?month=8&view=chart",
+    "/ar/guide?month=8&kind=fruit&view=chart",
+    "/ar/guide?month=8&kind=vegetable&view=chart",
+    "/ar/guide?month=8&kind=leafy&view=chart",
+  ]);
+  expect(chipHrefs(html, "الشهور")).toContain("/ar/guide?month=9&kind=fruit&view=chart");
 });
 
 it("keeps a bare guide or a junk query on the language links", async () => {

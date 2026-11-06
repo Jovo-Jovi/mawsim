@@ -5,7 +5,7 @@ import { filterByKind, parseKindParam, parseMonthParam } from "@/domain";
 import { localeHref, otherLocale } from "@/i18n/href";
 import { localeParam } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
-import { CardGrid, KindChips, MonthScroller, Reveal, guideQuery } from "@/modules/guide";
+import { CardGrid, KindChips, MonthPicker, Reveal, guideQuery, parseGuideView } from "@/modules/guide";
 import { catalogueMonth, getTexturePhoto, inSeasonIn, MarketTexture, thisCalendarMonth } from "@/modules/produce";
 import styles from "./page.module.css";
 
@@ -27,25 +27,32 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function GuidePage({
   searchParams,
 }: {
-  searchParams: Promise<{ month?: string | string[]; kind?: string | string[] }>;
+  searchParams: Promise<{ month?: string | string[]; kind?: string | string[]; view?: string | string[] }>;
 }) {
   const locale = await localeParam();
   const query = await searchParams;
   const currentMonth = await thisCalendarMonth();
   const selectedMonth = parseMonthParam(query.month, currentMonth);
   const kind = parseKindParam(query.kind);
+  const view = parseGuideView(query.view);
   const requestedMonth = query.month === String(selectedMonth) ? selectedMonth : null;
   const rows = filterByKind(inSeasonIn(selectedMonth), kind);
   const copy = messages(locale);
   const title = copy.guide.title.replaceAll("{month}", catalogueMonth(copy.months, selectedMonth));
   return (
-    <PageShell locale={locale} path="/guide" query={guideQuery(requestedMonth, kind)}>
+    <PageShell locale={locale} path="/guide" query={guideQuery(requestedMonth, kind, view)}>
       <div className={styles.page}>
         <div className={styles.header} data-texture-band="guide">
           <MarketTexture photo={getTexturePhoto()} />
           <h1>{title}</h1>
-          <MonthScroller locale={locale} selectedMonth={selectedMonth} currentMonth={currentMonth} kind={kind} />
-          <KindChips locale={locale} selectedMonth={selectedMonth} kind={kind} />
+          <MonthPicker
+            locale={locale}
+            selectedMonth={selectedMonth}
+            currentMonth={currentMonth}
+            kind={kind}
+            view={view}
+          />
+          <KindChips locale={locale} selectedMonth={selectedMonth} kind={kind} view={view} />
         </div>
         <Reveal>
           <CardGrid

@@ -15,6 +15,7 @@ export { ProducePhoto } from "./ProducePhoto";
 export { MarketTexture } from "./MarketTexture";
 export { ProduceCard } from "./ProduceCard";
 export { SeasonBar } from "./SeasonBar";
+export { YearDial } from "./YearDial";
 export {
   calendarMonthAccentTick,
   calendarMonthLabelPoint,

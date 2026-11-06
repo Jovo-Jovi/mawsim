@@ -69,11 +69,11 @@ test("follows a second redirect, drops the guide month or fruit kind, changes th
 
   await page.getByRole("link", { name: "تصفّح الدليل كاملًا", exact: true }).click();
   await expect(page).toHaveURL(/\/ar\/guide\?month=(?:[1-9]|1[0-2])$/);
-  await expect(page.locator("[data-month-scroller]")).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "الشهور" }).locator("[data-month]")).toHaveCount(12);
   steps.push(page.url());
   found += await expectInternalHrefs(page, seen);
 
-  const august = page.locator("[data-month-scroller]").getByRole("link", { name: /أغسطس/ });
+  const august = page.getByRole("navigation", { name: "الشهور" }).locator('[data-month="8"]');
   await expect(august).toHaveCount(1);
   await august.click();
   await expect(page).toHaveURL(/\/ar\/guide\?month=8$/);

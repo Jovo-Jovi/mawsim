@@ -53,7 +53,7 @@ it("catches a looping module stylesheet, because its source contains infinite", 
   expect(read).toContain("modules/guide/CardGrid.module.css");
   expect(read).toContain("modules/produce/ProduceCard.module.css");
   expect(read).toContain("modules/guide/KindChips.module.css");
-  expect(read).toContain("modules/guide/MonthScroller.module.css");
+  expect(read).toContain("modules/guide/MonthPicker.module.css");
   const looping = stylesheets.filter(({ css }) => css.includes("infinite")).map(({ file }) => relative(file));
   expect(looping).toEqual([]);
 });
@@ -341,7 +341,7 @@ function exactSelectorBodies(css: string, selector: string): string[] {
 
 const PILL_ARRIVALS = [
   ["modules/guide/KindChips.module.css", '.chip[aria-current="true"]'],
-  ["modules/guide/MonthScroller.module.css", '.link[aria-current="true"] .label'],
+  ["modules/guide/MonthPicker.module.css", '.link[aria-current="true"]'],
 ] as const;
 
 it("catches a selected pill animation whose reduced-motion block omits the aria-current rule, so the arrival animation keeps playing", () => {
@@ -376,9 +376,9 @@ it("catches a guide transition or keyframe that animates a property other than t
     }
   }
   expect(sheet("modules/guide/KindChips.module.css")).toContain("transition-property: background-color, color");
-  expect(sheet("modules/guide/MonthScroller.module.css")).toContain("transition-property: background-color, color");
+  expect(sheet("modules/guide/MonthPicker.module.css")).toContain("transition-property: background-color, color");
   expect(sheet("modules/guide/KindChips.module.css")).toContain("@keyframes grow");
-  expect(sheet("modules/guide/MonthScroller.module.css")).toContain("@keyframes grow");
+  expect(sheet("modules/guide/MonthPicker.module.css")).toContain("@keyframes grow");
   expect(offenders).toEqual([]);
 });
 
@@ -391,7 +391,7 @@ it("catches a raw scale() in a guide stylesheet, so a pill scale stays on the --
     if (rawScale.test(css)) offenders.push(name);
   }
   expect(sheet("modules/guide/KindChips.module.css")).toContain("scale(var(--pill-grow-from))");
-  expect(sheet("modules/guide/MonthScroller.module.css")).toContain("scale(var(--pill-grow-from))");
+  expect(sheet("modules/guide/MonthPicker.module.css")).toContain("scale(var(--pill-grow-from))");
   expect(offenders).toEqual([]);
 });
 
@@ -475,7 +475,7 @@ it("catches an infinite animation anywhere in a stylesheet, because a loop never
   expect(files).toContain("styles/tokens.css");
   expect(files).toContain("app/globals.css");
   expect(files).toContain("modules/guide/KindChips.module.css");
-  expect(files).toContain("modules/guide/MonthScroller.module.css");
+  expect(files).toContain("modules/guide/MonthPicker.module.css");
   const looping = files.filter((file) => {
     const css = stripComments(readFileSync(path.join(srcRoot, file), "utf8"));
     return css.includes("infinite");

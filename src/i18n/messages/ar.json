@@ -83,7 +83,9 @@
     "empty": "لا شيء من هذا النوع في موسمه في {month}.",
     "showAll": "عرض كل الأنواع",
     "showThisMonth": "عرض هذا الشهر",
-    "thisMonth": "هذا الشهر"
+    "thisMonth": "هذا الشهر",
+    "previousMonth": "الشهر السابق",
+    "nextMonth": "الشهر التالي"
   },
   "home": {
     "headline": "الطازج في مصر في",

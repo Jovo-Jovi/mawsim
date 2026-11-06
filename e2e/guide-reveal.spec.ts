@@ -51,7 +51,7 @@ async function animationName(locator: Locator): Promise<string> {
 }
 
 function monthLabel(page: Page, locale: Locale): Locator {
-  return page.locator(`nav[aria-label="${COPY[locale].months}"] a[aria-current="true"] > span`).last();
+  return page.locator(`nav[aria-label="${COPY[locale].months}"] a[aria-current="true"]`);
 }
 
 function selectedChip(page: Page, locale: Locale): Locator {

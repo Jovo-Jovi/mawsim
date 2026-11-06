@@ -2,10 +2,11 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it } from "vitest";
 import type { Locale } from "@/i18n/config";
 import type { ProduceKind } from "../../domain";
+import type { GuideView } from "./guide-query";
 import { KindChips } from "./index";
 
-function markup(locale: Locale, kind: ProduceKind | null): string {
-  return renderToStaticMarkup(<KindChips locale={locale} selectedMonth={8} kind={kind} />);
+function markup(locale: Locale, kind: ProduceKind | null, view: GuideView = "list"): string {
+  return renderToStaticMarkup(<KindChips locale={locale} selectedMonth={8} kind={kind} view={view} />);
 }
 
 function kindsNav(html: string, label: string): string {
@@ -62,4 +63,23 @@ it("marks All current when a kind is selected, or points a chip at another month
   const leafy = kindsNav(markup("ar", "leafy"), "الأنواع");
   expect(hrefs(leafy)).toEqual(arabicHrefs);
   expect(currentLabels(leafy)).toEqual(["ورقيات"]);
+});
+
+it("drops view=chart from a kind link", () => {
+  const english = kindsNav(markup("en", "fruit", "chart"), "Kinds");
+  expect(hrefs(english)).toEqual([
+    "/en/guide?month=8&view=chart",
+    "/en/guide?month=8&kind=fruit&view=chart",
+    "/en/guide?month=8&kind=vegetable&view=chart",
+    "/en/guide?month=8&kind=leafy&view=chart",
+  ]);
+  expect(currentLabels(english)).toEqual(["Fruit"]);
+
+  const arabic = kindsNav(markup("ar", null, "chart"), "الأنواع");
+  expect(hrefs(arabic)).toEqual([
+    "/ar/guide?month=8&view=chart",
+    "/ar/guide?month=8&kind=fruit&view=chart",
+    "/ar/guide?month=8&kind=vegetable&view=chart",
+    "/ar/guide?month=8&kind=leafy&view=chart",
+  ]);
 });

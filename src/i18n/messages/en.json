@@ -83,7 +83,9 @@
     "empty": "Nothing of this kind is in season in {month}.",
     "showAll": "Show all kinds",
     "showThisMonth": "Show this month",
-    "thisMonth": "This month"
+    "thisMonth": "This month",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
   },
   "home": {
     "headline": "What is fresh in Egypt in",
