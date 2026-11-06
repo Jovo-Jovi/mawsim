@@ -38,7 +38,13 @@ function heading(html: string): string {
 }
 
 function slugs(html: string): string[] {
-  return [...html.matchAll(/href="\/(?:ar|en)\/produce\/([a-z-]+)"/g)].map((match) => match[1] ?? "");
+  return [...html.matchAll(/<li\b([^>]*)>([\s\S]*?)<\/li>/g)].flatMap((match) => {
+    const attrs = match[1] ?? "";
+    if (/(?:^|\s)hidden(?:[\s=]|$)/.test(attrs)) return [];
+    return [...(match[2] ?? "").matchAll(/href="\/(?:ar|en)\/produce\/([a-z-]+)"/g)].map(
+      (found) => found[1] ?? "",
+    );
+  });
 }
 
 function labelledNav(html: string, label: string): string {
@@ -289,6 +295,7 @@ it("renders the year chart for the card grid, or the card grid when the view is 
   const listed = await render({ month: "8", view: "list" });
   expect(listed).not.toContain("data-year-chart");
   expect(listed).not.toContain("Seasons across the year");
+  expect(listed.match(/data-flip-id="/g)?.length).toBe(10);
   expect(slugs(listed)).toEqual(augustAll);
   expect(listed.match(/data-reveal-item=/g)?.length).toBe(8);
 

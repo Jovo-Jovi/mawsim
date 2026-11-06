@@ -6,7 +6,7 @@ import { localeHref, otherLocale } from "@/i18n/href";
 import { localeParam } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
 import { CardGrid, GuideViewLinks, KindChips, MonthPicker, Reveal, YearChart, guideQuery, parseGuideView } from "@/modules/guide";
-import { catalogueMonth, getTexturePhoto, inSeasonIn, listProduce, MarketTexture, thisCalendarMonth } from "@/modules/produce";
+import { catalogueMonth, getTexturePhoto, listProduce, MarketTexture, thisCalendarMonth } from "@/modules/produce";
 import styles from "./page.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -36,7 +36,6 @@ export default async function GuidePage({
   const kind = parseKindParam(query.kind);
   const view = parseGuideView(query.view);
   const requestedMonth = query.month === String(selectedMonth) ? selectedMonth : null;
-  const rows = filterByKind(inSeasonIn(selectedMonth), kind);
   const chartRows = filterByKind(listProduce(), kind);
   const copy = messages(locale);
   const title = copy.guide.title.replaceAll("{month}", catalogueMonth(copy.months, selectedMonth));
@@ -67,8 +66,7 @@ export default async function GuidePage({
             />
           ) : (
             <CardGrid
-              key={`${selectedMonth}-${kind ?? "all"}`}
-              produce={rows}
+              produce={listProduce()}
               locale={locale}
               currentMonth={currentMonth}
               selectedMonth={selectedMonth}

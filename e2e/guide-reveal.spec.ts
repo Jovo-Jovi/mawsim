@@ -207,27 +207,25 @@ test.describe("guide reveal", () => {
       await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=8&kind=fruit$`));
       await page.evaluate(() => window.scrollTo(0, 0));
       const nextPending = page.locator('li[data-reveal-item][data-reveal="pending"]');
-      await expect.poll(async () => nextPending.count()).toBeGreaterThan(0);
+      await expect.poll(async () => nextPending.count()).toBe(0);
       const nextCells = page.locator("li[data-reveal-item]");
-      const nextIndexes: number[] = [];
+      await expect.poll(async () => nextCells.count()).toBeGreaterThan(0);
       const nextCount = await nextCells.count();
+      const states: string[] = [];
+      const opacities: string[] = [];
       for (let index = 0; index < nextCount; index += 1) {
-        if ((await nextCells.nth(index).getAttribute("data-reveal")) === "pending") nextIndexes.push(index);
-      }
-      const nextOpacity = await opacityOf(nextPending.first());
-      console.log(`${locale} fruit pending count=${nextIndexes.length} opacity=${nextOpacity}`);
-      expect(nextOpacity).toBe("0");
-      await armEnds(nextCells);
-      await revealPending(page);
-      const fruitEnds: number[] = [];
-      for (const index of nextIndexes) {
         const cell = nextCells.nth(index);
-        await expect.poll(async () => endCount(cell)).toBe(1);
-        expect(await cell.getAttribute("data-reveal")).toBe("shown");
-        expect(await opacityOf(cell)).toBe("1");
-        fruitEnds.push(await endCount(cell));
+        states.push((await cell.getAttribute("data-reveal")) ?? "");
+        opacities.push(await opacityOf(cell));
       }
-      console.log(`${locale} fruit shown ends=${fruitEnds.join(",")}`);
+      console.log(
+        `${locale} fruit stayed shown count=${nextCount} state=${[...new Set(states)].join(",")} opacity=${[...new Set(opacities)].join(",")}`,
+      );
+      expect(states.every((state) => state === "shown")).toBe(true);
+      expect(opacities.every((value) => value === "1")).toBe(true);
+      await expect(page.locator(`a[href="/${locale}/produce/mango"]`)).toBeVisible();
+      await expect(page.locator(`a[href="/${locale}/produce/tomato"]`)).toBeHidden();
+      expect(await page.locator("li[hidden][data-reveal-item]").count()).toBe(0);
       expect(foreign).toEqual([]);
     });
   }

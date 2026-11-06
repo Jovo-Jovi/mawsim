@@ -52,7 +52,7 @@ async function openProducePage(page: Page, path: string): Promise<Locator> {
   await page.evaluate(async () => {
     if (document.fonts) await document.fonts.ready;
   });
-  const cards = page.locator("main a[href*='/produce/']");
+  const cards = page.locator("main a[href*='/produce/']:visible");
   await expect(cards.first(), path).toBeVisible();
   return cards;
 }

@@ -88,7 +88,7 @@ test("follows a second redirect, drops the guide month or fruit kind, changes th
   steps.push(page.url());
   found += await expectInternalHrefs(page, seen);
 
-  const firstProduce = page.locator('main a[href^="/ar/produce/"]').first();
+  const firstProduce = page.locator('main a[href^="/ar/produce/"]:visible').first();
   await expect(firstProduce).toHaveAttribute("href", "/ar/produce/mango");
   await firstProduce.click();
   await expect(page).toHaveURL(/\/ar\/produce\/mango$/);
