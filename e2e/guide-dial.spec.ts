@@ -10,7 +10,15 @@ const COPY = {
 
 type Locale = keyof typeof COPY;
 
-type Box = { month: string; x: number; y: number; width: number; height: number };
+type Box = {
+  month: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  layoutWidth: number;
+  layoutHeight: number;
+};
 
 function overlapArea(a: Box, b: Box): number {
   const width = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
@@ -23,12 +31,15 @@ async function monthBoxes(page: Page, locale: Locale): Promise<Box[]> {
   return page.locator(`nav[aria-label="${COPY[locale].months}"] a[data-month]`).evaluateAll((elements) =>
     elements.map((element) => {
       const box = element.getBoundingClientRect();
+      const link = element as HTMLElement;
       return {
         month: element.getAttribute("data-month") ?? "",
         x: box.x,
         y: box.y,
         width: box.width,
         height: box.height,
+        layoutWidth: link.offsetWidth,
+        layoutHeight: link.offsetHeight,
       };
     }),
   );
@@ -56,13 +67,20 @@ for (const locale of ["en", "ar"] as const) {
         next: await months.getByRole("link", { name: COPY[locale].next, exact: true }).boundingBox(),
       };
       const dial = await months.boundingBox();
-      const ring = await months.locator("svg").boundingBox();
+      const ringSvg = months.locator("svg[data-dial-ring]");
+      await expect(ringSvg).toHaveCount(1);
+      const ring = await ringSvg.boundingBox();
       const selectedBox = await selected.boundingBox();
       if (dial === null || ring === null || selectedBox === null || steps.previous === null || steps.next === null) {
         throw new Error("dial geometry missing");
       }
 
-      const sizes = boxes.map((box) => `${box.month}:${box.width.toFixed(2)}x${box.height.toFixed(2)}`).join(" ");
+      const sizes = boxes
+        .map(
+          (box) =>
+            `${box.month}:${box.width.toFixed(4)}x${box.height.toFixed(4)} layout=${box.layoutWidth}x${box.layoutHeight}`,
+        )
+        .join(" ");
       const overlaps = boxes.flatMap((box, index) =>
         boxes.slice(index + 1).flatMap((other) => {
           const area = overlapArea(box, other);
@@ -74,9 +92,14 @@ for (const locale of ["en", "ar"] as const) {
         `${locale} ${viewport.name} dial=${dial.width.toFixed(2)}x${dial.height.toFixed(2)} selectedDx=${selectedDx.toFixed(2)} prev=${steps.previous.width.toFixed(2)}x${steps.previous.height.toFixed(2)} next=${steps.next.width.toFixed(2)}x${steps.next.height.toFixed(2)} months=${sizes} overlaps=${overlaps.join(",") || "none"}`,
       );
 
+      // The link's layout size is 2.75rem (44px). Chromium's getBoundingClientRect
+      // of the counter-rotated box undershoots that by less than 0.001px, so the
+      // painted size is compared at a hundredth of a pixel.
       for (const box of boxes) {
-        expect(box.width).toBeGreaterThanOrEqual(44);
-        expect(box.height).toBeGreaterThanOrEqual(44);
+        expect(box.layoutWidth).toBeGreaterThanOrEqual(44);
+        expect(box.layoutHeight).toBeGreaterThanOrEqual(44);
+        expect(Number(box.width.toFixed(2))).toBeGreaterThanOrEqual(44);
+        expect(Number(box.height.toFixed(2))).toBeGreaterThanOrEqual(44);
       }
       expect(steps.previous.width).toBeGreaterThanOrEqual(44);
       expect(steps.previous.height).toBeGreaterThanOrEqual(44);
@@ -104,6 +127,7 @@ for (const locale of ["en", "ar"] as const) {
         scrollWidth: document.documentElement.scrollWidth,
         clientWidth: document.documentElement.clientWidth,
       }));
+      console.log(`${locale} ${viewport.name} scroll=${scroll.scrollWidth}/${scroll.clientWidth}`);
       expect(scroll.scrollWidth).toBeLessThanOrEqual(scroll.clientWidth);
 
       const violations = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();

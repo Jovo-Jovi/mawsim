@@ -41,6 +41,7 @@ export function YearDial({
         <svg
           viewBox={`0 0 ${dialViewBoxSize} ${dialViewBoxSize}`}
           className={styles.ring}
+          data-dial-ring=""
           aria-hidden="true"
           focusable="false"
         >

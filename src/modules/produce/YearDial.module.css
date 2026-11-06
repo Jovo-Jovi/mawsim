@@ -9,8 +9,6 @@
 .turn {
   position: absolute;
   inset: 0;
-  transform-origin: center;
-  transform: rotate(var(--dial-turn));
 }
 
 .ring {
@@ -20,11 +18,12 @@
   inline-size: 58%;
   block-size: 58%;
   overflow: visible;
+  transform: rotate(var(--dial-turn));
   transform-origin: center;
 }
 
 :dir(rtl) .ring {
-  transform: scaleX(-1);
+  transform: rotate(var(--dial-turn)) scaleX(-1);
 }
 
 .bed,
@@ -56,5 +55,5 @@
   block-size: var(--target-min);
   margin: auto;
   transform-origin: center;
-  transform: translate(var(--dial-x), var(--dial-y)) rotate(calc(var(--dial-turn) * -1));
+  transform: rotate(var(--dial-turn)) translate(var(--dial-x), var(--dial-y)) rotate(calc(var(--dial-turn) * -1));
 }

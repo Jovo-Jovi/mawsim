@@ -55,6 +55,8 @@ it("hides a month label inside the ring, or drops this month's accent tick", () 
   const html = markup(3, "ltr", 8);
   const ring = /<svg\b[\s\S]*?<\/svg>/.exec(html)?.[0] ?? "";
   expect(ring).toContain('aria-hidden="true"');
+  expect(ring).toContain('data-dial-ring=""');
+  expect(html.match(/<svg\b/g)?.length).toBe(1);
   expect(ring).not.toContain("data-label");
   expect(html.match(/data-label="/g)?.length).toBe(12);
   expect(html.match(/<line\b/g)?.length).toBe(1);
