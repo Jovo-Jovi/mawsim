@@ -1,8 +1,11 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 import {
+  arcDiscShare,
+  arcRingDiameterShare,
   calendarMonthAccentTick,
   calendarMonthLabelPoint,
+  cellMidpointLabelPoint,
   dialTurnDegrees,
   dialViewBoxSize,
   innerDialSize,
@@ -84,6 +87,48 @@ it("places the accent tick off the month midpoint or outside the band", () => {
   expect(innerRadius).toBeGreaterThanOrEqual(ringInnerEdgeRadius - 0.001);
   expect(outerRadius).toBeLessThanOrEqual(ringOuterEdgeRadius + 0.001);
   expect(angleOf({ x: Number(august.x1), y: Number(august.y1) })).toBeCloseTo(7.5 * CELL_SWEEP, 4);
+});
+
+it("places a season-arc label off its cell midpoint, or off the tick's angle", () => {
+  const januaryLtr = cellMidpointLabelPoint(1, 10, "ltr");
+  const januaryRtl = cellMidpointLabelPoint(1, 10, "rtl");
+  const signed = (point: { x: number; y: number }) => Math.atan2(point.x - CENTER, CENTER - point.y);
+  expect(signed(januaryLtr)).toBeCloseTo(Math.PI / 12, 5);
+  expect(signed(januaryRtl)).toBeCloseTo(-Math.PI / 12, 5);
+  expect(Math.hypot(januaryLtr.x - CENTER, januaryLtr.y - CENTER)).toBeCloseTo(10, 5);
+  for (const calendarMonth of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as const) {
+    const tick = calendarMonthAccentTick(calendarMonth);
+    const tickSigned = signed({ x: Number(tick.x1), y: Number(tick.y1) });
+    const ltr = signed(cellMidpointLabelPoint(calendarMonth, 10, "ltr"));
+    const rtl = signed(cellMidpointLabelPoint(calendarMonth, 10, "rtl"));
+    expect(ltr).toBeCloseTo(tickSigned, 3);
+    expect(rtl).toBeCloseTo(-tickSigned, 3);
+  }
+});
+
+it("draws the centre disc under 9rem at 18rem or under 12rem at 24rem, or lets the tick cap meet the frame", () => {
+  const arcCss = readFileSync(new URL("./SeasonArc.module.css", import.meta.url), "utf8");
+  const tickRule = /\.tick\s*\{([^}]*)\}/.exec(arcCss);
+  const tickWidth = Number(/stroke-width:\s*([0-9.]+)/.exec(tickRule?.[1] ?? "")?.[1]);
+  expect(tickWidth).toBeGreaterThan(0);
+  const frameCss = readFileSync(new URL("./ProducePhoto.module.css", import.meta.url), "utf8");
+  expect(frameCss).toMatch(/border:\s*1px solid var\(--color-hairline\)/);
+  const globalCss = readFileSync(new URL("../../app/globals.css", import.meta.url), "utf8");
+  const borderBox = /\*\s*,[\s\S]*?box-sizing:\s*border-box/.test(globalCss);
+  expect(borderBox).toBe(true);
+  const capRadius = ringInnerEdgeRadius - tickWidth / 2;
+  const frameOuter = arcDiscShare * ringOuterEdgeRadius;
+  expect(frameOuter).toBeLessThan(capRadius);
+  for (const [arcRem, floor] of [
+    [18, 9],
+    [24, 12],
+  ] as const) {
+    const disc = arcRem * arcRingDiameterShare * arcDiscShare;
+    expect(disc).toBeGreaterThanOrEqual(floor);
+    const unit = (arcRem * arcRingDiameterShare) / dialViewBoxSize;
+    const hairlineOutside = borderBox ? 0 : 1 / 16;
+    expect((capRadius - frameOuter) * unit - hairlineOutside).toBeGreaterThanOrEqual(0.1);
+  }
 });
 
 it("places an rtl label off the mirror of its ltr point", () => {

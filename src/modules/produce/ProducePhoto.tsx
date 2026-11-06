@@ -3,13 +3,21 @@ import type { Locale } from "@/i18n/config";
 import { otherLocale } from "@/i18n/href";
 import type { CalendarMonth } from "../../domain";
 import type { Produce } from "./catalogue";
+import { arcDiscShare, arcRingDiameterShare } from "./dial-geometry";
 import type { ProducePhotoRow } from "./photos";
-import { SeasonRing } from "./SeasonRing";
 import styles from "./ProducePhoto.module.css";
+
+function wholeRem(value: number): number {
+  return Math.ceil(value - 1e-9);
+}
+
+/** `--arc-size` is 18rem, and 24rem from 64rem. The disc share is rounded up to a whole rem. */
+const pageDiscNarrow = wholeRem(18 * arcRingDiameterShare * arcDiscShare);
+const pageDiscWide = wholeRem(24 * arcRingDiameterShare * arcDiscShare);
 
 const sizesBySlot = {
   card: "(min-width: 64rem) 20vw, 40vw",
-  page: "(min-width: 64rem) 50vw, 100vw",
+  page: `(min-width: 64rem) ${pageDiscWide}rem, ${pageDiscNarrow}rem`,
   hero: "100vw",
   orbit: "6rem",
 } as const;
@@ -35,13 +43,13 @@ export function ProducePhoto({
   locale,
   slot,
   priority = false,
-  currentMonth,
 }: {
   produce: Produce;
   photo: ProducePhotoRow | undefined;
   locale: Locale;
   slot: "card" | "page" | "hero" | "orbit";
   priority?: boolean;
+  /** Accepted until T23. The page arc draws the tick; this slot no longer reads it. */
   currentMonth?: CalendarMonth;
 }) {
   const frameClass = `${styles.frame} ${slotClass[slot]}`;
@@ -83,22 +91,10 @@ export function ProducePhoto({
       </p>
     </div>
   );
-  if (slot === "card" || slot === "hero") {
-    return (
-      <div className={frameClass}>
-        <div className={styles.tile} data-kind={produce.kind}>
-          {names}
-        </div>
-      </div>
-    );
-  }
   return (
     <div className={frameClass}>
       <div className={styles.tile} data-kind={produce.kind}>
-        <div className={styles.dial}>
-          <SeasonRing kind={produce.kind} months={produce.months} currentMonth={currentMonth} />
-          {names}
-        </div>
+        {names}
       </div>
     </div>
   );

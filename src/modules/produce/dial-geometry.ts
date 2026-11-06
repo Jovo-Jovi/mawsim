@@ -19,6 +19,16 @@ export const ringInnerEdgeRadius = ringOuterEdgeRadius - ringBandWidth;
 
 export const ringStrokeRadius = ringOuterEdgeRadius - ringBandWidth / 2;
 
+/**
+ * Season arc, as shares of `--arc-size` (the disc is a share of the ring).
+ * 0.77 keeps the tick's round cap off the photograph's frame.
+ */
+export const arcRingDiameterShare = 0.68;
+
+export const arcLabelRadiusShare = 0.44;
+
+export const arcDiscShare = 0.77;
+
 /** Radians of empty arc between two painted cells. The previous ring used this gap. */
 const RING_CELL_GAP = 0.28;
 
@@ -78,6 +88,17 @@ export function calendarMonthLabelPoint(
   direction: "ltr" | "rtl",
 ): { x: number; y: number } {
   const clockwise = (calendarMonth - 1) * CELL_SWEEP;
+  const angle = direction === "rtl" ? -clockwise : clockwise;
+  return pointAt(angle, radius);
+}
+
+/** Label centre at the midpoint of the month's cell. `rtl` mirrors across 12 o'clock. */
+export function cellMidpointLabelPoint(
+  calendarMonth: CalendarMonth,
+  radius: number,
+  direction: "ltr" | "rtl",
+): { x: number; y: number } {
+  const clockwise = (calendarMonth - 1) * CELL_SWEEP + CELL_SWEEP / 2;
   const angle = direction === "rtl" ? -clockwise : clockwise;
   return pointAt(angle, radius);
 }

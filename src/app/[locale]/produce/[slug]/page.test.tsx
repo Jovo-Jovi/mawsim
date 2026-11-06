@@ -58,6 +58,14 @@ function imageFiles(html: string): string[] {
   return [...html.matchAll(/<img\b[^>]*>/g)].map((match) => imageFile(match[0]));
 }
 
+function photoFrame(html: string): string {
+  const imgAt = html.indexOf("<img");
+  if (imgAt < 0) throw new Error("missing photograph");
+  const open = html.lastIndexOf("<div", imgAt);
+  const close = html.indexOf("</div>", imgAt);
+  return html.slice(open, close + "</div>".length);
+}
+
 it("streams an unknown slug as HTTP 200", () => {
   expect(ensureStatic).toBe("navigation");
 });
@@ -103,8 +111,10 @@ it("renders an English mango page as Arabic, drops its photograph, or draws the 
   expect(main).toContain("اتركها حتى تنضج ثم ضعها في الثلاجة.");
   expect(main).not.toContain("Ripen on the counter, then chill.");
   expect(main).toContain("طريقة الحفظ");
-  expect(html).not.toContain("<line");
-  expect(html.match(/data-current="true"/g)?.length).toBe(1);
+  expect(html.match(/<line\b/g)?.length).toBe(1);
+  expect(html).toContain("data-arc-tick");
+  expect(photoFrame(html)).not.toContain("<line");
+  expect(html).not.toContain("data-current=");
   expect(html.match(/هذا الشهر/g)?.length).toBe(1);
   expect(html.match(/<img\b/g)?.length).toBe(1);
   expect(html).toContain('alt="مانجو على قماش الكتان"');
@@ -142,7 +152,10 @@ it("labels molokhia as fruit, paints the fallback tile, or omits the leafy seaso
   expect(html.match(/<img\b/g)?.length).toBe(1);
   expect(html).toContain('alt="ملوخية على صندوق في السوق"');
   expect(imageFiles(html)).toEqual(["/photos/produce/molokhia.webp"]);
-  expect(html).not.toContain("<line");
+  expect(html.match(/<line\b/g)?.length).toBe(1);
+  expect(html).toContain("data-arc-tick");
+  expect(photoFrame(html)).not.toContain("<line");
+  expect(photoFrame(html)).not.toContain("data-kind=");
   expect(html.match(/data-kind="leafy"/g)?.length).toBe(1);
   expect(html).not.toContain('data-kind="fruit"');
   expect(html).not.toContain('data-kind="vegetable"');
