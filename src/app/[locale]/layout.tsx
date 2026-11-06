@@ -25,9 +25,7 @@ export default async function LocaleLayout({ children }: { children: ReactNode }
   const locale = isLocale(value) ? value : defaultLocale;
   return (
     <html lang={locale} dir={directionOf(locale)} className={fontVariableClass}>
-      <body>
-        <Suspense>{children}</Suspense>
-      </body>
+      <body>{isLocale(value) ? children : <Suspense>{children}</Suspense>}</body>
     </html>
   );
 }

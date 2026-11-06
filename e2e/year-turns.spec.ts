@@ -227,6 +227,29 @@ async function openSized(page: Page, path: string, width: number): Promise<void>
   expect(response?.ok()).toBe(true);
 }
 
+type NoJsPage = "home" | "guide" | "chart";
+
+function cardsFromContent(kind: NoJsPage): number {
+  if (kind === "home") return produce.filter((row) => row.months.includes(cairoMonth())).length;
+  if (kind === "guide") return produce.filter((row) => row.months.includes(8)).length;
+  return produce.length;
+}
+
+async function paintedCount(page: Page, kind: NoJsPage): Promise<number> {
+  return page.evaluate((which) => {
+    const painted = (node: Element): boolean => {
+      if (!(node instanceof HTMLElement)) return false;
+      if (node.closest("div[hidden][id^='S:']") !== null) return false;
+      const box = node.getBoundingClientRect();
+      const opacity = Number.parseFloat(getComputedStyle(node).opacity);
+      return box.width > 1 && box.height > 1 && opacity >= 0.99;
+    };
+    if (which === "home") return [...document.querySelectorAll("[data-story-produce]")].filter(painted).length;
+    if (which === "guide") return [...document.querySelectorAll("li[data-flip-id]:not([hidden])")].filter(painted).length;
+    return [...document.querySelectorAll("[data-year-chart] ol > li")].filter(painted).length;
+  }, kind);
+}
+
 for (const locale of LOCALES) {
   for (const width of WIDTHS) {
     test(`turns the dial the wrong way or lets it drift after the scroll stops (${locale} ${width})`, async ({
@@ -333,6 +356,9 @@ test.describe("year turns without javascript", () => {
           "data-story-month",
           String(month),
         );
+        const band = page.locator("[data-texture-band='hero']");
+        await expect(band).toHaveCount(1);
+        await expect(band.locator("> :not([aria-hidden='true'])").first()).toBeAttached();
         const settled = await page.evaluate(() => {
           const band = document.querySelector("[data-texture-band='hero']");
           const stage =
@@ -353,10 +379,54 @@ test.describe("year turns without javascript", () => {
         console.log(
           `year-turns ${locale} ${width} nojs month=${month} hiddenSlot=${settled.hiddenSlot} height=${settled.height} lenis=${settled.lenis}`,
         );
+        expect(settled.band).toBeGreaterThan(0);
+        expect(settled.stage).toBeGreaterThan(0);
+        expect(settled.hiddenSlot).toBe(false);
         expect(settled.lenis).toBe(false);
-        if (settled.hiddenSlot) expect(settled.height).toBe("auto");
-        else expect(Math.abs(settled.band - settled.stage)).toBeLessThanOrEqual(0.5);
+        expect(Math.abs(settled.band - settled.stage)).toBeLessThanOrEqual(0.5);
       });
+    }
+  }
+});
+
+test.describe("year turns pages arrive whole without javascript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  const pages: { kind: NoJsPage; href: (locale: LocaleCode) => string }[] = [
+    { kind: "home", href: (locale) => `/${locale}` },
+    { kind: "guide", href: (locale) => `/${locale}/guide?month=8` },
+    { kind: "chart", href: (locale) => `/${locale}/guide?month=8&view=chart` },
+  ];
+
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      for (const target of pages) {
+        test(`hides the ${target.kind} page, sets a cookie, or paints the wrong count without JavaScript (${locale} ${width})`, async ({
+          page,
+        }) => {
+          const expected = cardsFromContent(target.kind);
+          if (target.kind === "guide") expect(expected).toBe(7);
+          if (target.kind === "chart") expect(expected).toBe(10);
+          await page.setViewportSize({ width, height: heightFor(width) });
+          const response = await page.goto(target.href(locale));
+          const status = response?.status() ?? 0;
+          const cookies = response?.headers()["set-cookie"] ? 1 : 0;
+          const main = page.locator("main");
+          await expect(main).toBeVisible();
+          const hiddenSlot = await main.evaluate((node) => node.closest("div[hidden][id^='S:']") !== null);
+          await expect
+            .poll(async () => paintedCount(page, target.kind), { timeout: 5_000 })
+            .toBe(expected);
+          const cards = await paintedCount(page, target.kind);
+          console.log(
+            `year-turns ${locale} ${width} nojs page=${target.kind} hiddenSlot=${hiddenSlot} cookie=${cookies} cards=${cards}`,
+          );
+          expect(status).toBe(200);
+          expect(cookies).toBe(0);
+          expect(hiddenSlot).toBe(false);
+          expect(cards).toBe(expected);
+        });
+      }
     }
   }
 });

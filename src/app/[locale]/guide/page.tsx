@@ -20,6 +20,9 @@ import {
 import { catalogueMonth, dialTurnDegrees, getTexturePhoto, listProduce, MarketTexture, thisCalendarMonth } from "@/modules/produce";
 import styles from "./page.module.css";
 
+// The guide reads its query on each request, and without JavaScript the page must arrive whole.
+export const instant = false;
+
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await localeParam();
   const copy = messages(locale);
