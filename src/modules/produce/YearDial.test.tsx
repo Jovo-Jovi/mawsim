@@ -15,7 +15,9 @@ function markup(selected: CalendarMonth, direction: "ltr" | "rtl", currentMonth:
 }
 
 function slotStyle(html: string, calendarMonth: CalendarMonth): string {
-  const match = new RegExp(`style="([^"]*)"[^>]*>\\s*<span data-label="${calendarMonth}"`).exec(html);
+  const match = new RegExp(
+    `style="([^"]*)"[^>]*>\\s*<div\\b[^>]*data-dial-label=""[^>]*>\\s*<span data-label="${calendarMonth}"`,
+  ).exec(html);
   return match?.[1] ?? "";
 }
 
@@ -59,6 +61,8 @@ it("hides a month label inside the ring, or drops this month's accent tick", () 
   expect(html.match(/<svg\b/g)?.length).toBe(1);
   expect(ring).not.toContain("data-label");
   expect(html.match(/data-label="/g)?.length).toBe(12);
+  expect(html.match(/data-dial-turn="/g)?.length).toBe(1);
+  expect(html.match(/data-dial-label="/g)?.length).toBe(12);
   expect(html.match(/<line\b/g)?.length).toBe(1);
   expect(html).toContain('x1="8.262"');
   expect(html).toContain('y1="31.738"');

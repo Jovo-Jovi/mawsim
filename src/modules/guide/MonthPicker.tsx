@@ -53,10 +53,20 @@ export function MonthPicker({
         }}
       />
       <div className={styles.steps}>
-        <Link className={styles.step} href={guideHref(locale, previous, kind, view)} aria-label={copy.guide.previousMonth}>
+        <Link
+          className={styles.step}
+          href={guideHref(locale, previous, kind, view)}
+          aria-label={copy.guide.previousMonth}
+          data-month-step="previous"
+        >
           <Icon name="arrow" />
         </Link>
-        <Link className={styles.step} href={guideHref(locale, next, kind, view)} aria-label={copy.guide.nextMonth}>
+        <Link
+          className={styles.step}
+          href={guideHref(locale, next, kind, view)}
+          aria-label={copy.guide.nextMonth}
+          data-month-step="next"
+        >
           <span className={styles.nextIcon}>
             <Icon name="arrow" />
           </span>

@@ -37,7 +37,7 @@ export function YearDial({
   } as CSSProperties;
   return (
     <div className={styles.dial} style={turn}>
-      <div className={styles.turn}>
+      <div className={styles.turn} data-dial-turn="">
         <svg
           viewBox={`0 0 ${dialViewBoxSize} ${dialViewBoxSize}`}
           className={styles.ring}
@@ -64,7 +64,9 @@ export function YearDial({
           } as CSSProperties;
           return (
             <div key={calendarMonth} className={styles.slot} style={place}>
-              {label(calendarMonth)}
+              <div className={styles.label} data-dial-label="">
+                {label(calendarMonth)}
+              </div>
             </div>
           );
         })}
