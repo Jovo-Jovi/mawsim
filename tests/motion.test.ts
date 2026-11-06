@@ -215,6 +215,14 @@ it("catches a moving card stylesheet whose reduced-motion block omits transform 
   expect(moves).toContain("modules/produce/ProduceCard.module.css");
   expect(moves).toContain("modules/produce/ProducePhoto.module.css");
   expect(bare).toEqual([]);
+  const photoReduce = blockAfter(sheet("modules/produce/ProducePhoto.module.css"), "@media (prefers-reduced-motion: reduce)").join("\n");
+  expect(photoReduce).toContain(".page .dial::before");
+  expect(photoReduce).toContain(".hero .dial::before");
+  expect(photoReduce).not.toContain(".card .dial");
+  const photo = sheet("modules/produce/ProducePhoto.module.css");
+  const dialHalos = [...photo.matchAll(/([^{}]*?)\.dial::before/g)].map((match) => match[1] ?? "");
+  expect(dialHalos.length).toBeGreaterThan(0);
+  expect(dialHalos.every((prefix) => prefix.includes(".page") || prefix.includes(".hero"))).toBe(true);
 });
 
 it("catches a tilt that is not var(--tilt-card) or whose rtl twin keeps the same sign", () => {
@@ -284,8 +292,9 @@ it("catches a ::before halo placed with a percentage translate or a physical lef
       }
     }
   }
-  expect(sheet("modules/produce/ProducePhoto.module.css")).toContain(".dial::before");
-  expect(sheet("modules/produce/ProduceCard.module.css")).toContain(".badge::before");
+  expect(sheet("modules/produce/ProducePhoto.module.css")).toContain(".page .dial::before");
+  expect(sheet("modules/produce/ProducePhoto.module.css")).toContain(".hero .dial::before");
+  expect(sheet("modules/produce/ProduceCard.module.css")).toContain(".ring::before");
   expect(offenders).toEqual([]);
 });
 

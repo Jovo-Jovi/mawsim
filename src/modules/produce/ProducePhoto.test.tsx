@@ -58,7 +58,7 @@ it("renders no image, the wrong alt, or the wrong pixel size when a photograph i
   expect(arabic).toContain('width="1800"');
   expect(arabic).toContain('height="1400"');
   expect(arabic).toContain(encodeURIComponent(photo.file));
-  expect(arabic).toContain('sizes="(min-width: 64rem) 25vw, 50vw"');
+  expect(arabic).toContain('sizes="(min-width: 64rem) 20vw, 40vw"');
 });
 
 it("lazy-loads a photograph marked priority", () => {
@@ -71,18 +71,18 @@ it("omits lazy loading when a photograph is not priority", () => {
   const card = markup("en", "card", photo, false);
   const page = markup("en", "page", photo, false);
   expect(card).toContain('loading="lazy"');
-  expect(card).toContain('sizes="(min-width: 64rem) 25vw, 50vw"');
+  expect(card).toContain('sizes="(min-width: 64rem) 20vw, 40vw"');
   expect(page).toContain('sizes="(min-width: 64rem) 50vw, 100vw"');
 });
 
-it("renders an image, drops the produce name, or exposes the ring when no photograph is present", () => {
+it("renders an image, drops a name, or draws an inner ring on the card fallback", () => {
   const html = markup("ar", "card", undefined);
   expect(html).not.toContain("<img");
   expect(html).toContain(fruit.ar);
   expect(html).toContain(fruit.en);
-  expect(html.match(/data-in="/g)?.length).toBe(12);
-  expect(html).toContain('aria-hidden="true"');
-  expect(html).toContain("A 18.3 18.3 0 0 1");
+  expect(html).not.toContain("<svg");
+  expect(html).not.toContain("data-in=");
+  expect(html).not.toContain("<line");
   expect(html).not.toContain("dir=");
 });
 
@@ -96,9 +96,15 @@ it("paints the wrong kind or hardcodes lang on the frame", () => {
     expect(html.match(/lang="[^"]*"/g)).toEqual([langAttribute("ar")]);
     expect(html.startsWith("<div")).toBe(true);
     expect(/^<div[^>]*>/.exec(html)?.[0]).not.toContain("lang=");
+    expect(html.match(/<svg\b/g)?.length).toBe(1);
+    expect(html).toContain("A 18.3 18.3 0 0 1");
   }
   const arabic = markup("ar", "page", undefined);
   expect(arabic.match(/lang="[^"]*"/g)).toEqual([langAttribute("en")]);
+  const hero = markup("en", "hero", undefined);
+  expect(hero).not.toContain("<img");
+  expect(hero.match(/data-in="/g)?.length).toBe(12);
+  expect(hero.match(/<svg\b/g)?.length).toBe(1);
 });
 
 it("uses a different frame class for the photograph and the fallback", () => {
