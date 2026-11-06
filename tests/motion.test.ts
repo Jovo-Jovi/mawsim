@@ -49,7 +49,7 @@ const stylesheets = moduleStylesheets(srcRoot).map((file) => ({
 
 it("catches a looping module stylesheet, because its source contains infinite", () => {
   const read = stylesheets.map(({ file }) => relative(file)).sort();
-  expect(read).toContain("modules/home/SeasonDial.module.css");
+  expect(read).toContain("modules/home/YearStory.module.css");
   expect(read).toContain("modules/guide/CardGrid.module.css");
   expect(read).toContain("modules/produce/ProduceCard.module.css");
   expect(read).toContain("modules/guide/KindChips.module.css");
@@ -63,10 +63,10 @@ it("catches a @keyframes name outside draw, settle, rise and grow", () => {
   for (const { css } of stylesheets) {
     for (const match of css.matchAll(/@keyframes\s+([A-Za-z0-9_-]+)/g)) names.push(match[1]);
   }
-  expect(names).toContain("draw");
-  expect(names).toContain("settle");
   expect(names).toContain("rise");
   expect(names).toContain("grow");
+  expect(names).not.toContain("draw");
+  expect(names).not.toContain("settle");
   expect(names.filter((name) => !ALLOWED_KEYFRAMES.has(name))).toEqual([]);
 });
 
@@ -94,8 +94,10 @@ it("catches a @keyframes other than draw that animates a property other than opa
       }
     }
   }
-  expect(seen.has("settle")).toBe(true);
+  expect(seen.has("rise")).toBe(true);
   expect(seen.has("grow")).toBe(true);
+  expect(seen.has("draw")).toBe(false);
+  expect(seen.has("settle")).toBe(false);
   expect(offenders).toEqual([]);
 });
 
@@ -433,9 +435,8 @@ it("catches a reveal stylesheet that hides a pending cell under reduced motion o
 it("catches a home stylesheet that loops or animates something other than transform and opacity", () => {
   const home = stylesheets.filter(({ file }) => relative(file).startsWith("modules/home/"));
   const names = home.map(({ file }) => relative(file)).sort();
-  expect(names).not.toContain("modules/home/HeroScene.module.css");
-  expect(names).toContain("modules/home/Hero.module.css");
-  expect(names).toContain("modules/home/SeasonDial.module.css");
+  const homeNames = names.filter((name) => name.startsWith("modules/home/"));
+  expect(homeNames).toEqual(["modules/home/YearStory.module.css"]);
   expect(home.filter(({ css }) => css.includes("infinite")).map(({ file }) => relative(file))).toEqual([]);
 
   const quiet = new Set(["opacity", "transform"]);
