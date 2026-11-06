@@ -14,7 +14,7 @@ export { PhotoCredits } from "./PhotoCredits";
 export { ProducePhoto } from "./ProducePhoto";
 export { MarketTexture } from "./MarketTexture";
 export { ProduceCard } from "./ProduceCard";
-export { SeasonBar } from "./SeasonBar";
+export { SeasonArc } from "./SeasonArc";
 export { YearDial } from "./YearDial";
 export {
   calendarMonthAccentTick,

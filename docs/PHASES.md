@@ -26,7 +26,7 @@ wait for the developer's merge.
 | T19 | P07 | J5 | Guide: the year dial as month picker and the year chart view | 2 | — | [x] | PASS a3 — docs/reviews/T19-a3.md |
 | T20 | P07 | J5 | Guide motion: GSAP joins; the dial turns and the cards re-sort with Flip | 2 | — | [x] | PASS a2 — docs/reviews/T20-a2.md |
 | T21 | P07 | J5 | Home: the scroll-driven year story with Lenis; the 3D hero scene and three.js removed | 2 | — | [x] | PASS a2 — docs/reviews/T21-a2.md |
-| T22 | P07 | J5 | Produce page: the season arc around the circular photograph, drawn on entry, with the scroll zoom | 2 | — | [ ] | — |
+| T22 | P07 | J5 | Produce page: the season arc around the circular photograph, drawn on entry, with the scroll zoom | 2 | — | [x] | PASS a1 — docs/reviews/T22-a1.md |
 | T23 | P07 | J5 | "The year turns" acceptance: every screen in both locales, the site-wide e2e and the captures | 2 | G-YearTurns | [ ] | — |
 
 ## Phases

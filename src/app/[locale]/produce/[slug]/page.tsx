@@ -10,8 +10,7 @@ import {
   getProduceBySlug,
   getProducePhoto,
   listProduce,
-  ProducePhoto,
-  SeasonBar,
+  SeasonArc,
   seasonSentence,
   StorageTipPanel,
   thisCalendarMonth,
@@ -84,18 +83,13 @@ export default async function ProducePage({
             <h1><bdi>{produce[locale]}</bdi></h1>
             <p className={styles.counter} lang={other}><bdi>{produce[other]}</bdi></p>
           </header>
-          <div className={styles.photo}>
-            <ProducePhoto
+          <div className={styles.arc}>
+            <SeasonArc
               produce={produce}
               photo={getProducePhoto(produce.slug)}
               locale={locale}
-              slot="page"
-              priority
               currentMonth={currentMonth}
             />
-          </div>
-          <div className={styles.bar}>
-            <SeasonBar produce={produce} locale={locale} currentMonth={currentMonth} />
           </div>
           <div className={styles.keep}>
             <StorageTipPanel produce={produce} locale={locale} />
