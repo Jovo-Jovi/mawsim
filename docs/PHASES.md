@@ -21,7 +21,13 @@ wait for the developer's merge.
 | T14 | P06 | J5 | Card hover and focus: photo zoom, mirrored tilt, season-ring glow | 2 | — | [x] | PASS a2 — docs/reviews/T14-a2.md |
 | T15 | P06 | J5 | Reveal on scroll once, and animated selected states for months and chips | 2 | — | [x] | PASS a1 — docs/reviews/T15-a1.md |
 | T16 | P06 | J5 | 3D hero scene: stylised produce in three.js / React Three Fiber, loaded late, with a still poster | 2 | — | [x] | PASS a4 — docs/reviews/T16-a4.md |
-| T17 | P06 | J5 | Showcase acceptance with the owner's images: every frame, credits, captures and the e2e | 2 | G-Showcase | [ ] | FAIL a3 — docs/reviews/T17-a3.md |
+| T17 | P06 | J5 | Showcase acceptance with the owner's images: every frame, credits, captures and the e2e | 2 | G-Showcase | [x] | PASS a4 — docs/reviews/T17-a4.md |
+| T18 | P07 | J5 | Year dial foundation: version 3 tokens, the shared ring geometry, and the card's circular photo inside its season ring | 2 | — | [ ] | — |
+| T19 | P07 | J5 | Guide: the year dial as month picker and the year chart view | 2 | — | [ ] | — |
+| T20 | P07 | J5 | Guide motion: GSAP joins; the dial turns and the cards re-sort with Flip | 2 | — | [ ] | — |
+| T21 | P07 | J5 | Home: the scroll-driven year story with Lenis; the 3D hero scene and three.js removed | 2 | — | [ ] | — |
+| T22 | P07 | J5 | Produce page: the season arc around the circular photograph, drawn on entry, with the scroll zoom | 2 | — | [ ] | — |
+| T23 | P07 | J5 | "The year turns" acceptance: every screen in both locales, the site-wide e2e and the captures | 2 | G-YearTurns | [ ] | — |
 
 ## Phases
 
@@ -33,6 +39,7 @@ wait for the developer's merge.
 | P04 Home and core flow | the home page with its photo hero and this month's produce; the whole core flow proven by a browser test on every run |
 | P05 About and motion | the about page with the photo credits, and the calm hero animation with reduced motion |
 | P06 Showcase (OD-10) | real imagery in every frame with its credits, the market texture, rich card and scroll motion, and the turning 3D hero scene with its still poster, signed off at G-Showcase |
+| P07 The year turns (OD-11) | one year dial across the site: the scroll-driven year story on home, the dial as the guide's month picker with re-sorting cards and the year chart, circular card photographs in their rings, the produce page's season arc, and no three.js, signed off at G-YearTurns |
 
 ## Phase outlines
 
@@ -197,3 +204,80 @@ shows the fallback). The about page lists one credit per row in both languages. 
 chunk loads after the page is usable. The core-flow test still passes. Fixes only in code (badge clearance, crops
 through `object-position` tokens). Screens: every page in both locales (home, guide, produce mango and molokhia,
 about). Criteria: UA-01 … UA-20. The owner merges.
+
+### P07 — The year turns (OD-11, issue #28)
+
+The tasks below implement `docs/DESIGN_SYSTEM.md` version 3. The builder never adds, replaces or deletes a file in
+`public/photos/**` and never edits `content/**`. Each task leaves every page working. A task that changes
+`package.json` (T20, T21) names each dependency by its fence line (PR-47), proves the Boundary gate (no network call,
+no CSP change, no storage) and gets a deep review. T18 starts once T17's G-Showcase decision is recorded on `main`.
+
+### T18 — Year dial foundation and the circular card (risk 2, UI; Stages: 3)
+`docs/fences/T18.md`. Layers: design · motion · frontend · accessibility · testing. Every version 3 token of §2
+(`--dial-*`, `--ring-inset`, `--arc-size`, `--story-*`, `--dur-flip`, `--flip-stagger`, `--zoom-scroll`). The scene
+tokens stay until T21. A pure ring-geometry module, `src/modules/produce/dial-geometry.ts`, with unit tests: cell
+paths, the tick, label positions, the turn angle and the `rtl` mirror. `SeasonRing` draws from it. `ProduceCard`
+becomes a square frame: the `SeasonRing` around a circular `ProducePhoto` inset by `--ring-inset`, with nothing over
+the photo and the fallback disc in the same circle. Hover and focus are kept (zoom inside the circle, mirrored tilt, ring
+glow). `e2e/card-motion.spec.ts` is retargeted from the badge to the ring, and a new check proves nothing covers the
+photo. Closes CF-49. Screens: `guide-ar /ar/guide?month=8` · `guide-en /en/guide?month=8` · `home-ar /ar` ·
+`card-hover-en … hover` · `card-focus-ar … focus`. Criteria: UA-01 … UA-14, UA-19.
+
+### T19 — Guide: the month picker and the year chart (risk 2, UI; Stages: 2)
+Layers: design · frontend · accessibility · testing. `YearDial` in `src/modules/produce/` (exported; server-rendered,
+turned to the selected month, mirrored, labels upright). `MonthPicker` in `src/modules/guide/`: the dial's twelve month
+links (`aria-current`, the "this month" text, targets ≥ `--target-min`) and the previous and next links (the `Icon`
+arrow, mirrored), all keeping `kind` and `view`. It replaces `MonthScroller`, whose files are deleted. `GuideViewLinks`
+and `parseGuideView` (`list` default, `chart`) are added in `guide-query.ts`. `guideQuery` and the language link keep
+`view`. `YearChart` (§6): a list of rows with the name link, the counter-name, twelve cells, the selected month's
+column, the this-month tick and the season sentence. Kind chips apply to both views. New catalogue strings go in both
+languages. `core-flow.spec.ts` picks the month through the dial, and `guide-reveal.spec.ts` drops the month pill. Screens:
+`guide-ar /ar/guide?month=8` · `guide-en /en/guide?month=8` · `guide-chart-ar /ar/guide?month=8&view=chart` ·
+`guide-chart-en /en/guide?month=8&view=chart` · `guide-month-focus-ar /ar/guide?month=3 focus a[aria-current="true"]`.
+Criteria: UA-01 … UA-18.
+
+### T20 — Guide motion: the dial turns and the cards re-sort (risk 2, UI; `package.json` makes the review deep)
+Layers: motion · frontend · accessibility · security · testing. Dependency `gsap` (core with Flip), named by its fence
+line, with the Boundary gate's evidence. One client component in `src/modules/guide/` wraps the dial and the grid. The
+grid keeps every card keyed by slug, with the cards out of the selected set `hidden`, so Flip can animate. On a month
+link it records the Flip state, and after the new page commits it turns the dial (the short way, mirrored) and re-sorts
+the cards: those that stay slide, those that leave fade, and new ones rise (`--dur-flip`, `--flip-stagger`).
+`gsap.matchMedia` keeps reduced motion settled, and everything is reverted on unmount. With no JavaScript the
+server-rendered page is complete. A Playwright spec checks the turn's sign by locale, no card jumping (CLS 0 across a
+month change), the settled state under reduced motion, and no network request outside the origin. Screens: the guide
+in both locales, and `guide-turn-en /en/guide?month=8 click a[data-month="9"]`. Criteria: UA-01 … UA-12, UA-14.
+
+### T21 — Home: the year story (risk 2, UI; `package.json` makes the review deep; Stages: 3)
+Layers: design · motion · frontend · accessibility · security · testing. Stage 1: remove `HeroScene*`, `scene-mode*`,
+the static `SeasonDial*`, their tests, `e2e/hero-scene.spec.ts`, the scene tokens and catalogue strings, and the
+dependencies `three`, `@react-three/fiber` and `@types/three`. Build `YearStory` in `src/modules/home/`, settled and
+server-rendered (§13): the `h1` with the month, `YearDial` with the hero photograph as its centre disc, the ten
+produce circles on the orbit (decorative), the count sentence (`home.storyCount`) and the guide link for the month
+shown. The scroll length is reserved by CSS under `(scripting: enabled) and (prefers-reduced-motion: no-preference)`.
+Stage 2: dependency `lenis` (and ScrollTrigger from `gsap`), named by the fence line. A client component builds the
+eleven-step timeline scrubbed over the band, with no pin, no snap and the `--story-scrub` lag. Lenis runs only while
+the story is mounted, and everything is reverted under reduced motion and on unmount. Stage 3: a Playwright spec. It
+scrolls to step k and finds the headline, the count, the forward set (from the catalogue) and the dial's turn sign by
+locale. It stops scrolling and finds the dial still over 30 frames. It finds the settled state under reduced motion and
+without JavaScript, CLS 0, no request outside the origin, and no built chunk containing three.js (closes CF-43, CF-41
+and CF-44). Screens: `home-ar /ar` · `home-en /en` and the story at mid-scroll in both locales. Criteria: UA-01 …
+UA-13, UA-17 … UA-20.
+
+### T22 — Produce page: the season arc (risk 2, UI)
+Layers: design · motion · frontend · accessibility · testing. `SeasonArc` in `src/modules/produce/` replaces `SeasonBar`
+(its files are deleted): `YearDial`'s ring at `--arc-size` around the circular page `ProducePhoto`, the short month
+names around it, the in-season cells in the kind colour, the this-month tick and label, and the season sentence below.
+On entry the in-season cells draw in once (`stroke-dashoffset`, `--dur-dial`). The photograph scales to `--zoom-scroll`
+as the page scrolls, through GSAP ScrollTrigger in one small client component. Reduced motion and no JavaScript give
+the drawn arc at scale 1. The page's layout at 390 and 1280 is in both locales. Screens: `produce-ar
+/ar/produce/mango` · `produce-en /en/produce/mango` · `produce-leafy-ar /ar/produce/molokhia`. Criteria: UA-01 …
+UA-13, UA-17 … UA-19.
+
+### T23 — "The year turns" acceptance (risk 2, UI, G-YearTurns)
+Layers: design · motion · frontend · accessibility · testing. `e2e/year-turns.spec.ts` runs over the whole site in
+both locales. Home: the story turns, stops and settles. Guide: the dial picks the month, the cards move with CLS 0, and
+the year chart has 10 rows × 12 cells with the selected column. Every card shows a circular photo inside its ring with
+nothing covering it. Every produce page draws its arc. No built chunk holds three.js. The core-flow, showcase, texture
+and card specs pass, updated only where version 3 changed what they assert. `DESIGN_SYSTEM.md` and `docs/STACK.md`
+("Rendering", dependencies) match the build. Fixes are in code only. Screens: every page in both locales (home, the
+story mid-scroll, guide cards and chart, produce mango and molokhia, about). Criteria: UA-01 … UA-20. The owner merges.

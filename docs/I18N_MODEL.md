@@ -37,7 +37,10 @@ and tips come from the data (`en`/`ar`, `tip_en`/`tip_ar`). Month names are cata
 - Logical properties only (`margin-inline-start`, `padding-block`, `inset-inline-end`, `text-align: start`);
   `guard:design` fails physical ones.
 - Direction-bearing glyphs (arrows, the month scroller's order, the season bar) follow the inline direction: the
-  season bar and scroller run January → December from the inline start, so right to left in Arabic.
+  season bar and scroller run January → December from the inline start, so right to left in Arabic. Version 3
+  (OD-11): the year chart's twelve columns run the same way; every ring (the year dial, a card's season ring, the
+  season arc) starts at 12 o'clock and runs clockwise in English and counter-clockwise in Arabic, and the dial turns
+  the other way in Arabic. Text on a ring stays upright and is never mirrored.
 - A Latin string inside Arabic text (none planned) is wrapped in `<bdi>`.
 
 ## 5. Numerals

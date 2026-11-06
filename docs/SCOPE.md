@@ -30,6 +30,7 @@ None. Every feature the brief asks for is in the core flow above. New work is a 
 | # | Change | OD | Tasks |
 |---|---|---|---|
 | A-1 (issue #17) | Showcase visual layer: generated, licensed or own imagery in every photo frame with a generator script the owner runs; a market texture behind the hero and section bands; richer card hover and focus; reveal on scroll once and animated selected states; a slowly turning 3D produce scene beside the hero dial with a still poster; design contract version 2 | OD-10 | T12–T17 (G-Showcase) |
+| A-2 (issue #28) | "The year turns": one twelve-month year dial across the site; a scroll-driven year story on home (sticky, scrubbed, Lenis on home only) with the hero photograph at the dial's centre; the dial as the guide's month picker with shared-layout card motion (GSAP Flip) and a year chart view (`view=chart`); circular card photographs inside their season rings (closes CF-49); the produce page's season arc with a scroll zoom; three.js and the 3D hero scene removed (closes CF-43); design contract version 3 | OD-11 | T18–T23 (G-YearTurns) |
 
 ## Out of scope (the brief excludes it, or nothing asks for it)
 
