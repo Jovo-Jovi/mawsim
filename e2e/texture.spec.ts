@@ -98,6 +98,27 @@ for (const scheme of SCHEMES) {
             ),
           )
           .toBe(0);
+        // Card names sit inside the rise. An empty animation list can land before that rise
+        // starts, while the name is still translucent. Wait for opacity 1, as year-story does,
+        // and leave a below-fold card that Reveal is still holding at pending.
+        await expect
+          .poll(() =>
+            page.locator("main a[href*='/produce/'] h2").evaluateAll((names) =>
+              names.every((name) => {
+                const cell = name.closest("li") ?? name;
+                const pending = cell.getAttribute("data-reveal") === "pending";
+                const opacity = getComputedStyle(cell).opacity;
+                const rising = [cell, name].some(
+                  (node) =>
+                    node.getAnimations().some((animation) => animation.playState === "running"),
+                );
+                if (rising) return false;
+                if (pending) return opacity === "0" || opacity === "1";
+                return opacity === "1";
+              }),
+            ),
+          )
+          .toBe(true);
 
         const axe = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
         console.log(

@@ -1,0 +1,539 @@
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test, type Page } from "@playwright/test";
+
+const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
+const LOCALES = ["ar", "en"] as const;
+const WIDTHS = [390, 1280] as const;
+
+type LocaleCode = (typeof LOCALES)[number];
+
+type ProduceRow = {
+  slug: string;
+  months: number[];
+};
+
+type CardHit = {
+  slug: string;
+  circular: boolean;
+  inside: boolean;
+  photoBeforeCopy: boolean;
+};
+
+const produce = JSON.parse(readFileSync("content/produce.json", "utf8")) as ProduceRow[];
+
+function heightFor(width: number): number {
+  return width === 390 ? 844 : 900;
+}
+
+function monthAfter(start: number, offset: number): number {
+  return ((start - 1 + offset) % 12) + 1;
+}
+
+function cairoMonth(now = new Date()): number {
+  const part = new Intl.DateTimeFormat("en-US", { timeZone: "Africa/Cairo", month: "numeric" })
+    .formatToParts(now)
+    .find((item) => item.type === "month");
+  const month = Number(part?.value);
+  if (!Number.isInteger(month) || month < 1 || month > 12) throw new Error("cairo month is outside 1-12");
+  return month;
+}
+
+function signedDelta(from: number, to: number): number {
+  return ((((to - from) % 360) + 540) % 360) - 180;
+}
+
+function pagePaths(locale: LocaleCode): string[] {
+  return [
+    `/${locale}`,
+    `/${locale}/guide?month=8`,
+    `/${locale}/guide?month=8&view=chart`,
+    ...produce.map((row) => `/${locale}/produce/${row.slug}`),
+    `/${locale}/about`,
+  ];
+}
+
+function staticFiles(dir: string): string[] {
+  const found: string[] = [];
+  for (const name of readdirSync(dir)) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) found.push(...staticFiles(path));
+    else found.push(path);
+  }
+  return found;
+}
+
+function bundleMarksThree(): boolean {
+  const root = ".next/static";
+  for (const file of staticFiles(root)) {
+    if (!file.endsWith(".js") && !file.endsWith(".css")) continue;
+    const text = readFileSync(file, "utf8");
+    if (text.includes("THREE.") || text.includes("WebGLRenderer")) return true;
+  }
+  return false;
+}
+
+function rememberScript(raw: string, foreign: string[]): void {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    foreign.push(raw);
+    return;
+  }
+  if (url.protocol === "data:" || url.protocol === "blob:") return;
+  if (url.hostname !== "127.0.0.1") foreign.push(raw);
+}
+
+async function installShift(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const bucket: number[] = [];
+    Object.assign(window, { __yearShifts: bucket });
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        const shift = entry as PerformanceEntry & { value?: number; hadRecentInput?: boolean };
+        if (shift.hadRecentInput || typeof shift.value !== "number") continue;
+        bucket.push(shift.value);
+      }
+    }).observe({ type: "layout-shift", buffered: true });
+  });
+}
+
+async function clearShift(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const bucket = (window as unknown as { __yearShifts?: number[] }).__yearShifts;
+    if (bucket) bucket.length = 0;
+  });
+}
+
+async function shiftSum(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const bucket = (window as unknown as { __yearShifts?: number[] }).__yearShifts ?? [];
+    return bucket.reduce((sum, value) => sum + value, 0);
+  });
+}
+
+async function scrollToY(page: Page, top: number): Promise<void> {
+  await page.evaluate((target) => {
+    window.scrollTo({ top: target, left: 0, behavior: "instant" });
+  }, top);
+  await expect
+    .poll(async () => page.evaluate((target) => Math.abs(window.scrollY - target) < 2, top), { timeout: 8_000 })
+    .toBe(true);
+}
+
+async function storyScroll(page: Page): Promise<{ start: number; step: number }> {
+  const metrics = await page.evaluate(() => {
+    const band = document.querySelector("[data-texture-band='hero']");
+    if (!(band instanceof HTMLElement)) return null;
+    const start = band.getBoundingClientRect().top + window.scrollY;
+    const step = (band.offsetHeight - window.innerHeight) / 11;
+    return { start, step };
+  });
+  if (!metrics) throw new Error("the year story band is missing");
+  return metrics;
+}
+
+async function labelAngle(page: Page, month: number): Promise<number> {
+  return page.evaluate((index) => {
+    const turn = document.querySelector("[data-dial-turn]");
+    const label = document.querySelectorAll("[data-dial-label]")[index];
+    if (!(turn instanceof HTMLElement) || !(label instanceof HTMLElement)) return Number.NaN;
+    const dial = turn.getBoundingClientRect();
+    const box = label.getBoundingClientRect();
+    const dx = box.x + box.width / 2 - (dial.x + dial.width / 2);
+    const dy = box.y + box.height / 2 - (dial.y + dial.height / 2);
+    return (Math.atan2(dx, -dy) * 180) / Math.PI;
+  }, month - 1);
+}
+
+async function dialRotation(page: Page): Promise<number> {
+  return page.locator("[data-dial-turn]").evaluate((node) => {
+    const transform = getComputedStyle(node).transform;
+    if (transform === "none") return 0;
+    const match = /matrix\(([^)]+)\)/.exec(transform);
+    if (!match?.[1]) return Number.NaN;
+    const [a, b] = match[1].split(",").map((part) => Number.parseFloat(part.trim()));
+    return (Math.atan2(b ?? 0, a ?? 1) * 180) / Math.PI;
+  });
+}
+
+async function waitUntilDialSettles(page: Page): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const first = await dialRotation(page);
+        await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+        const second = await dialRotation(page);
+        return Number.isFinite(first) && Number.isFinite(second) && Math.abs(first - second) < 0.05;
+      },
+      { timeout: 8_000 },
+    )
+    .toBe(true);
+}
+
+async function stillRotations(page: Page): Promise<number[]> {
+  return page.evaluate(
+    () =>
+      new Promise<number[]>((resolve) => {
+        const reads: number[] = [];
+        const take = () => {
+          const node = document.querySelector("[data-dial-turn]");
+          const transform = node instanceof HTMLElement ? getComputedStyle(node).transform : "none";
+          let rotation = 0;
+          if (transform !== "none") {
+            const match = /matrix\(([^)]+)\)/.exec(transform);
+            if (match?.[1]) {
+              const [a, b] = match[1].split(",").map((part) => Number.parseFloat(part.trim()));
+              rotation = (Math.atan2(b ?? 0, a ?? 1) * 180) / Math.PI;
+            }
+          }
+          reads.push(Math.round(rotation * 1000) / 1000);
+          if (reads.length === 30) resolve(reads);
+          else requestAnimationFrame(take);
+        };
+        requestAnimationFrame(take);
+      }),
+  );
+}
+
+async function cardNamesOpaque(page: Page): Promise<boolean> {
+  return page.locator("main a[href*='/produce/'] h2").evaluateAll((names) =>
+    names.every((name) => {
+      const cell = name.closest("li") ?? name;
+      const pending = cell.getAttribute("data-reveal") === "pending";
+      const opacity = getComputedStyle(cell).opacity;
+      const rising = [cell, name].some((node) =>
+        node.getAnimations().some((animation) => animation.playState === "running"),
+      );
+      if (rising) return false;
+      if (pending) return opacity === "0" || opacity === "1";
+      return opacity === "1";
+    }),
+  );
+}
+
+async function settleNames(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    if (document.fonts) await document.fonts.ready;
+  });
+  await expect.poll(() => cardNamesOpaque(page), { timeout: 8_000 }).toBe(true);
+}
+
+async function openSized(page: Page, path: string, width: number): Promise<void> {
+  await page.setViewportSize({ width, height: heightFor(width) });
+  const response = await page.goto(path);
+  expect(response?.ok()).toBe(true);
+}
+
+for (const locale of LOCALES) {
+  for (const width of WIDTHS) {
+    test(`turns the dial the wrong way or lets it drift after the scroll stops (${locale} ${width})`, async ({
+      page,
+    }) => {
+      await installShift(page);
+      await openSized(page, `/${locale}`, width);
+      await page.locator("[data-dial-label]").first().waitFor();
+      const href = await page.locator("main a[href*='guide?month=']").getAttribute("href");
+      const initial = Number(new URL(href ?? "", "http://127.0.0.1").searchParams.get("month"));
+      expect(initial).toBeGreaterThanOrEqual(1);
+      expect(initial).toBeLessThanOrEqual(12);
+
+      const { start, step } = await storyScroll(page);
+      expect(step).toBeGreaterThan(100);
+      const month = monthAfter(initial, 6);
+      await scrollToY(page, start + 5 * step);
+      await waitUntilDialSettles(page);
+      const approach = await labelAngle(page, month);
+      const sign = approach > 8 ? 1 : approach < -8 ? -1 : 0;
+      const rotationBefore = await dialRotation(page);
+      expect(sign).toBe(locale === "ar" ? -1 : 1);
+
+      await scrollToY(page, start + 6 * step);
+      await expect.poll(async () => Math.abs(await labelAngle(page, month)), { timeout: 8_000 }).toBeLessThanOrEqual(2);
+      await waitUntilDialSettles(page);
+      const turned = signedDelta(rotationBefore, await dialRotation(page));
+      expect(Math.sign(turned)).toBe(locale === "ar" ? 1 : -1);
+
+      await scrollToY(page, start + 11 * step);
+      await expect
+        .poll(async () => Math.abs(await labelAngle(page, monthAfter(initial, 11))), { timeout: 8_000 })
+        .toBeLessThanOrEqual(2);
+      let frames: number[] = [];
+      await expect
+        .poll(
+          async () => {
+            frames = await stillRotations(page);
+            return new Set(frames).size;
+          },
+          { timeout: 8_000 },
+        )
+        .toBe(1);
+      const shift = await shiftSum(page);
+      console.log(
+        `year-turns ${locale} ${width} sign=${sign} frames=${frames.length} shift=${shift} turn=${turned.toFixed(2)}`,
+      );
+      expect(frames.length).toBe(30);
+      expect(shift).toBe(0);
+    });
+  }
+}
+
+test.describe("year turns under reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      test(`moves off this month when motion is reduced (${locale} ${width})`, async ({ page }) => {
+        const month = cairoMonth();
+        await openSized(page, `/${locale}`, width);
+        await page.locator("[data-dial-label]").first().waitFor();
+        await expect(page.locator("main a[href*='guide?month=']")).toHaveAttribute(
+          "href",
+          `/${locale}/guide?month=${month}`,
+        );
+        await expect.poll(async () => Math.abs(await labelAngle(page, month)), { timeout: 8_000 }).toBeLessThanOrEqual(2);
+        const lenis = await page.evaluate(() =>
+          [...document.documentElement.classList].some((name) => name === "lenis" || name.startsWith("lenis-")),
+        );
+        const bottom = await page.evaluate(() =>
+          Math.max(0, document.documentElement.scrollHeight - window.innerHeight),
+        );
+        await scrollToY(page, bottom);
+        await expect(page.locator("main a[href*='guide?month=']")).toHaveAttribute(
+          "href",
+          `/${locale}/guide?month=${month}`,
+        );
+        const angle = await labelAngle(page, month);
+        console.log(
+          `year-turns ${locale} ${width} reduced month=${month} angle=${angle.toFixed(2)} lenis=${lenis}`,
+        );
+        expect(lenis).toBe(false);
+        expect(Math.abs(angle)).toBeLessThanOrEqual(2);
+      });
+    }
+  }
+});
+
+test.describe("year turns without javascript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      test(`leaves this month when JavaScript is off (${locale} ${width})`, async ({ page }) => {
+        const month = cairoMonth();
+        await openSized(page, `/${locale}`, width);
+        await expect.poll(async () => page.locator("[data-dial-label]").count()).toBe(12);
+        await expect(page.locator("main a[href*='guide?month=']")).toHaveAttribute(
+          "href",
+          `/${locale}/guide?month=${month}`,
+        );
+        await expect(page.locator("[data-story-slot='month']:not([aria-hidden='true'])")).toHaveAttribute(
+          "data-story-month",
+          String(month),
+        );
+        const settled = await page.evaluate(() => {
+          const band = document.querySelector("[data-texture-band='hero']");
+          const stage =
+            band instanceof HTMLElement
+              ? [...band.children].find((node) => node instanceof HTMLElement && node.getAttribute("aria-hidden") !== "true")
+              : null;
+          if (!(band instanceof HTMLElement) || !(stage instanceof HTMLElement)) {
+            return { hiddenSlot: false, height: "", band: -1, stage: -1, lenis: false };
+          }
+          return {
+            hiddenSlot: band.closest("div[hidden][id^='S:']") !== null,
+            height: getComputedStyle(band).height,
+            band: band.getBoundingClientRect().height,
+            stage: stage.getBoundingClientRect().height,
+            lenis: [...document.documentElement.classList].some((name) => name === "lenis" || name.startsWith("lenis-")),
+          };
+        });
+        console.log(
+          `year-turns ${locale} ${width} nojs month=${month} hiddenSlot=${settled.hiddenSlot} height=${settled.height} lenis=${settled.lenis}`,
+        );
+        expect(settled.lenis).toBe(false);
+        if (settled.hiddenSlot) expect(settled.height).toBe("auto");
+        else expect(Math.abs(settled.band - settled.stage)).toBeLessThanOrEqual(0.5);
+      });
+    }
+  }
+});
+
+for (const locale of LOCALES) {
+  for (const width of WIDTHS) {
+    test(`picks the wrong month, shifts the cards, or draws a chart that is not ten by twelve (${locale} ${width})`, async ({
+      page,
+    }) => {
+      await installShift(page);
+      await openSized(page, `/${locale}/guide?month=8`, width);
+      await expect(page.locator('a[data-month="8"][aria-current="true"]')).toBeVisible();
+      await clearShift(page);
+      await page.locator('a[data-month="9"]').click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=9$`));
+      await expect(page.locator('a[data-month="9"][aria-current="true"]')).toBeVisible();
+      await settleNames(page);
+      const shift = await shiftSum(page);
+
+      await openSized(page, `/${locale}/guide?month=8&view=chart`, width);
+      const chart = await page.locator("[data-year-chart]").evaluate((root) => {
+        const rows = [...root.querySelectorAll("ol > li")];
+        const selected = [
+          ...new Set(
+            [...root.querySelectorAll("[data-selected='true']")].map((node) => node.getAttribute("data-month")),
+          ),
+        ];
+        return {
+          rows: rows.length,
+          cells: rows.map((row) => row.querySelectorAll("[data-month]").length),
+          selectedInRows: rows.map((row) => row.querySelectorAll("[data-selected='true']").length),
+          selected,
+        };
+      });
+      console.log(
+        `year-turns ${locale} ${width} guide month=9 shift=${shift} chart=${chart.rows}x${chart.cells[0] ?? 0} selected=${chart.selected.join(",")}`,
+      );
+      expect(shift).toBe(0);
+      expect(chart.rows).toBe(10);
+      expect(chart.cells).toEqual([12, 12, 12, 12, 12, 12, 12, 12, 12, 12]);
+      expect(chart.selectedInRows).toEqual([1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+      expect(chart.selected).toEqual(["8"]);
+    });
+
+    test(`covers a guide photograph or draws fewer than ten circles (${locale} ${width})`, async ({ page }) => {
+      await openSized(page, `/${locale}/guide?month=8`, width);
+      await settleNames(page);
+      const cards = page.locator("li[data-flip-id]");
+      await expect(cards).toHaveCount(10);
+      let photos = 0;
+      let covered = 0;
+      for (let index = 0; index < 10; index += 1) {
+        const card = cards.nth(index);
+        await expect(card.locator("[data-photo-circle] img")).toHaveCount(1);
+        await expect(card.locator("[data-season-ring]")).toHaveCount(1);
+        photos += 1;
+        if ((await card.getAttribute("hidden")) !== null) continue;
+        await card.evaluate((node) => {
+          node.scrollIntoView({ block: "center", inline: "center" });
+          const circle = node.querySelector("[data-photo-circle]");
+          const header = document.querySelector("header");
+          if (!(circle instanceof HTMLElement) || !(header instanceof HTMLElement)) return;
+          const overlap = header.getBoundingClientRect().bottom - circle.getBoundingClientRect().top;
+          if (overlap > 0) window.scrollBy(0, -overlap);
+        });
+        await expect
+          .poll(() =>
+            card.evaluate((node) => {
+              const opacity = Number(getComputedStyle(node).opacity);
+              const box = node.getBoundingClientRect();
+              return opacity >= 0.99 && box.width > 1 && box.height > 1;
+            }),
+          )
+          .toBe(true);
+        const hit: CardHit = await card.evaluate((anchor) => {
+          const slug = /\/produce\/([^/?#]+)/.exec(anchor.querySelector("a")?.getAttribute("href") ?? "")?.[1] ?? "";
+          const ring = anchor.querySelector("[data-season-ring]");
+          const circle = anchor.querySelector("[data-photo-circle]");
+          const img = circle?.querySelector("img");
+          if (!(ring instanceof HTMLElement) || !(circle instanceof HTMLElement) || !(img instanceof HTMLImageElement)) {
+            return { slug, circular: false, inside: false, photoBeforeCopy: false };
+          }
+          const ringBox = ring.getBoundingClientRect();
+          const circleBox = circle.getBoundingClientRect();
+          const radius = Number.parseFloat(getComputedStyle(circle).borderTopLeftRadius);
+          const side = Math.min(circleBox.width, circleBox.height);
+          const circular = side > 1 && radius + 1 >= side / 2;
+          const inside =
+            circleBox.left >= ringBox.left - 1 &&
+            circleBox.top >= ringBox.top - 1 &&
+            circleBox.right <= ringBox.right + 1 &&
+            circleBox.bottom <= ringBox.bottom + 1 &&
+            circleBox.width < ringBox.width &&
+            circleBox.height < ringBox.height;
+          const stack = document.elementsFromPoint(
+            circleBox.left + circleBox.width / 2,
+            circleBox.top + circleBox.height / 2,
+          );
+          const photoAt = stack.findIndex((node) => node === img);
+          const copyAt = stack.findIndex((node) => {
+            if (!(node instanceof Element)) return false;
+            if (node === img || img.contains(node)) return false;
+            const badge = node.closest("[data-badge], [class*='badge']");
+            const copy = node.closest("h2, p");
+            return (badge !== null || copy !== null) && anchor.contains(node);
+          });
+          return { slug, circular, inside, photoBeforeCopy: photoAt >= 0 && (copyAt < 0 || photoAt < copyAt) };
+        });
+        expect(hit.circular, hit.slug).toBe(true);
+        expect(hit.inside, hit.slug).toBe(true);
+        if (!hit.photoBeforeCopy) covered += 1;
+      }
+      console.log(`year-turns ${locale} ${width} cards=10 photos=${photos} covered=${covered}`);
+      expect(photos).toBe(10);
+      expect(covered).toBe(0);
+    });
+
+    test(`draws an arc whose lit cells disagree with the content file (${locale} ${width})`, async ({ page }) => {
+      test.setTimeout(180_000);
+      await page.setViewportSize({ width, height: heightFor(width) });
+      for (const row of produce) {
+        const response = await page.goto(`/${locale}/produce/${row.slug}`);
+        expect(response?.ok()).toBe(true);
+        await expect.poll(async () => page.locator("[data-arc-label]").count()).toBe(12);
+        const arc = await page.evaluate(() => ({
+          labels: document.querySelectorAll("[data-arc-label]").length,
+          ticks: document.querySelectorAll("[data-arc-tick]").length,
+          lit: document.querySelectorAll("[data-in='true']").length,
+        }));
+        console.log(
+          `year-turns ${locale} ${width} arc=${row.slug} labels=${arc.labels} tick=${arc.ticks} lit=${arc.lit} months=${row.months.length}`,
+        );
+        expect(arc.labels).toBe(12);
+        expect(arc.ticks).toBe(1);
+        expect(arc.lit).toBe(row.months.length);
+      }
+    });
+
+    test(`ships THREE or WebGLRenderer, or requests a script from another origin (${locale} ${width})`, async ({
+      page,
+    }) => {
+      test.setTimeout(180_000);
+      const foreign: string[] = [];
+      page.on("request", (request) => {
+        if (request.resourceType() === "script") rememberScript(request.url(), foreign);
+      });
+      await page.setViewportSize({ width, height: heightFor(width) });
+      for (const path of pagePaths(locale)) {
+        const response = await page.goto(path);
+        expect(response?.ok(), path).toBe(true);
+        await expect(page.locator("h1")).toBeVisible();
+      }
+      const three = bundleMarksThree();
+      console.log(`year-turns ${locale} ${width} bundle three=${three} scripts=${foreign.length}`);
+      expect(three).toBe(false);
+      expect(foreign).toEqual([]);
+    });
+
+    test(`reports an axe violation on a settled page (${locale} ${width})`, async ({ page }) => {
+      test.setTimeout(240_000);
+      await page.setViewportSize({ width, height: heightFor(width) });
+      for (const path of pagePaths(locale)) {
+        const response = await page.goto(path);
+        expect(response?.ok(), path).toBe(true);
+        await expect(page.locator("h1")).toBeVisible();
+        await settleNames(page);
+        await expect
+          .poll(() =>
+            page.evaluate(
+              () => (document.getAnimations?.() ?? []).filter((animation) => animation.playState === "running").length,
+            ),
+          )
+          .toBe(0);
+        const violations = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+        console.log(`year-turns ${locale} ${width} axe=${violations.violations.length} path=${path}`);
+        expect(violations.violations).toEqual([]);
+      }
+    });
+  }
+}
