@@ -135,6 +135,23 @@ it("puts the selected column or this month's tick on another cell", () => {
   expect(tomato.filter((tag) => tag.includes('data-tick="true"')).map(monthOf)).toEqual([3]);
 });
 
+it("splits a short month name, or lists the header out of January-to-December order", () => {
+  const catalogue = listProduce();
+  const wholeNames = {
+    en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    ar: ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"],
+  } as const;
+  for (const locale of ["en", "ar"] as const) {
+    const html = markup(catalogue, locale, 4, 11, null);
+    const headStart = html.indexOf('data-chart-head=""');
+    const headEnd = html.indexOf("<ol");
+    const head = html.slice(headStart, headEnd);
+    const labels = [...head.matchAll(/<span\b[^>]*>([^<]*)<\/span>/g)].map((match) => match[1] ?? "");
+    expect(labels).toEqual([...wholeNames[locale]]);
+    expect(head).not.toContain("<br");
+  }
+});
+
 it("drops a season sentence, or gives the counter-name the page language", () => {
   const catalogue = listProduce();
   const english = markup(catalogue, "en", 8, 8, null);

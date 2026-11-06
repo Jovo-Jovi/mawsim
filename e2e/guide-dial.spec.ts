@@ -186,6 +186,51 @@ for (const locale of ["en", "ar"] as const) {
       expect(scroll.scrollWidth).toBeLessThanOrEqual(scroll.clientWidth);
       expect(scroll.chartScrollWidth).toBeLessThanOrEqual(scroll.chartClientWidth);
 
+      if (viewport.name === "390") {
+        const headerLines = await page.locator("[data-chart-head] [data-month]").evaluateAll((elements) =>
+          elements.map((element) => {
+            const style = getComputedStyle(element);
+            const range = document.createRange();
+            range.selectNodeContents(element);
+            const rects = [...range.getClientRects()];
+            const probe = document.createElement("span");
+            probe.textContent = element.textContent;
+            probe.style.font = style.font;
+            probe.style.whiteSpace = "nowrap";
+            probe.style.position = "absolute";
+            probe.style.visibility = "hidden";
+            document.body.appendChild(probe);
+            const needed = probe.getBoundingClientRect().width;
+            probe.remove();
+            const lineHeight = Number.parseFloat(style.lineHeight);
+            const paddingBlock = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+            return {
+              month: element.getAttribute("data-month") ?? "",
+              text: element.textContent ?? "",
+              lines: rects.length,
+              lineWidth: rects[0]?.width ?? 0,
+              needed,
+              boxHeight: element.getBoundingClientRect().height,
+              lineBox: lineHeight + paddingBlock,
+            };
+          }),
+        );
+        console.log(
+          `${locale} 390 header ${headerLines
+            .map(
+              (line) =>
+                `${line.month}:${line.text} lines=${line.lines} width=${line.lineWidth.toFixed(1)}/${line.needed.toFixed(1)} height=${line.boxHeight.toFixed(1)}/${line.lineBox.toFixed(1)}`,
+            )
+            .join(" ")}`,
+        );
+        expect(headerLines).toHaveLength(12);
+        for (const line of headerLines) {
+          expect(line.lines).toBe(1);
+          expect(Math.abs(line.lineWidth - line.needed)).toBeLessThan(1);
+          expect(Math.abs(line.boxHeight - line.lineBox)).toBeLessThan(1);
+        }
+      }
+
       const language = page.getByRole("banner").getByRole("link", { name: COPY[locale].language, exact: true });
       await expect(language).toHaveAttribute(
         "href",
