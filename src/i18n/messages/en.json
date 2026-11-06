@@ -80,10 +80,16 @@
     "kinds": "Kinds",
     "months": "Months",
     "all": "All",
+    "cards": "Cards",
+    "chart": "Seasons across the year",
     "empty": "Nothing of this kind is in season in {month}.",
     "showAll": "Show all kinds",
     "showThisMonth": "Show this month",
-    "thisMonth": "This month"
+    "thisMonth": "This month",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "views": "Views",
+    "yearChart": "Year chart"
   },
   "home": {
     "headline": "What is fresh in Egypt in",

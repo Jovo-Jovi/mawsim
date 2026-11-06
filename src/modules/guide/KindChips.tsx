@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/i18n/config";
 import { messages } from "@/i18n/messages";
 import type { CalendarMonth, ProduceKind } from "../../domain";
+import type { GuideView } from "./guide-query";
 import { guideHref } from "./guide-query";
 import styles from "./KindChips.module.css";
 
@@ -23,10 +24,12 @@ export function KindChips({
   locale,
   selectedMonth,
   kind,
+  view = "list",
 }: {
   locale: Locale;
   selectedMonth: CalendarMonth;
   kind: ProduceKind | null;
+  view?: GuideView;
 }) {
   return (
     <nav className={styles.nav} aria-label={messages(locale).guide.kinds}>
@@ -37,7 +40,7 @@ export function KindChips({
             <li key={chipKind ?? "all"} className={styles.item}>
               <Link
                 className={styles.chip}
-                href={guideHref(locale, selectedMonth, chipKind)}
+                href={guideHref(locale, selectedMonth, chipKind, view)}
                 aria-current={active ? "true" : undefined}
               >
                 {chipLabel(chipKind, locale)}

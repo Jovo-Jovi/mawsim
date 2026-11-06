@@ -1,0 +1,59 @@
+.dial {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  container-type: size;
+}
+
+.turn {
+  position: absolute;
+  inset: 0;
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  inline-size: 58%;
+  block-size: 58%;
+  overflow: visible;
+  transform: rotate(var(--dial-turn));
+  transform-origin: center;
+}
+
+:dir(rtl) .ring {
+  transform: rotate(var(--dial-turn)) scaleX(-1);
+}
+
+.bed,
+.cell,
+.tick {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.bed {
+  stroke: var(--color-ink);
+  stroke-width: 3.4;
+}
+
+.cell {
+  stroke: var(--color-track);
+  stroke-width: 2.2;
+}
+
+.tick {
+  stroke: var(--color-accent);
+  stroke-width: 1.6;
+}
+
+.slot {
+  position: absolute;
+  inset: 0;
+  inline-size: var(--target-min);
+  block-size: var(--target-min);
+  margin: auto;
+  transform-origin: center;
+  transform: rotate(var(--dial-turn)) translate(var(--dial-x), var(--dial-y)) rotate(calc(var(--dial-turn) * -1));
+}

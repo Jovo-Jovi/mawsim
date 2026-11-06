@@ -14,6 +14,10 @@
   min-inline-size: 0;
 }
 
+.header [data-month-picker] {
+  align-self: center;
+}
+
 /* The Arabic display face is narrower than its fallback, so an uncapped heading
    drops a line when the face arrives. The cap is the loaded line count. */
 .page h1:lang(ar) {
@@ -48,7 +52,17 @@
   }
 
   .header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--space-8);
+    align-items: center;
+  }
+
+  .header [data-month-picker] {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    justify-self: end;
+    align-self: center;
   }
 
   .notice {

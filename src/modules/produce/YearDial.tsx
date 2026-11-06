@@ -1,0 +1,74 @@
+import type { CSSProperties, ReactNode } from "react";
+import { calendarMonths, type CalendarMonth } from "../../domain";
+import {
+  calendarMonthAccentTick,
+  calendarMonthLabelPoint,
+  dialTurnDegrees,
+  dialViewBoxSize,
+  ringCellPath,
+} from "./dial-geometry";
+import styles from "./YearDial.module.css";
+
+/**
+ * Label-centre radius in the 40-unit dial. At `--dial-picker-size` 18rem
+ * (288px) this is 121.5px: a 44px square stays inside the dial and clears
+ * its neighbour on the diagonal (the tight pair is 0.47px apart).
+ */
+const labelRadius = 16.875;
+
+function percentOfDial(coordinate: number): string {
+  const ratio = ((coordinate - dialViewBoxSize / 2) / dialViewBoxSize) * 100;
+  return `${ratio.toFixed(4)}cqi`;
+}
+
+export function YearDial({
+  selected,
+  currentMonth,
+  direction,
+  label,
+}: {
+  selected: CalendarMonth;
+  currentMonth: CalendarMonth;
+  direction: "ltr" | "rtl";
+  label: (calendarMonth: CalendarMonth) => ReactNode;
+}) {
+  const turn = {
+    "--dial-turn": `${dialTurnDegrees(selected, direction)}deg`,
+  } as CSSProperties;
+  return (
+    <div className={styles.dial} style={turn}>
+      <div className={styles.turn}>
+        <svg
+          viewBox={`0 0 ${dialViewBoxSize} ${dialViewBoxSize}`}
+          className={styles.ring}
+          data-dial-ring=""
+          aria-hidden="true"
+          focusable="false"
+        >
+          {calendarMonths.map((calendarMonth, index) => {
+            const d = ringCellPath(index);
+            return (
+              <g key={calendarMonth}>
+                <path d={d} className={styles.bed} />
+                <path d={d} className={styles.cell} />
+              </g>
+            );
+          })}
+          <line className={styles.tick} {...calendarMonthAccentTick(currentMonth)} />
+        </svg>
+        {calendarMonths.map((calendarMonth) => {
+          const point = calendarMonthLabelPoint(calendarMonth, labelRadius, direction);
+          const place = {
+            "--dial-x": percentOfDial(point.x),
+            "--dial-y": percentOfDial(point.y),
+          } as CSSProperties;
+          return (
+            <div key={calendarMonth} className={styles.slot} style={place}>
+              {label(calendarMonth)}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
