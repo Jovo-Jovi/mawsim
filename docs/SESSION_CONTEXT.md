@@ -1,6 +1,6 @@
 # MAWSIM — Session context
 
-**Phase:** P06 Showcase · **Station:** J5 · **Next task:** T17, waiting at G-Showcase for the developer's merge · **Profile:** A, adapted (no personal
+**Phase:** P07 The year turns · **Station:** J5 · **Next task:** T23, waiting at G-YearTurns for the developer's merge · **Profile:** A, adapted (no personal
 data, no database) · **Scope:** mvp
 
 ## Done steps
@@ -11,12 +11,13 @@ data, no database) · **Scope:** mvp
 | Blueprint revision | The developer's answers: Arabic default (`/` → `/ar`, D-01) and licensed photography (OD-09, task T05 added; 11 tasks) | approved by the developer's merge |
 | T01–T09 | Scaffold through the home page and the core-flow browser test | PASS on `docs/PHASES.md` (the runner's ticks) |
 | T10–T11 | About page, photo credits, hero dial and the motion pass | PASS on `docs/PHASES.md` |
-| T12–T16 | Imagery pipeline through the late-loaded hero scene | PASS on `docs/PHASES.md` (T12 a1, T13 a2, T14 a2, T15 a1, T16 a4) |
+| T12–T17 | Imagery pipeline through the showcase acceptance | PASS on `docs/PHASES.md` |
+| T18–T22 | Year dial, guide motion, the home year story and the produce season arc | PASS on `docs/PHASES.md` (T18 a2, T19 a3, T20 a2, T21 a2, T22 a1) |
 
 ## Open carry-forwards
 
-38 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-51. Developer content: the twelve photographs are on `main` (`009f3f2`). The doubled sample-data notice stays (CF-24). CF-15 is closed (T10, step 7). CF-34 is closed (T11). T17 closes CF-42, CF-45 and CF-47. CF-43 stays open for the developer's chunk-size budget at G-Showcase.
+50 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-81 (`grep -oE 'CF-[0-9]+' docs/method/CARRY_FORWARDS.md | sed 's/CF-//' | sort -n | tail -1`). T23 closes CF-21, CF-28, CF-41, CF-43, CF-44 and CF-49, and the rows this attempt fixed (CF-52 through CF-63). The doubled sample-data notice stays (CF-24).
 
 ## Next action
 
-P06 is in progress. T12–T16 are done. T17 is waiting at G-Showcase for the developer's merge. No crop token was added. The card badge covering the produce is among the developer's G-Showcase decisions (CF-49). The hero photograph is the wider market composition §11 asks for.
+P07 is in progress. T18–T22 are done. T23 is at G-YearTurns: the owner reads the captures and merges. The guide renders on each request (`ƒ`, CF-80) so the page arrives whole without JavaScript.
