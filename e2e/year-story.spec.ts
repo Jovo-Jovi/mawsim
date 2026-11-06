@@ -770,6 +770,15 @@ test.describe("year story settled axe", () => {
         await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
         await page.goto(`/${locale}`);
         await page.locator("[data-dial-label]").first().waitFor();
+        // The in-season cells rise from opacity 0. Axe samples that blend as a contrast failure.
+        await expect.poll(async () =>
+          page.locator("[data-reveal-item]").evaluateAll((cells) =>
+            cells.every((cell) => {
+              const rising = cell.getAnimations().some((animation) => animation.playState === "running");
+              return !rising && getComputedStyle(cell).opacity === "1";
+            }),
+          ),
+        ).toBe(true);
         const violations = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
         console.log(`year-story ${locale} ${width} axe=${violations.violations.length}`);
         expect(violations.violations).toEqual([]);
