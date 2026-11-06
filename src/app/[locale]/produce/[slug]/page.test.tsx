@@ -49,6 +49,15 @@ function attr(name: string, value: string): string {
   return `${name}="${value}"`;
 }
 
+function imageFile(tag: string): string {
+  const src = (/src="([^"]*)"/.exec(tag)?.[1] ?? "").replaceAll("&amp;", "&");
+  return new URL(src, "http://localhost").searchParams.get("url") ?? "";
+}
+
+function imageFiles(html: string): string[] {
+  return [...html.matchAll(/<img\b[^>]*>/g)].map((match) => imageFile(match[0]));
+}
+
 it("streams an unknown slug as HTTP 200", () => {
   expect(ensureStatic).toBe("navigation");
 });
@@ -81,7 +90,7 @@ it("sets a generic title, drops the season sentence, or adds a canonical", async
   expect(JSON.stringify(english)).not.toContain("canonical");
 });
 
-it("renders an English mango page as Arabic, drops the season sentence, or skips the current-month tick", async () => {
+it("renders an English mango page as Arabic, drops its photograph, or draws the fallback ring tick over it", async () => {
   localeState.value = "ar";
   const html = renderToStaticMarkup(await ProducePage({ params: Promise.resolve({ slug: "mango" }) }));
   const main = mainHtml(html);
@@ -94,10 +103,12 @@ it("renders an English mango page as Arabic, drops the season sentence, or skips
   expect(main).toContain("اتركها حتى تنضج ثم ضعها في الثلاجة.");
   expect(main).not.toContain("Ripen on the counter, then chill.");
   expect(main).toContain("طريقة الحفظ");
-  expect(html.match(/<line\b/g)?.length).toBe(1);
+  expect(html).not.toContain("<line");
   expect(html.match(/data-current="true"/g)?.length).toBe(1);
   expect(html.match(/هذا الشهر/g)?.length).toBe(1);
-  expect(html).not.toContain("<img");
+  expect(html.match(/<img\b/g)?.length).toBe(1);
+  expect(html).toContain('alt="مانجو على قماش الكتان"');
+  expect(imageFiles(html)).toEqual(["/photos/produce/mango.webp"]);
   expect(html.match(/href="\/en\/produce\/mango"/g)?.length).toBe(2);
   expect(main).toContain("بيانات تجريبية لمنتج قيد التجربة — وليست نصيحة زراعية أو غذائية.");
 });
@@ -120,7 +131,7 @@ it("renders an Arabic mango page as English, or points the language link at the 
   expect(main).toContain("Sample data for a test product — not farming or nutrition advice.");
 });
 
-it("labels molokhia as fruit or omits the leafy season sentence", async () => {
+it("labels molokhia as fruit, paints the fallback tile, or omits the leafy season sentence", async () => {
   localeState.value = "ar";
   const html = renderToStaticMarkup(await ProducePage({ params: Promise.resolve({ slug: "molokhia" }) }));
   const main = mainHtml(html);
@@ -128,7 +139,11 @@ it("labels molokhia as fruit or omits the leafy season sentence", async () => {
   expect(html).toContain("<bdi>Molokhia</bdi>");
   expect(main).toContain("ورقيات");
   expect(main).not.toContain("فاكهة");
-  expect(html.match(/data-kind="leafy"/g)?.length).toBe(3);
+  expect(html.match(/<img\b/g)?.length).toBe(1);
+  expect(html).toContain('alt="ملوخية على صندوق في السوق"');
+  expect(imageFiles(html)).toEqual(["/photos/produce/molokhia.webp"]);
+  expect(html).not.toContain("<line");
+  expect(html.match(/data-kind="leafy"/g)?.length).toBe(1);
   expect(html).not.toContain('data-kind="fruit"');
   expect(html).not.toContain('data-kind="vegetable"');
   expect(main).toContain("في الموسم: من مايو إلى سبتمبر");

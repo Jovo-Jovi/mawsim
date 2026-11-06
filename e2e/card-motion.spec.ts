@@ -81,16 +81,17 @@ async function readMotion(card: Locator): Promise<Reading> {
       if (!Number.isFinite(n)) return null;
       return trimmed.endsWith("%") ? (n / 100) * size : n;
     };
-    const tile = anchor.querySelector("div[data-kind]");
-    if (!(tile instanceof HTMLElement)) throw new Error("missing tile");
-    const frame = tile.parentElement;
+    const photo = anchor.querySelector("img");
+    if (!(photo instanceof HTMLElement)) throw new Error("missing photo");
+    const frame = photo.parentElement;
     if (!(frame instanceof HTMLElement)) throw new Error("missing frame");
-    const dial = tile.querySelector("div");
-    if (!(dial instanceof HTMLElement)) throw new Error("missing dial");
+    const ring = anchor.querySelector("svg[data-kind]");
+    const badge = ring?.parentElement ?? null;
+    if (!(badge instanceof HTMLElement)) throw new Error("missing badge");
     const cardStyle = getComputedStyle(anchor);
-    const tileStyle = getComputedStyle(tile);
-    const glow = getComputedStyle(dial, "::before");
-    let block: HTMLElement | null = dial.parentElement;
+    const tileStyle = getComputedStyle(photo);
+    const glow = getComputedStyle(badge, "::before");
+    let block: HTMLElement | null = badge;
     while (block) {
       const parent = getComputedStyle(block);
       const shifted = parent.transform !== "none" || (parent.translate !== "none" && parent.translate !== "");
@@ -134,7 +135,7 @@ async function readMotion(card: Locator): Promise<Reading> {
     const fromBorderX = borderLeft + paddingX + shiftX;
     const fromBorderY = borderTop + paddingY + shiftY;
     const hostBox = host.getBoundingClientRect();
-    const dialBox = dial.getBoundingClientRect();
+    const dialBox = badge.getBoundingClientRect();
     const scaleX = host.offsetWidth === 0 ? 1 : hostBox.width / host.offsetWidth;
     const scaleY = host.offsetHeight === 0 ? 1 : hostBox.height / host.offsetHeight;
     const haloX = hostBox.left + hostBox.width / 2 + (fromBorderX - host.offsetWidth / 2) * scaleX;
@@ -155,8 +156,8 @@ async function readMotion(card: Locator): Promise<Reading> {
       haloDy: haloY - (dialBox.top + dialBox.height / 2),
       haloWidth: width,
       haloHeight: height,
-      dialWidth: dial.offsetWidth,
-      dialHeight: dial.offsetHeight,
+      dialWidth: badge.offsetWidth,
+      dialHeight: badge.offsetHeight,
     };
   });
 }
@@ -190,7 +191,7 @@ async function pollMotion(card: Locator, ready: (reading: Reading) => boolean): 
 function line(label: string, reading: Reading): string {
   const pair = scalePair(reading.tile);
   const scale = pair ? `${pair.x},${pair.y}` : reading.tile;
-  return `${label} transform=${reading.transform} tile=${reading.tile} scale=${scale} glow=${reading.glowOpacity} glowTransform=${reading.glowTransform} outline=${reading.outlineStyle}/${reading.outlineWidth} frame=${reading.frameWidth}x${reading.frameHeight} layout=${reading.layoutWidth}x${reading.layoutHeight} haloDx=${reading.haloDx.toFixed(2)} haloDy=${reading.haloDy.toFixed(2)} halo=${reading.haloWidth.toFixed(2)}x${reading.haloHeight.toFixed(2)} dial=${reading.dialWidth}x${reading.dialHeight}`;
+  return `${label} transform=${reading.transform} img=${reading.tile} scale=${scale} glow=${reading.glowOpacity} glowTransform=${reading.glowTransform} outline=${reading.outlineStyle}/${reading.outlineWidth} frame=${reading.frameWidth}x${reading.frameHeight} layout=${reading.layoutWidth}x${reading.layoutHeight} haloDx=${reading.haloDx.toFixed(2)} haloDy=${reading.haloDy.toFixed(2)} halo=${reading.haloWidth.toFixed(2)}x${reading.haloHeight.toFixed(2)} badge=${reading.dialWidth}x${reading.dialHeight}`;
 }
 
 async function openGuide(page: Page, locale: "en" | "ar", foreign: string[]): Promise<Locator> {
