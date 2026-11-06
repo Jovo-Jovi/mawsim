@@ -24,7 +24,7 @@ wait for the developer's merge.
 | T17 | P06 | J5 | Showcase acceptance with the owner's images: every frame, credits, captures and the e2e | 2 | G-Showcase | [x] | PASS a4 — docs/reviews/T17-a4.md |
 | T18 | P07 | J5 | Year dial foundation: version 3 tokens, the shared ring geometry, and the card's circular photo inside its season ring | 2 | — | [x] | PASS a2 — docs/reviews/T18-a2.md |
 | T19 | P07 | J5 | Guide: the year dial as month picker and the year chart view | 2 | — | [x] | PASS a3 — docs/reviews/T19-a3.md |
-| T20 | P07 | J5 | Guide motion: GSAP joins; the dial turns and the cards re-sort with Flip | 2 | — | [ ] | FAIL a1 — docs/reviews/T20-a1.md |
+| T20 | P07 | J5 | Guide motion: GSAP joins; the dial turns and the cards re-sort with Flip | 2 | — | [x] | PASS a2 — docs/reviews/T20-a2.md |
 | T21 | P07 | J5 | Home: the scroll-driven year story with Lenis; the 3D hero scene and three.js removed | 2 | — | [ ] | — |
 | T22 | P07 | J5 | Produce page: the season arc around the circular photograph, drawn on entry, with the scroll zoom | 2 | — | [ ] | — |
 | T23 | P07 | J5 | "The year turns" acceptance: every screen in both locales, the site-wide e2e and the captures | 2 | G-YearTurns | [ ] | — |
