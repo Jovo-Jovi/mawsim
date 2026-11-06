@@ -18,28 +18,11 @@
   align-self: center;
 }
 
-/* The Arabic display face is narrower than its fallback, so an uncapped heading
-   drops a line when the face arrives. The cap is the loaded line count. */
-.page h1:lang(ar) {
-  overflow: hidden;
-}
-
-@media (min-width: 23.5rem) {
-  .page h1:lang(ar) {
-    max-block-size: calc(var(--leading-tight) * 2em);
-  }
-}
-
-@media (min-width: 40rem) {
-  .page h1:lang(ar) {
-    max-block-size: none;
-  }
-}
-
-@media (min-width: 72rem) {
-  .page h1:lang(ar) {
-    max-block-size: calc(var(--leading-tight) * 1em);
-  }
+/* The display face paints outside a one-line cap and outside the tight leading.
+   The heading stays as tall as its text, and the padding keeps that ink inside
+   the border box. */
+.page h1 {
+  padding-block: var(--space-3);
 }
 
 .notice {

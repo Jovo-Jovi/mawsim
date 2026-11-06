@@ -235,6 +235,96 @@ function cardsFromContent(kind: NoJsPage): number {
   return produce.length;
 }
 
+type GuideSurface = "guide" | "chart";
+
+function guideSurfaceHref(locale: LocaleCode, surface: GuideSurface): string {
+  if (surface === "chart") return `/${locale}/guide?month=8&view=chart`;
+  return `/${locale}/guide?month=8`;
+}
+
+async function installFirstload(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const seen: string[] = [];
+    Object.assign(window, { __yearFirstload: seen });
+    document.addEventListener(
+      "animationstart",
+      (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const card = target.closest("li[data-flip-id], [data-year-chart] ol > li");
+        if (!(card instanceof HTMLElement) || card !== target || card.hasAttribute("hidden")) return;
+        const box = card.getBoundingClientRect();
+        if (box.width <= 1 || box.height <= 1 || box.top >= window.innerHeight || box.bottom <= 0) return;
+        const slug = card.getAttribute("data-flip-id") ?? card.querySelector("a")?.getAttribute("href") ?? "";
+        if (slug.length === 0 || seen.includes(slug)) return;
+        seen.push(slug);
+      },
+      true,
+    );
+  });
+}
+
+async function waitUntilStill(page: Page): Promise<void> {
+  await page.evaluate(async () => {
+    if (document.fonts) await document.fonts.ready;
+  });
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(
+          () =>
+            (document.getAnimations?.() ?? []).filter((animation) => animation.playState === "running").length,
+        ),
+      { timeout: 8_000 },
+    )
+    .toBe(0);
+}
+
+async function headingClip(page: Page): Promise<{ clipped: number; rects: number }> {
+  return page.locator("h1").evaluate((heading) => {
+    if (!(heading instanceof HTMLElement)) return { clipped: 1, rects: 0 };
+    const range = document.createRange();
+    range.selectNodeContents(heading);
+    const box = heading.getBoundingClientRect();
+    const rects = [...range.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0);
+    let top = Number.POSITIVE_INFINITY;
+    let bottom = Number.NEGATIVE_INFINITY;
+    let out = 0;
+    for (const rect of rects) {
+      top = Math.min(top, rect.top);
+      bottom = Math.max(bottom, rect.bottom);
+      out = Math.max(out, box.left - rect.left, rect.right - box.right, box.top - rect.top, rect.bottom - box.bottom);
+    }
+    const textHeight = rects.length === 0 ? 0 : bottom - top;
+    const max = getComputedStyle(heading).maxBlockSize;
+    const maxPx = Number.parseFloat(max);
+    const maxOk = max === "none" || (Number.isFinite(maxPx) && maxPx + 1 >= textHeight);
+    const inside = rects.length > 0 && out <= 1;
+    return { clipped: inside && maxOk ? 0 : 1, rects: rects.length };
+  });
+}
+
+async function firstloadCount(page: Page): Promise<number> {
+  return page.evaluate(() => {
+    const seen = (window as unknown as { __yearFirstload?: string[] }).__yearFirstload;
+    return seen?.length ?? -1;
+  });
+}
+
+async function viewportCards(page: Page): Promise<{ count: number; names: string[] }> {
+  return page.evaluate(() => {
+    const names: string[] = [];
+    const cards = [...document.querySelectorAll("li[data-flip-id]:not([hidden]), [data-year-chart] ol > li")];
+    for (const card of cards) {
+      if (!(card instanceof HTMLElement)) continue;
+      const box = card.getBoundingClientRect();
+      if (box.width <= 1 || box.height <= 1 || box.top >= window.innerHeight || box.bottom <= 0) continue;
+      names.push(getComputedStyle(card).animationName);
+    }
+    return { count: names.length, names };
+  });
+}
+
 async function paintedCount(page: Page, kind: NoJsPage): Promise<number> {
   return page.evaluate((which) => {
     const painted = (node: Element): boolean => {
@@ -607,3 +697,77 @@ for (const locale of LOCALES) {
     });
   }
 }
+
+const SURFACES: GuideSurface[] = ["guide", "chart"];
+
+for (const locale of LOCALES) {
+  for (const width of WIDTHS) {
+    for (const surface of SURFACES) {
+      test(`clips the ${surface} heading (${locale} ${width})`, async ({ page }) => {
+        await installShift(page);
+        await openSized(page, guideSurfaceHref(locale, surface), width);
+        await expect(page.locator("h1")).toBeVisible();
+        await page.evaluate(async () => {
+          if (document.fonts) await document.fonts.ready;
+        });
+        const reading = await headingClip(page);
+        const shift = await shiftSum(page);
+        console.log(
+          `year-turns ${locale} ${width} heading clipped=${reading.clipped} page=${surface} shift=${shift}`,
+        );
+        expect(reading.rects).toBeGreaterThan(0);
+        expect(reading.clipped).toBe(0);
+        expect(shift).toBe(0);
+      });
+
+      test(`plays rise on a first-viewport card when the ${surface} page loads (${locale} ${width})`, async ({
+        page,
+      }) => {
+        await installFirstload(page);
+        await openSized(page, guideSurfaceHref(locale, surface), width);
+        await expect(page.locator("h1")).toBeVisible();
+        const anchor =
+          surface === "guide"
+            ? page.locator("li[data-flip-id]:not([hidden])").first()
+            : page.locator("[data-year-chart] ol > li").first();
+        await expect(anchor).toBeVisible();
+        await waitUntilStill(page);
+        const animated = await firstloadCount(page);
+        const viewport = await viewportCards(page);
+        console.log(
+          `year-turns ${locale} ${width} firstload animated=${animated} page=${surface} viewport=${viewport.count}`,
+        );
+        expect(animated).toBe(0);
+      });
+    }
+  }
+}
+
+test.describe("year turns first load without javascript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      for (const surface of SURFACES) {
+        test(`gives a first-viewport card an animation when JavaScript is off on ${surface} (${locale} ${width})`, async ({
+          page,
+        }) => {
+          await page.setViewportSize({ width, height: heightFor(width) });
+          const response = await page.goto(guideSurfaceHref(locale, surface));
+          expect(response?.status()).toBe(200);
+          const anchor =
+            surface === "guide"
+              ? page.locator("li[data-flip-id]:not([hidden])").first()
+              : page.locator("[data-year-chart] ol > li").first();
+          await expect(anchor).toBeAttached();
+          const viewport = await viewportCards(page);
+          const moving = viewport.names.filter((name) => name !== "none");
+          console.log(
+            `year-turns ${locale} ${width} firstload nojs page=${surface} seen=${viewport.count} names=${viewport.names.join(",") || "none"}`,
+          );
+          expect(moving).toEqual([]);
+        });
+      }
+    }
+  }
+});

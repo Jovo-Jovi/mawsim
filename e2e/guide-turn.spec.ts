@@ -344,6 +344,13 @@ async function waitStable(page: Page): Promise<void> {
             return opacity >= 0.99;
           });
           if (!faded) return false;
+          // The load-time rise no longer keeps the page busy until Reveal marks
+          // cards below the viewport. An unmarked card there has not been classified yet.
+          const unclassified = cards.some((element) => {
+            if (element.getAttribute("data-reveal")) return false;
+            return element.getBoundingClientRect().top >= window.innerHeight;
+          });
+          if (unclassified) return false;
           const read = () =>
             cards
               .map((element) => {
