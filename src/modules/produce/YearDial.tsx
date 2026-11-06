@@ -5,7 +5,9 @@ import {
   calendarMonthLabelPoint,
   dialTurnDegrees,
   dialViewBoxSize,
+  innerDialSize,
   ringCellPath,
+  storyOrbitBandRatio,
 } from "./dial-geometry";
 import styles from "./YearDial.module.css";
 
@@ -26,17 +28,27 @@ export function YearDial({
   currentMonth,
   direction,
   label,
+  centre,
+  story = false,
 }: {
   selected: CalendarMonth;
   currentMonth: CalendarMonth;
   direction: "ltr" | "rtl";
   label: (calendarMonth: CalendarMonth) => ReactNode;
+  centre?: ReactNode;
+  story?: boolean;
 }) {
   const turn = {
     "--dial-turn": `${dialTurnDegrees(selected, direction)}deg`,
   } as CSSProperties;
+  const frameStyle = (
+    story
+      ? { ...turn, inlineSize: `${innerDialSize(100, 100 * storyOrbitBandRatio)}%` }
+      : turn
+  ) as CSSProperties;
   return (
-    <div className={styles.dial} style={turn}>
+    <div className={story ? `${styles.dial} ${styles.story}` : styles.dial} style={frameStyle}>
+      {centre != null ? <div className={styles.centre}>{centre}</div> : null}
       <div className={styles.turn} data-dial-turn="">
         <svg
           viewBox={`0 0 ${dialViewBoxSize} ${dialViewBoxSize}`}

@@ -6,6 +6,27 @@
   container-type: size;
 }
 
+.dial.story {
+  position: relative;
+  inset: auto;
+  block-size: auto;
+  aspect-ratio: 1;
+  max-inline-size: 100%;
+}
+
+.centre {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  margin: auto;
+  /* The ring is 58% of the dial; its inner edge is ringInnerEdgeRadius / ringOuterEdgeRadius. */
+  inline-size: calc(58% * 16.6 / 20);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  pointer-events: none;
+}
+
 .turn {
   position: absolute;
   inset: 0;

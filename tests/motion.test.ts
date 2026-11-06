@@ -430,26 +430,23 @@ it("catches a reveal stylesheet that hides a pending cell under reduced motion o
   expect(offenders).toEqual([]);
 });
 
-it("catches a home stylesheet that loops, animates something other than transform and opacity, or drops the scene control's reduced-motion block", () => {
+it("catches a home stylesheet that loops or animates something other than transform and opacity", () => {
   const home = stylesheets.filter(({ file }) => relative(file).startsWith("modules/home/"));
   const names = home.map(({ file }) => relative(file)).sort();
-  expect(names).toContain("modules/home/HeroScene.module.css");
+  expect(names).not.toContain("modules/home/HeroScene.module.css");
   expect(names).toContain("modules/home/Hero.module.css");
   expect(names).toContain("modules/home/SeasonDial.module.css");
   expect(home.filter(({ css }) => css.includes("infinite")).map(({ file }) => relative(file))).toEqual([]);
 
   const quiet = new Set(["opacity", "transform"]);
-  const buttonColour = new Set(["color", "background-color"]);
   const offenders: string[] = [];
   for (const { file, css } of home) {
     const name = relative(file);
-    const sceneSheet = name === "modules/home/HeroScene.module.css";
     for (const match of css.matchAll(/transition-property\s*:\s*([^;]+)/g)) {
       const value = match[1].trim().replaceAll(/\s+/g, " ");
       if (value === "none") continue;
       for (const prop of value.split(",").map((part) => part.trim())) {
         if (quiet.has(prop)) continue;
-        if (sceneSheet && buttonColour.has(prop)) continue;
         offenders.push(`${name} transition ${prop}`);
       }
     }
@@ -461,13 +458,6 @@ it("catches a home stylesheet that loops, animates something other than transfor
     }
   }
   expect(offenders).toEqual([]);
-
-  const scene = sheet("modules/home/HeroScene.module.css");
-  const active = [...scene.matchAll(/transition-property\s*:\s*([^;]+)/g)]
-    .map((match) => match[1].trim())
-    .filter((value) => value !== "none");
-  expect(active.length).toBeGreaterThan(0);
-  expect(scene).toContain("prefers-reduced-motion: reduce");
 });
 
 it("adds a keyframe, animation or transition to the guide motion or the dial stylesheet", () => {

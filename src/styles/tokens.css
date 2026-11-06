@@ -83,8 +83,6 @@
   --dur-flip: 560ms;
   --flip-stagger: 40ms;
   --zoom-scroll: 1.08;
-  --scene-turn: 48s;
-  --scene-size: 12rem;
   --texture-opacity: 0.08;
   --texture-ink: #1F2A22;
   --texture-tile: 12rem;
@@ -124,7 +122,6 @@
 
 @media (min-width: 40rem) {
   :root {
-    --scene-size: 14rem;
     --dial-size: 28rem;
     --dial-picker-size: 20rem;
   }
@@ -132,7 +129,6 @@
 
 @media (min-width: 64rem) {
   :root {
-    --scene-size: 16rem;
     --dial-size: 34rem;
     --arc-size: 24rem;
   }

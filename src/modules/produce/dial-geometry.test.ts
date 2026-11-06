@@ -5,11 +5,14 @@ import {
   calendarMonthLabelPoint,
   dialTurnDegrees,
   dialViewBoxSize,
+  innerDialSize,
+  orbitPlace,
   ringBandWidth,
   ringCellPath,
   ringInnerEdgeRadius,
   ringOuterEdgeRadius,
   ringStrokeRadius,
+  storyOrbitBandRatio,
 } from "./dial-geometry";
 
 const CENTER = 20;
@@ -116,6 +119,41 @@ it("sets the ring outer edge inside half the viewBox", () => {
   expect(ringInnerEdgeRadius).toBe(16.6);
   expect(ringStrokeRadius).toBe(18.3);
   expect(ringOuterEdgeRadius * 2).toBe(dialViewBoxSize);
+});
+
+it("puts an orbit place off 12 o'clock, or leaves the rtl place unmirrored", () => {
+  const radius = 10;
+  const count = 10;
+  for (const direction of ["ltr", "rtl"] as const) {
+    const first = orbitPlace(0, count, radius, direction);
+    expect(first.x).toBeCloseTo(CENTER, 5);
+    expect(first.y).toBeCloseTo(CENTER - radius, 5);
+  }
+  for (let index = 0; index < count; index += 1) {
+    const ltr = orbitPlace(index, count, radius, "ltr");
+    const rtl = orbitPlace(index, count, radius, "rtl");
+    expect(rtl.x).toBeCloseTo(dialViewBoxSize - ltr.x, 5);
+    expect(rtl.y).toBeCloseTo(ltr.y, 5);
+  }
+  const east = orbitPlace(1, 4, radius, "ltr");
+  expect(east.x).toBeCloseTo(30, 5);
+  expect(east.y).toBeCloseTo(20, 5);
+  const west = orbitPlace(1, 4, radius, "rtl");
+  expect(west.x).toBeCloseTo(10, 5);
+  expect(west.y).toBeCloseTo(20, 5);
+});
+
+it("returns an inner dial that swallows the orbit band or grows past the outer size", () => {
+  expect(20 * storyOrbitBandRatio).toBe(1);
+  expect(innerDialSize(20, 1)).toBe(18);
+  expect(innerDialSize(20, 20 * storyOrbitBandRatio)).toBe(18);
+  expect(innerDialSize(28, 28 * storyOrbitBandRatio)).toBe(25.2);
+  expect(innerDialSize(34, 34 * storyOrbitBandRatio)).toBe(30.6);
+  expect(innerDialSize(100, 100 * storyOrbitBandRatio)).toBe(90);
+  const dialSize = 20;
+  const band = 1;
+  expect(innerDialSize(dialSize, band)).toBeLessThan(dialSize);
+  expect(innerDialSize(dialSize, band) + 2 * band).toBe(dialSize);
 });
 
 it("lets the band width drift from the widest stroke in the ring stylesheet", () => {

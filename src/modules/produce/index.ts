@@ -21,11 +21,14 @@ export {
   calendarMonthLabelPoint,
   dialTurnDegrees,
   dialViewBoxSize,
+  innerDialSize,
+  orbitPlace,
   ringBandWidth,
   ringCellPath,
   ringInnerEdgeRadius,
   ringOuterEdgeRadius,
   ringStrokeRadius,
+  storyOrbitBandRatio,
 } from "./dial-geometry";
 export { StorageTipPanel } from "./StorageTipPanel";
 export { seasonRuns } from "./season-text";

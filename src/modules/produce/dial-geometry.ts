@@ -86,3 +86,31 @@ export function dialTurnDegrees(calendarMonth: CalendarMonth, direction: "ltr" |
   const steps = (calendarMonth - 1) * DIAL_STEP_DEGREES;
   return direction === "rtl" ? steps : 0 - steps;
 }
+
+/**
+ * Place `index` of `count` on a circle of `radius` (viewBox units).
+ * Index 0 sits at 12 o'clock. `rtl` mirrors across the vertical axis, the
+ * same rule as `calendarMonthLabelPoint`, so no orbit circle is flipped.
+ */
+export function orbitPlace(
+  index: number,
+  count: number,
+  radius: number,
+  direction: "ltr" | "rtl",
+): { x: number; y: number } {
+  const clockwise = index * ((Math.PI * 2) / count);
+  const angle = direction === "rtl" ? -clockwise : clockwise;
+  return pointAt(angle, radius);
+}
+
+/**
+ * Share of `--dial-size` reserved on each side for the produce orbit.
+ * At the 20rem token the inner dial is 18rem, the guide dial's base size,
+ * where a `--target-min` label ends on the dial's edge.
+ */
+export const storyOrbitBandRatio = 1 / 20;
+
+/** Diameter left when `band` is reserved on both sides, so the band stays inside `dialSize`. */
+export function innerDialSize(dialSize: number, band: number): number {
+  return dialSize - 2 * band;
+}
