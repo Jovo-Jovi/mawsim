@@ -17,6 +17,7 @@ vi.mock("next/root-params", () => ({
   locale: () => Promise.resolve(localeState.value),
 }));
 
+import { listProduce } from "@/modules/produce";
 import { generateMetadata, default as GuidePage } from "./page";
 
 beforeEach(() => {
@@ -265,6 +266,43 @@ it("drops view=chart from a month, kind or language link", async () => {
     "/ar/guide?month=8&kind=leafy&view=chart",
   ]);
   expect(chipHrefs(html, "الشهور")).toContain("/ar/guide?month=9&kind=fruit&view=chart");
+});
+
+it("renders the year chart for the card grid, or the card grid when the view is missing", async () => {
+  const catalogue = listProduce().map((row) => row.slug);
+  expect(catalogue).toHaveLength(10);
+
+  localeState.value = "ar";
+  const chart = await render({ month: "8", view: "chart" });
+  expect(chart).toContain('data-year-chart=""');
+  expect(chart).toContain('aria-label="المواسم على مدار السنة"');
+  expect(slugs(chart)).toEqual(catalogue);
+  expect(chart.match(/data-reveal-item=/g)?.length).toBe(1);
+  const monthsAt = chart.indexOf('aria-label="الشهور"');
+  const viewsAt = chart.indexOf('aria-label="طرق العرض"');
+  const kindsAt = chart.indexOf('aria-label="الأنواع"');
+  expect(monthsAt).toBeGreaterThan(chart.indexOf("<h1"));
+  expect(viewsAt).toBeGreaterThan(monthsAt);
+  expect(kindsAt).toBeGreaterThan(viewsAt);
+
+  localeState.value = "en";
+  const listed = await render({ month: "8", view: "list" });
+  expect(listed).not.toContain("data-year-chart");
+  expect(listed).not.toContain("Seasons across the year");
+  expect(slugs(listed)).toEqual(augustAll);
+  expect(listed.match(/data-reveal-item=/g)?.length).toBe(8);
+
+  const missing = await render({ month: "8" });
+  expect(missing).not.toContain("data-year-chart");
+  expect(slugs(missing)).toEqual(augustAll);
+
+  localeState.value = "ar";
+  const fruit = await render({ month: "8", kind: "fruit", view: "chart" });
+  expect(chipHrefs(fruit, "طرق العرض")).toEqual([
+    "/ar/guide?month=8&kind=fruit",
+    "/ar/guide?month=8&kind=fruit&view=chart",
+  ]);
+  expect(slugs(fruit)).toEqual(["mango", "orange", "strawberry", "watermelon", "guava", "pomegranate", "dates"]);
 });
 
 it("keeps a bare guide or a junk query on the language links", async () => {

@@ -60,7 +60,7 @@
 
   .header [data-month-picker] {
     grid-column: 2;
-    grid-row: 1 / span 2;
+    grid-row: 1 / span 3;
     justify-self: end;
     align-self: center;
   }

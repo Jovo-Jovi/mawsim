@@ -4,8 +4,24 @@ import { expect, test, type Page } from "@playwright/test";
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 const COPY = {
-  en: { months: "Months", kinds: "Kinds", previous: "Previous month", next: "Next month" },
-  ar: { months: "الشهور", kinds: "الأنواع", previous: "الشهر السابق", next: "الشهر التالي" },
+  en: {
+    months: "Months",
+    kinds: "Kinds",
+    previous: "Previous month",
+    next: "Next month",
+    chart: "Seasons across the year",
+    language: "العربية",
+    other: "ar",
+  },
+  ar: {
+    months: "الشهور",
+    kinds: "الأنواع",
+    previous: "الشهر السابق",
+    next: "الشهر التالي",
+    chart: "المواسم على مدار السنة",
+    language: "English",
+    other: "en",
+  },
 } as const;
 
 type Locale = keyof typeof COPY;
@@ -141,6 +157,43 @@ for (const locale of ["en", "ar"] as const) {
       await expect(kept).toHaveAttribute("href", `/${locale}/guide?month=9&kind=fruit`);
       await kept.click();
       await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=9&kind=fruit$`));
+    });
+
+    test(`${locale} chart keeps kind and view and fits at ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      const response = await page.goto(`/${locale}/guide?month=8&kind=fruit&view=chart`);
+      expect(response?.ok()).toBe(true);
+
+      const months = page.locator(`nav[aria-label="${COPY[locale].months}"]`);
+      await expect(months.locator('a[data-month="9"]')).toHaveAttribute(
+        "href",
+        `/${locale}/guide?month=9&kind=fruit&view=chart`,
+      );
+      const chart = page.getByRole("list", { name: COPY[locale].chart });
+      await expect(chart).toBeVisible();
+      const scroll = await page.evaluate(() => {
+        const node = document.querySelector("[data-year-chart]");
+        return {
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+          chartScrollWidth: node?.scrollWidth ?? -1,
+          chartClientWidth: node?.clientWidth ?? -1,
+        };
+      });
+      console.log(
+        `${locale} ${viewport.name} chart scroll=${scroll.scrollWidth}/${scroll.clientWidth} chartBox=${scroll.chartScrollWidth}/${scroll.chartClientWidth}`,
+      );
+      expect(scroll.scrollWidth).toBeLessThanOrEqual(scroll.clientWidth);
+      expect(scroll.chartScrollWidth).toBeLessThanOrEqual(scroll.chartClientWidth);
+
+      const language = page.getByRole("banner").getByRole("link", { name: COPY[locale].language, exact: true });
+      await expect(language).toHaveAttribute(
+        "href",
+        `/${COPY[locale].other}/guide?month=8&kind=fruit&view=chart`,
+      );
+
+      const violations = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+      expect(violations.violations).toEqual([]);
     });
   }
 }
