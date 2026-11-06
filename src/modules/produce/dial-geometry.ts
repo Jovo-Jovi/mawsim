@@ -151,8 +151,3 @@ export const storyOrbitCentreInset = 0.006;
 export function storyOrbitCentreRadius(bandRatio: number): number {
   return dialViewBoxSize * ((1 - bandRatio) / 2 - storyOrbitCentreInset);
 }
-
-/** Diameter left when `band` is reserved on both sides, so the band stays inside `dialSize`. */
-export function innerDialSize(dialSize: number, band: number): number {
-  return dialSize - 2 * band;
-}

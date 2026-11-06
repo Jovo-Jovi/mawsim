@@ -109,12 +109,9 @@ it("lets the accent tick's round cap paint on the centre photograph", () => {
   const css = readFileSync(new URL("./YearDial.module.css", import.meta.url), "utf8");
   const tickWidth = Number(/\.tick\s*\{[^}]*stroke-width:\s*([0-9.]+)/.exec(css)?.[1]);
   expect(tickWidth).toBeGreaterThan(0);
-  const limit = (ringInnerEdgeRadius - tickWidth / 2) / ringOuterEdgeRadius;
   expect(css).toContain("inline-size: 58%");
   expect(css).toContain(
     `calc(58% * (${ringInnerEdgeRadius} - ${tickWidth} / 2) / ${ringOuterEdgeRadius} - 0.25%)`,
   );
-  const centreOverRing = limit - 0.0025 / 0.58;
-  expect(centreOverRing).toBeLessThan(limit);
   expect(css).toContain("border-radius: var(--radius-pill)");
 });

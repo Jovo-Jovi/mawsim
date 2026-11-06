@@ -21,7 +21,6 @@ export {
   calendarMonthLabelPoint,
   dialTurnDegrees,
   dialViewBoxSize,
-  innerDialSize,
   orbitPlace,
   ringBandWidth,
   ringCellPath,

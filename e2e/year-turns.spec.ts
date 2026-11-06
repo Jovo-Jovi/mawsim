@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 const LOCALES = ["ar", "en"] as const;
@@ -212,6 +212,49 @@ async function cardNamesOpaque(page: Page): Promise<boolean> {
       return opacity === "1";
     }),
   );
+}
+
+const CARD_MONTHS = [8, 1, 10] as const;
+
+function slugsInMonth(month: number): string[] {
+  return produce.filter((row) => row.months.includes(month)).map((row) => row.slug);
+}
+
+async function readCardHit(card: Locator): Promise<CardHit> {
+  return card.evaluate((anchor) => {
+    const slug = /\/produce\/([^/?#]+)/.exec(anchor.querySelector("a")?.getAttribute("href") ?? "")?.[1] ?? "";
+    const ring = anchor.querySelector("[data-season-ring]");
+    const circle = anchor.querySelector("[data-photo-circle]");
+    const img = circle?.querySelector("img");
+    if (!(ring instanceof HTMLElement) || !(circle instanceof HTMLElement) || !(img instanceof HTMLImageElement)) {
+      return { slug, circular: false, inside: false, photoBeforeCopy: false };
+    }
+    const ringBox = ring.getBoundingClientRect();
+    const circleBox = circle.getBoundingClientRect();
+    const radius = Number.parseFloat(getComputedStyle(circle).borderTopLeftRadius);
+    const side = Math.min(circleBox.width, circleBox.height);
+    const circular = side > 1 && radius + 1 >= side / 2;
+    const inside =
+      circleBox.left >= ringBox.left - 1 &&
+      circleBox.top >= ringBox.top - 1 &&
+      circleBox.right <= ringBox.right + 1 &&
+      circleBox.bottom <= ringBox.bottom + 1 &&
+      circleBox.width < ringBox.width &&
+      circleBox.height < ringBox.height;
+    const stack = document.elementsFromPoint(
+      circleBox.left + circleBox.width / 2,
+      circleBox.top + circleBox.height / 2,
+    );
+    const photoAt = stack.findIndex((node) => node === img);
+    const copyAt = stack.findIndex((node) => {
+      if (!(node instanceof Element)) return false;
+      if (node === img || img.contains(node)) return false;
+      const badge = node.closest("[data-badge], [class*='badge']");
+      const copy = node.closest("h2, p");
+      return (badge !== null || copy !== null) && anchor.contains(node);
+    });
+    return { slug, circular, inside, photoBeforeCopy: photoAt >= 0 && (copyAt < 0 || photoAt < copyAt) };
+  });
 }
 
 async function settleNames(page: Page): Promise<void> {
@@ -561,76 +604,51 @@ for (const locale of LOCALES) {
       expect(chart.selected).toEqual(["8"]);
     });
 
-    test(`covers a guide photograph or draws fewer than ten circles (${locale} ${width})`, async ({ page }) => {
-      await openSized(page, `/${locale}/guide?month=8`, width);
-      await settleNames(page);
-      const cards = page.locator("li[data-flip-id]");
-      await expect(cards).toHaveCount(10);
-      let photos = 0;
+    test(`covers a guide photograph or leaves a slug untested (${locale} ${width})`, async ({ page }) => {
+      test.setTimeout(180_000);
+      const checked = new Set<string>();
       let covered = 0;
-      for (let index = 0; index < 10; index += 1) {
-        const card = cards.nth(index);
-        await expect(card.locator("[data-photo-circle] img")).toHaveCount(1);
-        await expect(card.locator("[data-season-ring]")).toHaveCount(1);
-        photos += 1;
-        if ((await card.getAttribute("hidden")) !== null) continue;
-        await card.evaluate((node) => {
-          node.scrollIntoView({ block: "center", inline: "center" });
-          const circle = node.querySelector("[data-photo-circle]");
-          const header = document.querySelector("header");
-          if (!(circle instanceof HTMLElement) || !(header instanceof HTMLElement)) return;
-          const overlap = header.getBoundingClientRect().bottom - circle.getBoundingClientRect().top;
-          if (overlap > 0) window.scrollBy(0, -overlap);
-        });
-        await expect
-          .poll(() =>
-            card.evaluate((node) => {
-              const opacity = Number(getComputedStyle(node).opacity);
-              const box = node.getBoundingClientRect();
-              return opacity >= 0.99 && box.width > 1 && box.height > 1;
-            }),
-          )
-          .toBe(true);
-        const hit: CardHit = await card.evaluate((anchor) => {
-          const slug = /\/produce\/([^/?#]+)/.exec(anchor.querySelector("a")?.getAttribute("href") ?? "")?.[1] ?? "";
-          const ring = anchor.querySelector("[data-season-ring]");
-          const circle = anchor.querySelector("[data-photo-circle]");
-          const img = circle?.querySelector("img");
-          if (!(ring instanceof HTMLElement) || !(circle instanceof HTMLElement) || !(img instanceof HTMLImageElement)) {
-            return { slug, circular: false, inside: false, photoBeforeCopy: false };
-          }
-          const ringBox = ring.getBoundingClientRect();
-          const circleBox = circle.getBoundingClientRect();
-          const radius = Number.parseFloat(getComputedStyle(circle).borderTopLeftRadius);
-          const side = Math.min(circleBox.width, circleBox.height);
-          const circular = side > 1 && radius + 1 >= side / 2;
-          const inside =
-            circleBox.left >= ringBox.left - 1 &&
-            circleBox.top >= ringBox.top - 1 &&
-            circleBox.right <= ringBox.right + 1 &&
-            circleBox.bottom <= ringBox.bottom + 1 &&
-            circleBox.width < ringBox.width &&
-            circleBox.height < ringBox.height;
-          const stack = document.elementsFromPoint(
-            circleBox.left + circleBox.width / 2,
-            circleBox.top + circleBox.height / 2,
-          );
-          const photoAt = stack.findIndex((node) => node === img);
-          const copyAt = stack.findIndex((node) => {
-            if (!(node instanceof Element)) return false;
-            if (node === img || img.contains(node)) return false;
-            const badge = node.closest("[data-badge], [class*='badge']");
-            const copy = node.closest("h2, p");
-            return (badge !== null || copy !== null) && anchor.contains(node);
+      for (const month of CARD_MONTHS) {
+        const expected = slugsInMonth(month);
+        await openSized(page, `/${locale}/guide?month=${month}`, width);
+        await settleNames(page);
+        const cards = page.locator("li[data-flip-id]:not([hidden])");
+        await expect(cards, `month ${month}`).toHaveCount(expected.length);
+        const seen: string[] = [];
+        for (let index = 0; index < expected.length; index += 1) {
+          const card = cards.nth(index);
+          await expect(card.locator("[data-photo-circle] img")).toHaveCount(1);
+          await expect(card.locator("[data-season-ring]")).toHaveCount(1);
+          await card.evaluate((node) => {
+            node.scrollIntoView({ block: "center", inline: "center" });
+            const circle = node.querySelector("[data-photo-circle]");
+            const header = document.querySelector("header");
+            if (!(circle instanceof HTMLElement) || !(header instanceof HTMLElement)) return;
+            const overlap = header.getBoundingClientRect().bottom - circle.getBoundingClientRect().top;
+            if (overlap > 0) window.scrollBy(0, -overlap);
           });
-          return { slug, circular, inside, photoBeforeCopy: photoAt >= 0 && (copyAt < 0 || photoAt < copyAt) };
-        });
-        expect(hit.circular, hit.slug).toBe(true);
-        expect(hit.inside, hit.slug).toBe(true);
-        if (!hit.photoBeforeCopy) covered += 1;
+          await expect
+            .poll(() =>
+              card.evaluate((node) => {
+                const opacity = Number(getComputedStyle(node).opacity);
+                const box = node.getBoundingClientRect();
+                return opacity >= 0.99 && box.width > 1 && box.height > 1;
+              }),
+            )
+            .toBe(true);
+          const hit = await readCardHit(card);
+          expect(hit.circular, `${month} ${hit.slug}`).toBe(true);
+          expect(hit.inside, `${month} ${hit.slug}`).toBe(true);
+          expect(expected, hit.slug).toContain(hit.slug);
+          if (!hit.photoBeforeCopy) covered += 1;
+          seen.push(hit.slug);
+          checked.add(hit.slug);
+        }
+        expect(new Set(seen).size, `month ${month}`).toBe(expected.length);
       }
-      console.log(`year-turns ${locale} ${width} cards=10 photos=${photos} covered=${covered}`);
-      expect(photos).toBe(10);
+      console.log(`year-turns ${locale} ${width} checked=${checked.size} covered=${covered}`);
+      expect([...checked].sort()).toEqual(produce.map((row) => row.slug).sort());
+      expect(checked.size).toBe(produce.length);
       expect(covered).toBe(0);
     });
 

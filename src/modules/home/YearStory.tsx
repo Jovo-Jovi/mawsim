@@ -62,7 +62,7 @@ export function YearStory({
     <YearStoryMotion
       dialTurnDegrees={calendarMonths.map((calendarMonth) => dialTurnDegrees(calendarMonth, direction))}
       guideHrefs={calendarMonths.map((calendarMonth) => guideHref(locale, calendarMonth, null))}
-      seasons={produce.map((row) => row.months)}
+      seasonMonths={produce.map((row) => row.months)}
     >
       <div className={styles.band} data-texture-band="hero">
         <MarketTexture photo={texture} />

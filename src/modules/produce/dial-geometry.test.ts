@@ -8,7 +8,6 @@ import {
   cellMidpointLabelPoint,
   dialTurnDegrees,
   dialViewBoxSize,
-  innerDialSize,
   orbitPlace,
   ringBandWidth,
   ringCellPath,
@@ -187,20 +186,6 @@ it("puts an orbit place off 12 o'clock, or leaves the rtl place unmirrored", () 
   const west = orbitPlace(1, 4, radius, "rtl");
   expect(west.x).toBeCloseTo(10, 5);
   expect(west.y).toBeCloseTo(20, 5);
-});
-
-it("returns an inner dial that swallows the orbit band or grows past the outer size", () => {
-  expect(innerDialSize(20, 1)).toBe(18);
-  const dialSize = 20;
-  const band = 1;
-  expect(innerDialSize(dialSize, band)).toBeLessThan(dialSize);
-  expect(innerDialSize(dialSize, band) + 2 * band).toBe(dialSize);
-  expect(20 * storyOrbitBandRatio).toBeCloseTo(2.408, 5);
-  expect(innerDialSize(20, 20 * storyOrbitBandRatio)).toBeCloseTo(15.184, 5);
-  expect(innerDialSize(28, 28 * storyOrbitBandRatio)).toBeCloseTo(21.2576, 5);
-  expect(34 * storyOrbitBandRatioWide).toBeCloseTo(5.1, 5);
-  expect(innerDialSize(34, 34 * storyOrbitBandRatioWide)).toBeCloseTo(23.8, 5);
-  expect(innerDialSize(100, 100 * storyOrbitBandRatio)).toBeCloseTo(75.92, 5);
 });
 
 it("draws a forward orbit circle under 2.4rem at 20rem or under 4rem at 34rem", () => {
