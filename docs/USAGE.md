@@ -11,32 +11,32 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 133 · Not reported: 32 · Last run: 2026-11-06T00:17:39.031Z
+Runs: 139 · Not reported: 32 · Last run: 2026-11-06T03:00:25.905Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 133 | 11,738,268 | 6,187,623 | 636,398,128 | 10,688,235 | $166.19 (54 without a price) |
+| 139 | 12,260,749 | 6,523,460 | 669,119,163 | 11,118,799 | $173.60 (57 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
-| claude | claude-opus-5-5 | 32 | 123,500 | 2,572,889 | 231,094,027 | 9,561,170 | $158.48 |
-| claude | claude-sonnet-5-5 | 15 | 414 | 216,428 | 12,098,725 | 1,127,065 | $7.72 |
+| claude | claude-opus-5-5 | 34 | 123,686 | 2,684,916 | 242,671,931 | 9,932,500 | $165.56 |
+| claude | claude-sonnet-5-5 | 16 | 428 | 221,722 | 12,340,736 | 1,186,299 | $8.03 |
 | cursor | grok-4.7-xhigh-fast | 56 | 5,961,051 | 1,722,717 | 213,353,600 | 0 | — |
-| cursor | grok-4.7-high | 30 | 5,653,303 | 1,675,589 | 179,851,776 | 0 | — |
+| cursor | grok-4.7-high | 33 | 6,175,584 | 1,894,105 | 200,752,896 | 0 | — |
 
 ## By stage
 
 | Stage | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
-| intake | 1 | 164 | 88,411 | 6,850,125 | 236,372 | $4.74 |
+| intake | 3 | 350 | 200,438 | 18,428,029 | 607,702 | $11.83 |
 | revise | 1 | 62 | 24,159 | 1,164,892 | 109,905 | $1.46 |
-| builder | 86 | 11,614,354 | 3,398,306 | 393,205,376 | 0 | — |
-| reviewer | 43 | 4,982 | 2,395,581 | 211,333,746 | 9,590,643 | $144.68 |
+| builder | 89 | 12,136,635 | 3,616,822 | 414,106,496 | 0 | — |
+| reviewer | 44 | 4,996 | 2,400,875 | 211,575,757 | 9,649,877 | $144.99 |
 
 ## By task
 
@@ -44,6 +44,7 @@ Runs: 133 · Not reported: 32 · Last run: 2026-11-06T00:17:39.031Z
 |---|---|---|---|---|---|---|
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
 | intake-17 | 1 | 164 | 88,411 | 6,850,125 | 236,372 | $4.74 |
+| intake-28 | 2 | 186 | 112,027 | 11,577,904 | 371,330 | $7.09 |
 | T01 | 3 | 519,803 | 193,264 | 20,452,343 | 249,235 | $3.68 (2 without a price) |
 | T02 | 3 | 362,086 | 175,406 | 17,926,604 | 533,296 | $8.09 (1 without a price) |
 | T03 | 6 | 1,243,941 | 619,110 | 72,519,838 | 1,141,011 | $17.95 (3 without a price) |
@@ -61,3 +62,4 @@ Runs: 133 · Not reported: 32 · Last run: 2026-11-06T00:17:39.031Z
 | T15 | 3 | 551,435 | 207,820 | 14,988,071 | 89,718 | $0.63 (2 without a price) |
 | T16 | 14 | 1,142,150 | 971,357 | 86,392,463 | 2,273,245 | $34.95 (6 without a price) |
 | T17 | 15 | 1,225,957 | 594,531 | 64,212,700 | 1,202,936 | $20.67 (7 without a price) |
+| T18 | 4 | 522,295 | 223,810 | 21,143,131 | 59,234 | $0.31 (3 without a price) |
