@@ -11,6 +11,7 @@
   inset: auto;
   block-size: auto;
   aspect-ratio: 1;
+  inline-size: calc((1 - 2 * var(--story-band)) * 100%);
   max-inline-size: 100%;
 }
 
@@ -19,8 +20,8 @@
   z-index: 0;
   inset: 0;
   margin: auto;
-  /* The ring is 58% of the dial; its inner edge is ringInnerEdgeRadius / ringOuterEdgeRadius. */
-  inline-size: calc(58% * 16.6 / 20);
+  /* Inside the ring's inner edge by half the tick stroke, then 0.25% of the dial, so the round cap ends off the photograph. */
+  inline-size: calc(58% * (16.6 - 1.6 / 2) / 20 - 0.25%);
   aspect-ratio: 1;
   overflow: hidden;
   border-radius: var(--radius-pill);
@@ -83,4 +84,10 @@
   display: flex;
   inline-size: 100%;
   block-size: 100%;
+}
+
+@media (min-width: 64rem) {
+  .dial.story {
+    inline-size: calc((1 - 2 * var(--story-band-wide)) * 100%);
+  }
 }

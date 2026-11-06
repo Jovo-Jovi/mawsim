@@ -533,6 +533,236 @@ test.describe("year story teardown", () => {
   }
 });
 
+const SIZE_WIDTHS = [320, 390, 1280] as const;
+
+function sizeFloor(width: number): { forward: number; disc: number } | null {
+  if (width === 390) return { forward: 2.4, disc: 6 };
+  if (width === 1280) return { forward: 4, disc: 10 };
+  return null;
+}
+
+type StorySizes = {
+  forward: number;
+  disc: number;
+  minLabelGap: number;
+  minCircleGap: number;
+  tickClear: number;
+  forwardCount: number;
+  labelCount: number;
+  circleCount: number;
+  scrollWidth: number;
+  clientWidth: number;
+};
+
+async function storySizes(page: Page): Promise<StorySizes> {
+  return page.evaluate(() => {
+    const root = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+    const ring = document.querySelector("[data-dial-ring]");
+    const line = ring?.querySelector("line");
+    const img = document.querySelector("[data-hero-photo] img");
+    if (!(ring instanceof SVGSVGElement) || !(line instanceof SVGLineElement) || !(img instanceof HTMLImageElement)) {
+      throw new Error("the story dial, its tick, or the hero photograph is missing");
+    }
+    const ringTransform = ring.getScreenCTM();
+    const lineTransform = line.getScreenCTM();
+    if (!ringTransform || !lineTransform) throw new Error("the ring has no screen transform");
+
+    const toScreen = (transform: DOMMatrix, x: number, y: number) => {
+      const point = ring.createSVGPoint();
+      point.x = x;
+      point.y = y;
+      return point.matrixTransform(transform);
+    };
+    const centre = toScreen(ringTransform, 20, 20);
+    const edge = toScreen(ringTransform, 40, 20);
+    const ringRadius = Math.hypot(edge.x - centre.x, edge.y - centre.y);
+    const inner = toScreen(lineTransform, line.x1.baseVal.value, line.y1.baseVal.value);
+    const innerDist = Math.hypot(inner.x - centre.x, inner.y - centre.y);
+    const strokeUser = Number.parseFloat(getComputedStyle(line).strokeWidth);
+    const halfScreen = (strokeUser / 2) * (ringRadius / 20);
+
+    const imgBox = img.getBoundingClientRect();
+    const imgRadius = Math.min(imgBox.width, imgBox.height) / 2;
+    const imgOffset = Math.hypot(imgBox.x + imgBox.width / 2 - centre.x, imgBox.y + imgBox.height / 2 - centre.y);
+    const tickClear = innerDist - halfScreen - imgOffset - imgRadius;
+
+    let host: Element | null = ring;
+    while (host && host.querySelector("[data-story-produce]") === null) host = host.parentElement;
+    if (!(host instanceof HTMLElement)) throw new Error("the story object is missing");
+    const objectBox = host.getBoundingClientRect();
+
+    const textBoxes = [...document.querySelectorAll("[data-dial-label]")].flatMap((label) => {
+      const text = label.firstElementChild?.firstChild;
+      if (!(text instanceof Text)) return [];
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      const rect = range.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return [];
+      return [rect];
+    });
+
+    const circles = [...document.querySelectorAll("[data-story-produce]")].flatMap((node) => {
+      if (!(node instanceof HTMLElement)) return [];
+      const rect = node.getBoundingClientRect();
+      const opacity = Number.parseFloat(getComputedStyle(node).opacity);
+      const transform = getComputedStyle(node).transform;
+      let scale = 1;
+      if (transform !== "none") {
+        const match = /matrix\(([^)]+)\)/.exec(transform);
+        if (match?.[1]) {
+          const [a, b] = match[1].split(",").map((part) => Number.parseFloat(part.trim()));
+          scale = Math.hypot(a ?? 1, b ?? 0);
+        }
+      }
+      return [
+        {
+          cx: rect.x + rect.width / 2,
+          cy: rect.y + rect.height / 2,
+          r: Math.min(rect.width, rect.height) / 2,
+          width: rect.width,
+          forward: opacity >= 0.99 && scale >= 0.99,
+        },
+      ];
+    });
+
+    const gapRectToCircle = (rect: DOMRect, cx: number, cy: number, radius: number) => {
+      const x = Math.max(rect.left, Math.min(cx, rect.right));
+      const y = Math.max(rect.top, Math.min(cy, rect.bottom));
+      return Math.hypot(x - cx, y - cy) - radius;
+    };
+    const gapRects = (a: DOMRect, b: DOMRect) => {
+      const dx = Math.max(0, a.left - b.right, b.left - a.right);
+      const dy = Math.max(0, a.top - b.bottom, b.top - a.bottom);
+      if (dx === 0 && dy === 0) {
+        const overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+        const overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+        return -Math.min(overlapX, overlapY);
+      }
+      return Math.hypot(dx, dy);
+    };
+
+    let minLabelGap = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < textBoxes.length; i += 1) {
+      const rect = textBoxes[i];
+      if (!rect) continue;
+      minLabelGap = Math.min(minLabelGap, gapRectToCircle(rect, centre.x, centre.y, ringRadius));
+      minLabelGap = Math.min(
+        minLabelGap,
+        gapRectToCircle(rect, imgBox.x + imgBox.width / 2, imgBox.y + imgBox.height / 2, imgRadius),
+      );
+      for (const circle of circles) {
+        minLabelGap = Math.min(minLabelGap, gapRectToCircle(rect, circle.cx, circle.cy, circle.r));
+      }
+      for (let j = i + 1; j < textBoxes.length; j += 1) {
+        const other = textBoxes[j];
+        if (!other) continue;
+        minLabelGap = Math.min(minLabelGap, gapRects(rect, other));
+      }
+    }
+
+    let minCircleGap = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < circles.length; i += 1) {
+      const circle = circles[i];
+      if (!circle) continue;
+      minCircleGap = Math.min(
+        minCircleGap,
+        circle.cx - circle.r - objectBox.left,
+        objectBox.right - (circle.cx + circle.r),
+        circle.cy - circle.r - objectBox.top,
+        objectBox.bottom - (circle.cy + circle.r),
+      );
+      for (let j = i + 1; j < circles.length; j += 1) {
+        const other = circles[j];
+        if (!other) continue;
+        minCircleGap = Math.min(
+          minCircleGap,
+          Math.hypot(circle.cx - other.cx, circle.cy - other.cy) - circle.r - other.r,
+        );
+      }
+    }
+
+    const forward = circles.filter((circle) => circle.forward);
+    const forwardWidth = forward.reduce((min, circle) => Math.min(min, circle.width), Number.POSITIVE_INFINITY);
+    return {
+      forward: forwardWidth / root,
+      disc: Math.min(imgBox.width, imgBox.height) / root,
+      minLabelGap,
+      minCircleGap,
+      tickClear,
+      forwardCount: forward.length,
+      labelCount: textBoxes.length,
+      circleCount: circles.length,
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    };
+  });
+}
+
+test.describe("year story orbit and centre", () => {
+  for (const locale of LOCALES) {
+    for (const width of SIZE_WIDTHS) {
+      test(`draws a forward circle under the floor, overlaps the dial, or rests the tick on the photograph (${locale} ${width})`, async ({
+        page,
+      }) => {
+        const height = width === 1280 ? 900 : width === 390 ? 844 : 700;
+        await page.setViewportSize({ width, height });
+        await page.goto(`/${locale}`);
+        await page.locator("[data-dial-label]").first().waitFor();
+        await page.evaluate(() => document.fonts.ready);
+        const href = await page.locator("main a[href*='guide?month=']").getAttribute("href");
+        const initial = Number(new URL(href ?? "", "http://127.0.0.1").searchParams.get("month"));
+        expect(initial).toBeGreaterThanOrEqual(1);
+        expect(initial).toBeLessThanOrEqual(12);
+        const { start, step } = await storyScroll(page);
+        expect(step).toBeGreaterThan(100);
+        const beforeSign = locale === "ar" ? -1 : 1;
+        const dialStep = await page.evaluate(() =>
+          Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--dial-step")),
+        );
+        expect(dialStep).toBeGreaterThan(0);
+
+        const assertSizes = async (storyStep: number, month: number, angle: number) => {
+          await waitForAngle(page, month, angle);
+          await expect
+            .poll(async () => (await forwardSlugs(page)).sort().join(","))
+            .toBe(setFor(month).sort().join(","));
+          const sizes = await storySizes(page);
+          console.log(
+            `year-story ${locale} ${width} sizes step=${storyStep} forward=${sizes.forward.toFixed(2)} disc=${sizes.disc.toFixed(2)} minLabelGap=${sizes.minLabelGap.toFixed(2)} minCircleGap=${sizes.minCircleGap.toFixed(2)} tickClear=${sizes.tickClear.toFixed(2)}`,
+          );
+          expect(sizes.labelCount).toBe(12);
+          expect(sizes.circleCount).toBe(10);
+          expect(sizes.forwardCount).toBeGreaterThan(0);
+          expect(sizes.forward).toBeGreaterThan(0);
+          if (width === 320) {
+            expect(sizes.scrollWidth).toBeLessThanOrEqual(sizes.clientWidth);
+            return;
+          }
+          const floor = sizeFloor(width);
+          if (!floor) throw new Error(`no floor for ${width}`);
+          const root = await page.evaluate(() =>
+            Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+          );
+          expect(sizes.forward).toBeGreaterThanOrEqual(floor.forward);
+          expect(sizes.disc).toBeGreaterThanOrEqual(floor.disc);
+          expect(sizes.minLabelGap / root).toBeGreaterThanOrEqual(0.1);
+          expect(sizes.minCircleGap / root).toBeGreaterThanOrEqual(0.1);
+          expect(sizes.tickClear).toBeGreaterThan(0);
+        };
+
+        await scrollToY(page, start);
+        await assertSizes(0, initial, 0);
+
+        const month = monthAfter(initial, 6);
+        await scrollToY(page, start + 5 * step);
+        await waitForAngle(page, month, beforeSign * dialStep);
+        await scrollToY(page, start + 6 * step);
+        await assertSizes(6, month, 0);
+      });
+    }
+  }
+});
+
 test.describe("year story settled axe", () => {
   for (const locale of LOCALES) {
     for (const width of WIDTHS) {

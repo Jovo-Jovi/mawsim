@@ -16,6 +16,8 @@ import {
   orbitPlace,
   ProducePhoto,
   storyOrbitBandRatio,
+  storyOrbitBandRatioWide,
+  storyOrbitCentreRadius,
   YearDial,
   type ProducePhotoRow,
 } from "@/modules/produce";
@@ -50,8 +52,12 @@ export function YearStory({
   const fallback = produce[0];
   if (!fallback) throw new Error("catalogue is empty");
   const forward = new Set(inSeasonIn(currentMonth).map((row) => row.slug));
-  const orbitRadius = (dialViewBoxSize / 2) * (1 - storyOrbitBandRatio);
-  const objectStyle = { "--orbit-span": `${storyOrbitBandRatio * 100}%` } as CSSProperties;
+  const narrowRadius = storyOrbitCentreRadius(storyOrbitBandRatio);
+  const wideRadius = storyOrbitCentreRadius(storyOrbitBandRatioWide);
+  const objectStyle = {
+    "--orbit-band": storyOrbitBandRatio.toFixed(4),
+    "--orbit-band-wide": storyOrbitBandRatioWide.toFixed(4),
+  } as CSSProperties;
   return (
     <YearStoryMotion
       dialTurnDegrees={calendarMonths.map((calendarMonth) => dialTurnDegrees(calendarMonth, direction))}
@@ -126,10 +132,13 @@ export function YearStory({
             </div>
             <div className={styles.orbit}>
               {produce.map((row, index) => {
-                const point = orbitPlace(index, produce.length, orbitRadius, direction);
+                const narrow = orbitPlace(index, produce.length, narrowRadius, direction);
+                const wide = orbitPlace(index, produce.length, wideRadius, direction);
                 const place = {
-                  "--orbit-x": orbitOffset(point.x),
-                  "--orbit-y": orbitOffset(point.y),
+                  "--orbit-x": orbitOffset(narrow.x),
+                  "--orbit-y": orbitOffset(narrow.y),
+                  "--orbit-x-wide": orbitOffset(wide.x),
+                  "--orbit-y-wide": orbitOffset(wide.y),
                 } as CSSProperties;
                 const shown = forward.has(row.slug);
                 return (

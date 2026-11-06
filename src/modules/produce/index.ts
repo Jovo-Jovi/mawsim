@@ -29,6 +29,8 @@ export {
   ringOuterEdgeRadius,
   ringStrokeRadius,
   storyOrbitBandRatio,
+  storyOrbitBandRatioWide,
+  storyOrbitCentreRadius,
 } from "./dial-geometry";
 export { StorageTipPanel } from "./StorageTipPanel";
 export { seasonRuns } from "./season-text";

@@ -171,7 +171,10 @@ it("brings a produce outside this month forward, scrambles the ten circles, or p
     }
 
     expect(placeStyle(html, "tomato")).toContain("--orbit-x:0.0000cqi");
-    expect(placeStyle(html, "tomato")).toContain("--orbit-y:-47.5000cqi");
+    expect(placeStyle(html, "tomato")).toContain("--orbit-y:-43.3800cqi");
+    expect(placeStyle(html, "tomato")).toContain("--orbit-y-wide:-41.9000cqi");
+    expect(html).toContain("--orbit-band:0.1204");
+    expect(html).toContain("--orbit-band-wide:0.1500");
     const mangoX = /--orbit-x:([^;]+)/.exec(placeStyle(html, "mango"))?.[1] ?? "";
     expect(mangoX.startsWith("-")).toBe(locale === "ar");
     expect(mangoX).not.toBe("0.0000cqi");
@@ -192,6 +195,9 @@ it("brings a produce outside this month forward, scrambles the ten circles, or p
   expect(css).toContain("transform: scale(var(--story-back-scale))");
   expect(css).toContain("opacity: var(--story-back-opacity)");
   expect(css).toContain("inline-size: var(--dial-size)");
+  expect(css).toContain("--orbit-span: calc(var(--orbit-band) * 100%)");
+  expect(css).toContain("--orbit-span: calc(var(--orbit-band-wide) * 100%)");
+  expect(css).toContain("translate(var(--orbit-x-wide), var(--orbit-y-wide))");
   expect(css).toContain("max-inline-size: 100%");
   const reservedQuery = "@media (scripting: enabled) and (prefers-reduced-motion: no-preference)";
   const reservedAt = css.indexOf(reservedQuery);

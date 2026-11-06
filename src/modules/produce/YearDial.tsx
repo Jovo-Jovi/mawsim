@@ -5,9 +5,10 @@ import {
   calendarMonthLabelPoint,
   dialTurnDegrees,
   dialViewBoxSize,
-  innerDialSize,
   ringCellPath,
+  storyLabelRadiusShare,
   storyOrbitBandRatio,
+  storyOrbitBandRatioWide,
 } from "./dial-geometry";
 import styles from "./YearDial.module.css";
 
@@ -43,7 +44,11 @@ export function YearDial({
   } as CSSProperties;
   const frameStyle = (
     story
-      ? { ...turn, inlineSize: `${innerDialSize(100, 100 * storyOrbitBandRatio)}%` }
+      ? {
+          ...turn,
+          "--story-band": storyOrbitBandRatio.toFixed(4),
+          "--story-band-wide": storyOrbitBandRatioWide.toFixed(4),
+        }
       : turn
   ) as CSSProperties;
   return (
@@ -69,7 +74,11 @@ export function YearDial({
           <line className={styles.tick} {...calendarMonthAccentTick(currentMonth)} />
         </svg>
         {calendarMonths.map((calendarMonth) => {
-          const point = calendarMonthLabelPoint(calendarMonth, labelRadius, direction);
+          const point = calendarMonthLabelPoint(
+            calendarMonth,
+            story ? storyLabelRadiusShare * dialViewBoxSize : labelRadius,
+            direction,
+          );
           const place = {
             "--dial-x": percentOfDial(point.x),
             "--dial-y": percentOfDial(point.y),

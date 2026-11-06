@@ -90,6 +90,7 @@
   justify-self: center;
   min-inline-size: 0;
   container-type: size;
+  --orbit-span: calc(var(--orbit-band) * 100%);
 }
 
 .seat {
@@ -154,6 +155,11 @@
 
   .object {
     justify-self: end;
+    --orbit-span: calc(var(--orbit-band-wide) * 100%);
+  }
+
+  .place {
+    transform: translate(var(--orbit-x-wide), var(--orbit-y-wide));
   }
 
   .headline {
