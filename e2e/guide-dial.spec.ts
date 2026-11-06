@@ -204,14 +204,20 @@ for (const locale of ["en", "ar"] as const) {
             probe.remove();
             const lineHeight = Number.parseFloat(style.lineHeight);
             const paddingBlock = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+            const chartBox = element.closest("[data-year-chart]")?.getBoundingClientRect();
+            const line = rects[0];
             return {
               month: element.getAttribute("data-month") ?? "",
               text: element.textContent ?? "",
               lines: rects.length,
-              lineWidth: rects[0]?.width ?? 0,
+              lineWidth: line?.width ?? 0,
               needed,
               boxHeight: element.getBoundingClientRect().height,
               lineBox: lineHeight + paddingBlock,
+              lineLeft: line && chartBox ? line.left - chartBox.left : 0,
+              lineRight: line && chartBox ? line.right - chartBox.left : 0,
+              lineTop: line?.top ?? 0,
+              chartWidth: chartBox?.width ?? 0,
             };
           }),
         );
@@ -228,8 +234,53 @@ for (const locale of ["en", "ar"] as const) {
           expect(line.lines).toBe(1);
           expect(Math.abs(line.lineWidth - line.needed)).toBeLessThan(1);
           expect(Math.abs(line.boxHeight - line.lineBox)).toBeLessThan(1);
+          expect(line.lineLeft).toBeGreaterThanOrEqual(-1);
+          expect(line.lineRight).toBeLessThanOrEqual(line.chartWidth + 1);
+        }
+        const bands: (typeof headerLines)[] = [];
+        for (const line of [...headerLines].sort((a, b) => a.lineTop - b.lineTop)) {
+          const band = bands.find((group) => {
+            const first = group[0];
+            return first !== undefined && Math.abs(first.lineTop - line.lineTop) < 4;
+          });
+          if (band === undefined) bands.push([line]);
+          else band.push(line);
+        }
+        expect(bands).toHaveLength(2);
+        for (const group of bands) {
+          const ordered = [...group].sort((a, b) => a.lineLeft - b.lineLeft);
+          for (let index = 1; index < ordered.length; index += 1) {
+            const previous = ordered[index - 1];
+            const current = ordered[index];
+            if (previous === undefined || current === undefined) continue;
+            expect(current.lineLeft).toBeGreaterThanOrEqual(previous.lineRight - 1);
+          }
         }
       }
+
+      const column = await page.locator("[data-year-chart]").evaluate((chart) => {
+        const head = chart.querySelector("[data-chart-head] [data-selected='true']");
+        const cell = chart.querySelector("ol [data-selected='true']");
+        if (head === null || cell === null) return null;
+        const headBox = head.getBoundingClientRect();
+        const cellBox = cell.getBoundingClientRect();
+        const tops = [...chart.querySelectorAll("[data-chart-head] [data-month]")].map(
+          (node) => node.getBoundingClientRect().top,
+        );
+        return {
+          dx: headBox.left - cellBox.left,
+          dw: headBox.width - cellBox.width,
+          rowSpread: Math.max(...tops) - Math.min(...tops),
+        };
+      });
+      if (column === null) throw new Error("selected chart column missing");
+      console.log(
+        `${locale} ${viewport.name} header column dx=${column.dx.toFixed(2)} dw=${column.dw.toFixed(2)} rowSpread=${column.rowSpread.toFixed(1)}`,
+      );
+      expect(Math.abs(column.dx)).toBeLessThan(1);
+      expect(Math.abs(column.dw)).toBeLessThan(1);
+      if (viewport.name === "390") expect(column.rowSpread).toBeGreaterThan(8);
+      expect(column.rowSpread).toBeLessThan(viewport.name === "1280" ? 2 : 80);
 
       const language = page.getByRole("banner").getByRole("link", { name: COPY[locale].language, exact: true });
       await expect(language).toHaveAttribute(
