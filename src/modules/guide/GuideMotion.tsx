@@ -47,15 +47,45 @@ function turnDial(
   previous: CalendarMonth,
   selected: CalendarMonth,
   direction: "ltr" | "rtl",
+  turnDegrees: readonly number[],
   duration: number,
 ): void {
-  const offset = dialTurnOffset(previous, selected, direction);
+  const offset = dialTurnOffset(previous, selected, direction, (month) => turnDegrees[month - 1] ?? Number.NaN);
   const turn = root.querySelector("[data-dial-turn]");
   const labels = root.querySelectorAll("[data-dial-label]");
   if (turn) gsap.fromTo(turn, { rotation: offset }, { rotation: 0, duration, ease: easeInOut });
   if (labels.length > 0) {
     gsap.fromTo(labels, { rotation: -offset }, { rotation: 0, duration, ease: easeInOut });
   }
+}
+
+function riseIn(elements: Element[], duration: number, stagger: number, rise: string) {
+  if (elements.length === 0) return;
+  // The card's own arrival animation writes transform, which would hide this rise.
+  const release = () => {
+    for (const element of elements) {
+      if (element instanceof HTMLElement) element.style.animation = "";
+    }
+  };
+  for (const element of elements) {
+    if (element instanceof HTMLElement) element.style.animation = "none";
+  }
+  return gsap.fromTo(
+    elements,
+    { opacity: 0, y: rise },
+    {
+      opacity: 1,
+      y: 0,
+      duration,
+      ease: easeInOut,
+      stagger: (index: number) => {
+        const place = index < enteringStaggerCap ? index : enteringStaggerCap - 1;
+        return place * stagger;
+      },
+      onComplete: release,
+      onInterrupt: release,
+    },
+  );
 }
 
 function resortCards(
@@ -65,6 +95,15 @@ function resortCards(
   stagger: number,
   rise: string,
 ): void {
+  // Flip 3.15 calls onEnter only when the captured state marks the element invisible.
+  // A card that was `hidden` is absent from that state, so the rise is started here too.
+  const captured = new Set<Element>(state.targets);
+  const risen = new Set<Element>();
+  const riseOnce = (elements: Element[]) => {
+    const fresh = elements.filter((element) => !risen.has(element));
+    for (const element of fresh) risen.add(element);
+    return riseIn(fresh, duration, stagger, rise);
+  };
   Flip.from(state, {
     absolute: true,
     absoluteOnLeave: true,
@@ -72,49 +111,57 @@ function resortCards(
     duration,
     ease: easeInOut,
     targets: root.querySelectorAll("[data-flip-id]"),
-    onEnter: (elements) =>
-      gsap.fromTo(
-        elements,
-        { opacity: 0, y: rise },
-        {
-          opacity: 1,
-          y: 0,
-          duration,
-          ease: easeInOut,
-          stagger: (index: number) => {
-            const place = index < enteringStaggerCap ? index : enteringStaggerCap - 1;
-            return place * stagger;
-          },
-        },
-      ),
+    onEnter: (elements) => riseOnce(elements),
     onLeave: (elements) => gsap.fromTo(elements, { opacity: 1 }, { opacity: 0, duration, ease: easeInOut }),
   });
+  riseOnce(
+    [...root.querySelectorAll("[data-flip-id]:not([hidden])")].filter(
+      (element) => !captured.has(element) && !risen.has(element),
+    ),
+  );
 }
 
 export function GuideMotion({
   selectedMonth,
   direction,
+  turnDegrees,
   children,
 }: {
   selectedMonth: CalendarMonth;
   direction: "ltr" | "rtl";
+  /** `dialTurnDegrees` for this direction, one value per calendar month, from the server. */
+  turnDegrees: readonly number[];
   children: ReactNode;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const monthRef = useRef(selectedMonth);
   const flipState = useRef<ReturnType<typeof Flip.getState> | null>(null);
+  const turnKey = turnDegrees.join(",");
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const onClick = (event: MouseEvent) => {
-      if (!plainPickerClick(event, root)) return;
+    const remember = () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       const cards = root.querySelectorAll("[data-flip-id]:not([hidden])");
       if (cards.length === 0) return;
       flipState.current = Flip.getState(cards);
     };
+    const onPointerDown = (event: PointerEvent) => {
+      if (!plainPickerClick(event, root)) return;
+      remember();
+    };
+    const onClick = (event: MouseEvent) => {
+      if (!plainPickerClick(event, root)) return;
+      if (flipState.current) return;
+      remember();
+    };
+    root.addEventListener("pointerdown", onPointerDown);
     root.addEventListener("click", onClick);
-    return () => root.removeEventListener("click", onClick);
+    return () => {
+      root.removeEventListener("pointerdown", onPointerDown);
+      root.removeEventListener("click", onClick);
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -131,7 +178,8 @@ export function GuideMotion({
         const flipDuration = secondsOf(customProperty("--dur-flip"));
         const stagger = secondsOf(customProperty("--flip-stagger"));
         const rise = customProperty("--reveal-rise");
-        if (Number.isFinite(turnDuration)) turnDial(root, previous, selectedMonth, direction, turnDuration);
+        const degrees = turnKey.split(",").map(Number);
+        if (Number.isFinite(turnDuration)) turnDial(root, previous, selectedMonth, direction, degrees, turnDuration);
         if (captured && Number.isFinite(flipDuration) && Number.isFinite(stagger) && rise.length > 0) {
           resortCards(root, captured, flipDuration, stagger, rise);
         }
@@ -146,7 +194,7 @@ export function GuideMotion({
       cleaned = true;
       ctx.revert();
     };
-  }, [direction, selectedMonth]);
+  }, [direction, selectedMonth, turnKey]);
 
   return (
     <div ref={rootRef} className={styles.motion}>

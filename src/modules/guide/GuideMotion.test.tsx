@@ -2,6 +2,8 @@ import { afterEach, beforeAll, expect, it } from "vitest";
 import type { ReactElement } from "react";
 import type { Root } from "react-dom/client";
 import type { CalendarMonth } from "../../domain";
+import { calendarMonths } from "../../domain";
+import { dialTurnDegrees } from "@/modules/produce";
 
 type GuideMotionComponent = typeof import("./GuideMotion").GuideMotion;
 
@@ -399,7 +401,8 @@ function scene(): ReactElement {
 }
 
 function guideTree(selectedMonth: CalendarMonth, direction: "ltr" | "rtl") {
-  return createElement(GuideMotion, { selectedMonth, direction, children: scene() });
+  const turnDegrees = calendarMonths.map((month) => dialTurnDegrees(month, direction));
+  return createElement(GuideMotion, { selectedMonth, direction, turnDegrees, children: scene() });
 }
 
 async function renderAt(selectedMonth: CalendarMonth, direction: "ltr" | "rtl" = "ltr"): Promise<Element> {

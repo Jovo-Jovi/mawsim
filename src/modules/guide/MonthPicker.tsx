@@ -43,6 +43,7 @@ export function MonthPicker({
             <Link
               className={styles.link}
               href={guideHref(locale, calendarMonth, kind, view)}
+              prefetch={false}
               aria-current={selected ? "true" : undefined}
               data-month={calendarMonth}
             >
@@ -56,6 +57,7 @@ export function MonthPicker({
         <Link
           className={styles.step}
           href={guideHref(locale, previous, kind, view)}
+          prefetch={false}
           aria-label={copy.guide.previousMonth}
           data-month-step="previous"
         >
@@ -64,6 +66,7 @@ export function MonthPicker({
         <Link
           className={styles.step}
           href={guideHref(locale, next, kind, view)}
+          prefetch={false}
           aria-label={copy.guide.nextMonth}
           data-month-step="next"
         >
