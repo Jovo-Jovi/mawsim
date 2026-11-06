@@ -1,7 +1,7 @@
 # MAWSIM — Carry-forwards
 
 Every finding becomes a row; the landing task allocates the id from the live maximum (handbook §5.2).
-**Live maximum: CF-48.**
+**Live maximum: CF-51.**
 
 One item carried across later reviews stays one row. A bullet that lists several items has one row each.
 An item marked "Owner: none" or "no action" is not a row. `closed` only where a later review, or T10 stages 1–3, shows the item done.
@@ -56,3 +56,6 @@ An item marked "Owner: none" or "no action" is not a row. `closed` only where a 
 | CF-46 | Capture method: after the hover, the full-page shot paints the sticky header mid-page, and the 390 filmstrips of `home-en`/`home-ar` never reach the frame, which is below the fold. | method (developer) | open | — |
 | CF-47 | `docs/SESSION_CONTEXT.md` still said "P05 … complete · Next task: none" after T16. T17 rewrites it for P06, with T12–T16 done and T17 waiting at G-Showcase. | T17 builder | closed | T17 |
 | CF-48 | T16 attempt 3's D2 lockfile count cited "the script" without its command. Attempt 4 did not repeat that count. Report hygiene: a count names its command. | builder | open | — |
+| CF-49 | The card badge (`--space-9` at `--space-2` inset) covers the edge of the produce in the frames listed under "Owner's images" (at 390, and the okra in `guide-ar-1280`); the 4:3 files fill the 4:3 card frame, so no position clears it. Either regenerate with margin (§11 Crop) or amend the badge at 390 by a design OD. | developer | open | G-Showcase |
+| CF-50 | `src/modules/produce/photos.test.ts` checks the https rule only with `http://` and an empty string, with no `javascript:` or `data:` case. | developer | open | — |
+| CF-51 | At 390 the generated credit's model name wraps at its hyphen, and in Arabic the bracketed name splits across lines (`about-en-390`, `about-ar-390`). | developer | open | — |

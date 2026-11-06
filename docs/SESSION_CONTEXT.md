@@ -15,8 +15,8 @@ data, no database) · **Scope:** mvp
 
 ## Open carry-forwards
 
-35 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-48. Developer content: the twelve photographs are on `main` (`009f3f2`). The doubled sample-data notice stays (CF-24). CF-15 is closed (T10, step 7). CF-34 is closed (T11). T17 closes CF-42, CF-45 and CF-47. CF-43 stays open for the developer's chunk-size budget at G-Showcase.
+38 open (`grep -c "| open |" docs/method/CARRY_FORWARDS.md`). Live maximum CF-51. Developer content: the twelve photographs are on `main` (`009f3f2`). The doubled sample-data notice stays (CF-24). CF-15 is closed (T10, step 7). CF-34 is closed (T11). T17 closes CF-42, CF-45 and CF-47. CF-43 stays open for the developer's chunk-size budget at G-Showcase.
 
 ## Next action
 
-P06 is in progress. T12–T16 are done. T17 is waiting at G-Showcase for the developer's merge. No crop token was added: the captures show each subject whole and centred, and the card badge sits clear of it. The hero photograph is the wider market composition §11 asks for.
+P06 is in progress. T12–T16 are done. T17 is waiting at G-Showcase for the developer's merge. No crop token was added. The card badge covering the produce is among the developer's G-Showcase decisions (CF-49). The hero photograph is the wider market composition §11 asks for.
