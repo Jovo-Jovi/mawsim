@@ -18,17 +18,15 @@
   aspect-ratio: 4 / 3;
 }
 
-.hero {
-  aspect-ratio: 4 / 5;
+.hero,
+.orbit {
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
 }
 
 @media (min-width: 40rem) {
   .page {
     aspect-ratio: 3 / 2;
-  }
-
-  .hero {
-    aspect-ratio: 5 / 4;
   }
 }
 

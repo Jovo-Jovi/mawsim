@@ -49,7 +49,7 @@ const stylesheets = moduleStylesheets(srcRoot).map((file) => ({
 
 it("catches a looping module stylesheet, because its source contains infinite", () => {
   const read = stylesheets.map(({ file }) => relative(file)).sort();
-  expect(read).toContain("modules/home/SeasonDial.module.css");
+  expect(read).toContain("modules/home/YearStory.module.css");
   expect(read).toContain("modules/guide/CardGrid.module.css");
   expect(read).toContain("modules/produce/ProduceCard.module.css");
   expect(read).toContain("modules/guide/KindChips.module.css");
@@ -63,10 +63,10 @@ it("catches a @keyframes name outside draw, settle, rise and grow", () => {
   for (const { css } of stylesheets) {
     for (const match of css.matchAll(/@keyframes\s+([A-Za-z0-9_-]+)/g)) names.push(match[1]);
   }
-  expect(names).toContain("draw");
-  expect(names).toContain("settle");
   expect(names).toContain("rise");
   expect(names).toContain("grow");
+  expect(names).not.toContain("draw");
+  expect(names).not.toContain("settle");
   expect(names.filter((name) => !ALLOWED_KEYFRAMES.has(name))).toEqual([]);
 });
 
@@ -94,8 +94,10 @@ it("catches a @keyframes other than draw that animates a property other than opa
       }
     }
   }
-  expect(seen.has("settle")).toBe(true);
+  expect(seen.has("rise")).toBe(true);
   expect(seen.has("grow")).toBe(true);
+  expect(seen.has("draw")).toBe(false);
+  expect(seen.has("settle")).toBe(false);
   expect(offenders).toEqual([]);
 });
 
@@ -430,26 +432,22 @@ it("catches a reveal stylesheet that hides a pending cell under reduced motion o
   expect(offenders).toEqual([]);
 });
 
-it("catches a home stylesheet that loops, animates something other than transform and opacity, or drops the scene control's reduced-motion block", () => {
+it("catches a home stylesheet that loops or animates something other than transform and opacity", () => {
   const home = stylesheets.filter(({ file }) => relative(file).startsWith("modules/home/"));
   const names = home.map(({ file }) => relative(file)).sort();
-  expect(names).toContain("modules/home/HeroScene.module.css");
-  expect(names).toContain("modules/home/Hero.module.css");
-  expect(names).toContain("modules/home/SeasonDial.module.css");
+  const homeNames = names.filter((name) => name.startsWith("modules/home/"));
+  expect(homeNames).toEqual(["modules/home/YearStory.module.css", "modules/home/YearStoryMotion.module.css"]);
   expect(home.filter(({ css }) => css.includes("infinite")).map(({ file }) => relative(file))).toEqual([]);
 
   const quiet = new Set(["opacity", "transform"]);
-  const buttonColour = new Set(["color", "background-color"]);
   const offenders: string[] = [];
   for (const { file, css } of home) {
     const name = relative(file);
-    const sceneSheet = name === "modules/home/HeroScene.module.css";
     for (const match of css.matchAll(/transition-property\s*:\s*([^;]+)/g)) {
       const value = match[1].trim().replaceAll(/\s+/g, " ");
       if (value === "none") continue;
       for (const prop of value.split(",").map((part) => part.trim())) {
         if (quiet.has(prop)) continue;
-        if (sceneSheet && buttonColour.has(prop)) continue;
         offenders.push(`${name} transition ${prop}`);
       }
     }
@@ -461,13 +459,6 @@ it("catches a home stylesheet that loops, animates something other than transfor
     }
   }
   expect(offenders).toEqual([]);
-
-  const scene = sheet("modules/home/HeroScene.module.css");
-  const active = [...scene.matchAll(/transition-property\s*:\s*([^;]+)/g)]
-    .map((match) => match[1].trim())
-    .filter((value) => value !== "none");
-  expect(active.length).toBeGreaterThan(0);
-  expect(scene).toContain("prefers-reduced-motion: reduce");
 });
 
 it("adds a keyframe, animation or transition to the guide motion or the dial stylesheet", () => {
@@ -518,6 +509,80 @@ it("names an animated property other than rotation, x, y, scale or opacity in Gu
   expect(source).toContain("opacity:");
   expect(source).toContain("y:");
   expect(keys.filter((key) => animated.has(key) && !allowed.has(key))).toEqual([]);
+});
+
+it("catches a keyframe, a loop or a transition in a home stylesheet", () => {
+  const home = stylesheets.filter(({ file }) => relative(file).startsWith("modules/home/"));
+  expect(home.map(({ file }) => relative(file)).sort()).toEqual([
+    "modules/home/YearStory.module.css",
+    "modules/home/YearStoryMotion.module.css",
+  ]);
+  const offenders: string[] = [];
+  for (const { file, css } of home) {
+    const name = relative(file);
+    if (css.includes("@keyframes") || css.includes("infinite") || /\btransition\b/.test(css)) offenders.push(name);
+  }
+  expect(offenders).toEqual([]);
+});
+
+it("reserves the year-story length outside the scripting and reduced-motion query", () => {
+  const css = sheet("modules/home/YearStory.module.css");
+  const marker = "@media (scripting: enabled) and (prefers-reduced-motion: no-preference)";
+  const blocks = blockAfter(css, marker);
+  expect(blocks).toHaveLength(1);
+  const reserved = blocks.join("\n");
+  expect(reserved).toContain("calc(100svh + 11 * var(--story-step))");
+  expect(reserved).toContain("position: sticky");
+  let outside = css;
+  for (const block of blocks) outside = outside.replace(block, "");
+  expect(outside).not.toContain("--story-step");
+  expect(outside).not.toContain("position: sticky");
+});
+
+it("names an animated property other than rotation, scale or opacity, or passes pin or snap, in the year story", () => {
+  const allowed = new Set(["rotation", "scale", "opacity"]);
+  const animated = new Set([
+    ...allowed,
+    "x",
+    "y",
+    "width",
+    "height",
+    "top",
+    "left",
+    "right",
+    "bottom",
+    "autoAlpha",
+    "skewX",
+    "skewY",
+    "xPercent",
+    "yPercent",
+    "rotationX",
+    "rotationY",
+    "z",
+    "backgroundColor",
+    "color",
+    "fontSize",
+    "margin",
+    "padding",
+    "zIndex",
+    "filter",
+    "clipPath",
+    "visibility",
+    "display",
+    "transform",
+    "willChange",
+  ]);
+  const source = stripComments(readFileSync(path.join(srcRoot, "modules/home/YearStoryMotion.tsx"), "utf8")).replace(
+    /\/\/.*$/gm,
+    "",
+  );
+  const keys = [...source.matchAll(/[{,]\s*([A-Za-z][\w-]*)\s*:/g)].map((match) => match[1] ?? "");
+  expect(source).toContain("rotation:");
+  expect(source).toContain("scale:");
+  expect(source).toContain("opacity:");
+  expect(keys.filter((key) => animated.has(key) && !allowed.has(key))).toEqual([]);
+  expect(source).not.toMatch(/\bpin\b/);
+  expect(source).not.toMatch(/\bsnap\b/);
 });
 
 it("catches an infinite animation anywhere in a stylesheet, because a loop never stops", () => {

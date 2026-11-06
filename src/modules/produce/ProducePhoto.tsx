@@ -11,12 +11,14 @@ const sizesBySlot = {
   card: "(min-width: 64rem) 20vw, 40vw",
   page: "(min-width: 64rem) 50vw, 100vw",
   hero: "100vw",
+  orbit: "6rem",
 } as const;
 
 const slotClass = {
   card: styles.card,
   page: styles.page,
   hero: styles.hero,
+  orbit: styles.orbit,
 } as const;
 
 function altText(photo: ProducePhotoRow, locale: Locale): string {
@@ -38,11 +40,12 @@ export function ProducePhoto({
   produce: Produce;
   photo: ProducePhotoRow | undefined;
   locale: Locale;
-  slot: "card" | "page" | "hero";
+  slot: "card" | "page" | "hero" | "orbit";
   priority?: boolean;
   currentMonth?: CalendarMonth;
 }) {
   const frameClass = `${styles.frame} ${slotClass[slot]}`;
+  const decorative = slot === "orbit";
   if (photo) {
     const image = {
       src: photo.file,
@@ -51,10 +54,21 @@ export function ProducePhoto({
       sizes: sizesBySlot[slot],
       className: styles.photo,
     };
-    const alt = altText(photo, locale);
+    const alt = decorative ? "" : altText(photo, locale);
     return (
-      <div className={frameClass}>
-        {priority ? <Image {...image} alt={alt} priority /> : <Image {...image} alt={alt} loading="lazy" />}
+      <div className={frameClass} aria-hidden={decorative ? true : undefined}>
+        {priority && !decorative ? (
+          <Image {...image} alt={alt} priority />
+        ) : (
+          <Image {...image} alt={alt} loading="lazy" />
+        )}
+      </div>
+    );
+  }
+  if (decorative) {
+    return (
+      <div className={frameClass} aria-hidden="true">
+        <div className={styles.tile} data-kind={produce.kind} />
       </div>
     );
   }
@@ -69,7 +83,7 @@ export function ProducePhoto({
       </p>
     </div>
   );
-  if (slot === "card") {
+  if (slot === "card" || slot === "hero") {
     return (
       <div className={frameClass}>
         <div className={styles.tile} data-kind={produce.kind}>

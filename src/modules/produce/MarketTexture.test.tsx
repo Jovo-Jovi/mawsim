@@ -81,7 +81,6 @@ it("changes a showcase token or sets texture opacity to anything but 0.08", () =
   expect(light).toContain("--tilt-card: 1.5deg;");
   expect(light).toContain("--glow-ring-opacity: 0.55;");
   expect(light).toContain("--glow-ring-spread: 0.5rem;");
-  expect(light).toContain("--scene-turn: 48s;");
   expect(light).toContain("--texture-opacity: 0.08;");
   expect(light).toContain("--texture-ink: #1F2A22;");
   expect(light).toContain("--texture-tile: 12rem;");

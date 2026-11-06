@@ -86,3 +86,52 @@ export function dialTurnDegrees(calendarMonth: CalendarMonth, direction: "ltr" |
   const steps = (calendarMonth - 1) * DIAL_STEP_DEGREES;
   return direction === "rtl" ? steps : 0 - steps;
 }
+
+/**
+ * Place `index` of `count` on a circle of `radius` (viewBox units).
+ * Index 0 sits at 12 o'clock. `rtl` mirrors across the vertical axis, the
+ * same rule as `calendarMonthLabelPoint`, so no orbit circle is flipped.
+ */
+export function orbitPlace(
+  index: number,
+  count: number,
+  radius: number,
+  direction: "ltr" | "rtl",
+): { x: number; y: number } {
+  const clockwise = index * ((Math.PI * 2) / count);
+  const angle = direction === "rtl" ? -clockwise : clockwise;
+  return pointAt(angle, radius);
+}
+
+/**
+ * Diameter of one orbit circle, as a share of `--dial-size`, below 64rem.
+ * The same share is reserved on each side, so the story dial is `1 − 2b`.
+ * 0.12 is the modelled floor, and Chromium floors that used width to 2.3994rem,
+ * so the share is 0.1204 and the painted circle stays at least 2.4rem.
+ */
+export const storyOrbitBandRatio = 0.1204;
+
+/** Diameter of one orbit circle, as a share of `--dial-size`, from 64rem. */
+export const storyOrbitBandRatioWide = 0.15;
+
+/**
+ * Label-centre radius as a share of the story dial. The guide dial keeps
+ * its own radius, 16.875 of the 40-unit viewBox.
+ */
+export const storyLabelRadiusShare = 0.4;
+
+/**
+ * Inset of an orbit circle's centre, as a share of `--dial-size`, so the
+ * circle stays inside the story object.
+ */
+export const storyOrbitCentreInset = 0.006;
+
+/** Centre radius of an orbit circle in the story object's 40-unit system. */
+export function storyOrbitCentreRadius(bandRatio: number): number {
+  return dialViewBoxSize * ((1 - bandRatio) / 2 - storyOrbitCentreInset);
+}
+
+/** Diameter left when `band` is reserved on both sides, so the band stays inside `dialSize`. */
+export function innerDialSize(dialSize: number, band: number): number {
+  return dialSize - 2 * band;
+}

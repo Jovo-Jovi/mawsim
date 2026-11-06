@@ -3,15 +3,9 @@ import { SampleDataNotice } from "@/components/SampleDataNotice";
 import { localeParam } from "@/i18n/locale-param";
 import { messages } from "@/i18n/messages";
 import { CardGrid } from "@/modules/guide";
-import { Hero } from "@/modules/home";
-import { getHeroPhoto, getTexturePhoto, inSeasonIn, MarketTexture, thisCalendarMonth, type Produce } from "@/modules/produce";
+import { YearStory } from "@/modules/home";
+import { getTexturePhoto, inSeasonIn, MarketTexture, thisCalendarMonth } from "@/modules/produce";
 import styles from "./page.module.css";
-
-function firstInSeason(rows: readonly Produce[]): Produce {
-  const first = rows[0];
-  if (!first) throw new Error("no produce is in season");
-  return first;
-}
 
 export default async function HomePage() {
   const locale = await localeParam();
@@ -22,14 +16,7 @@ export default async function HomePage() {
   return (
     <PageShell locale={locale} path="">
       <div className={styles.page}>
-        <Hero
-          locale={locale}
-          currentMonth={currentMonth}
-          inSeasonCount={rows.length}
-          produce={firstInSeason(rows)}
-          photo={getHeroPhoto()}
-          texture={texture}
-        />
+        <YearStory locale={locale} currentMonth={currentMonth} texture={texture} />
         <div className={styles.season}>
           <div className={styles.headingBand} data-texture-band="heading">
             <MarketTexture photo={texture} />

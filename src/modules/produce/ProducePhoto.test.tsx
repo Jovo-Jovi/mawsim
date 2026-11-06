@@ -32,7 +32,12 @@ const photo: ProducePhotoRow = {
   credit_required: true,
 };
 
-function markup(locale: Locale, slot: "card" | "page" | "hero", row: ProducePhotoRow | undefined, priority?: boolean) {
+function markup(
+  locale: Locale,
+  slot: "card" | "page" | "hero" | "orbit",
+  row: ProducePhotoRow | undefined,
+  priority?: boolean,
+) {
   const produce = row ? fruit : fruit;
   return renderToStaticMarkup(
     <ProducePhoto produce={produce} photo={row} locale={locale} slot={slot} priority={priority} />,
@@ -103,8 +108,9 @@ it("paints the wrong kind or hardcodes lang on the frame", () => {
   expect(arabic.match(/lang="[^"]*"/g)).toEqual([langAttribute("en")]);
   const hero = markup("en", "hero", undefined);
   expect(hero).not.toContain("<img");
-  expect(hero.match(/data-in="/g)?.length).toBe(12);
-  expect(hero.match(/<svg\b/g)?.length).toBe(1);
+  expect(hero).not.toContain("<svg");
+  expect(hero).toContain(fruit.en);
+  expect(hero).toContain(`data-kind="${fruit.kind}"`);
 });
 
 it("uses a different frame class for the photograph and the fallback", () => {
@@ -117,11 +123,49 @@ it("uses a different frame class for the photograph and the fallback", () => {
   const frameCss = readFileSync(new URL("./ProducePhoto.module.css", import.meta.url), "utf8");
   expect(frameCss).toContain("aspect-ratio: 4 / 3");
   expect(frameCss).toContain("aspect-ratio: 3 / 2");
-  expect(frameCss).toContain("aspect-ratio: 4 / 5");
-  expect(frameCss).toContain("aspect-ratio: 5 / 4");
+  expect(frameCss).not.toContain("aspect-ratio: 4 / 5");
+  expect(frameCss).not.toContain("aspect-ratio: 5 / 4");
+  expect(frameCss).toMatch(/\.hero\s*,\s*\.orbit\s*\{[^}]*aspect-ratio:\s*1;/);
+  expect(frameCss).toMatch(/\.hero\s*,\s*\.orbit\s*\{[^}]*border-radius:\s*var\(--radius-pill\)/);
   expect(frameCss).toContain("min-width: 40rem");
   expect(frameCss).toContain("object-fit: cover");
   const ringCss = readFileSync(new URL("./SeasonRing.module.css", import.meta.url), "utf8");
   expect(ringCss).toContain(":dir(rtl)");
   expect(ringCss).toContain("scaleX(-1)");
+});
+
+it("names the orbit photograph or leaves the orbit disc available to assistive technology", () => {
+  const photographed = renderToStaticMarkup(
+    <ProducePhoto produce={fruit} photo={photo} locale="en" slot="orbit" priority />,
+  );
+  expect(photographed).toContain('aria-hidden="true"');
+  expect(photographed).toContain('alt=""');
+  expect(photographed).toContain('sizes="6rem"');
+  expect(photographed).toContain('loading="lazy"');
+  expect(photographed).not.toContain(fruit.en);
+  expect(photographed).not.toContain("Mango on linen");
+
+  const fallback = renderToStaticMarkup(
+    <ProducePhoto produce={vegetable} photo={undefined} locale="ar" slot="orbit" />,
+  );
+  expect(fallback).toContain('aria-hidden="true"');
+  expect(fallback).toContain(`data-kind="${vegetable.kind}"`);
+  expect(fallback).not.toContain("<img");
+  expect(fallback).not.toContain("<svg");
+  expect(fallback).not.toContain(vegetable.ar);
+  expect(fallback).not.toContain(vegetable.en);
+});
+
+it("leaves the hero frame rectangular or draws the season ring on the centre disc", () => {
+  const css = readFileSync(new URL("./ProducePhoto.module.css", import.meta.url), "utf8");
+  expect(css).toMatch(/\.hero\s*,\s*\.orbit\s*\{[^}]*aspect-ratio:\s*1;/);
+  expect(css).toMatch(/\.hero\s*,\s*\.orbit\s*\{[^}]*border-radius:\s*var\(--radius-pill\)/);
+  const fallback = markup("en", "hero", undefined);
+  expect(fallback).not.toContain("<svg");
+  expect(fallback).not.toContain("data-in=");
+  expect(fallback).toContain(fruit.en);
+  const photographed = markup("en", "hero", photo, true);
+  expect(photographed).toContain('sizes="100vw"');
+  expect(photographed).not.toContain('loading="lazy"');
+  expect(photographed).not.toContain('aria-hidden="true"');
 });
