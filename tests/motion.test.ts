@@ -436,7 +436,7 @@ it("catches a home stylesheet that loops or animates something other than transf
   const home = stylesheets.filter(({ file }) => relative(file).startsWith("modules/home/"));
   const names = home.map(({ file }) => relative(file)).sort();
   const homeNames = names.filter((name) => name.startsWith("modules/home/"));
-  expect(homeNames).toEqual(["modules/home/YearStory.module.css"]);
+  expect(homeNames).toEqual(["modules/home/YearStory.module.css", "modules/home/YearStoryMotion.module.css"]);
   expect(home.filter(({ css }) => css.includes("infinite")).map(({ file }) => relative(file))).toEqual([]);
 
   const quiet = new Set(["opacity", "transform"]);
@@ -509,6 +509,80 @@ it("names an animated property other than rotation, x, y, scale or opacity in Gu
   expect(source).toContain("opacity:");
   expect(source).toContain("y:");
   expect(keys.filter((key) => animated.has(key) && !allowed.has(key))).toEqual([]);
+});
+
+it("catches a keyframe, a loop or a transition in a home stylesheet", () => {
+  const home = stylesheets.filter(({ file }) => relative(file).startsWith("modules/home/"));
+  expect(home.map(({ file }) => relative(file)).sort()).toEqual([
+    "modules/home/YearStory.module.css",
+    "modules/home/YearStoryMotion.module.css",
+  ]);
+  const offenders: string[] = [];
+  for (const { file, css } of home) {
+    const name = relative(file);
+    if (css.includes("@keyframes") || css.includes("infinite") || /\btransition\b/.test(css)) offenders.push(name);
+  }
+  expect(offenders).toEqual([]);
+});
+
+it("reserves the year-story length outside the scripting and reduced-motion query", () => {
+  const css = sheet("modules/home/YearStory.module.css");
+  const marker = "@media (scripting: enabled) and (prefers-reduced-motion: no-preference)";
+  const blocks = blockAfter(css, marker);
+  expect(blocks).toHaveLength(1);
+  const reserved = blocks.join("\n");
+  expect(reserved).toContain("calc(100svh + 11 * var(--story-step))");
+  expect(reserved).toContain("position: sticky");
+  let outside = css;
+  for (const block of blocks) outside = outside.replace(block, "");
+  expect(outside).not.toContain("--story-step");
+  expect(outside).not.toContain("position: sticky");
+});
+
+it("names an animated property other than rotation, scale or opacity, or passes pin or snap, in the year story", () => {
+  const allowed = new Set(["rotation", "scale", "opacity"]);
+  const animated = new Set([
+    ...allowed,
+    "x",
+    "y",
+    "width",
+    "height",
+    "top",
+    "left",
+    "right",
+    "bottom",
+    "autoAlpha",
+    "skewX",
+    "skewY",
+    "xPercent",
+    "yPercent",
+    "rotationX",
+    "rotationY",
+    "z",
+    "backgroundColor",
+    "color",
+    "fontSize",
+    "margin",
+    "padding",
+    "zIndex",
+    "filter",
+    "clipPath",
+    "visibility",
+    "display",
+    "transform",
+    "willChange",
+  ]);
+  const source = stripComments(readFileSync(path.join(srcRoot, "modules/home/YearStoryMotion.tsx"), "utf8")).replace(
+    /\/\/.*$/gm,
+    "",
+  );
+  const keys = [...source.matchAll(/[{,]\s*([A-Za-z][\w-]*)\s*:/g)].map((match) => match[1] ?? "");
+  expect(source).toContain("rotation:");
+  expect(source).toContain("scale:");
+  expect(source).toContain("opacity:");
+  expect(keys.filter((key) => animated.has(key) && !allowed.has(key))).toEqual([]);
+  expect(source).not.toMatch(/\bpin\b/);
+  expect(source).not.toMatch(/\bsnap\b/);
 });
 
 it("catches an infinite animation anywhere in a stylesheet, because a loop never stops", () => {

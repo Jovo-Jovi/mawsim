@@ -193,8 +193,15 @@ it("brings a produce outside this month forward, scrambles the ten circles, or p
   expect(css).toContain("opacity: var(--story-back-opacity)");
   expect(css).toContain("inline-size: var(--dial-size)");
   expect(css).toContain("max-inline-size: 100%");
-  expect(css).not.toContain("position: sticky");
-  expect(css).not.toContain("--story-step");
+  const reservedQuery = "@media (scripting: enabled) and (prefers-reduced-motion: no-preference)";
+  const reservedAt = css.indexOf(reservedQuery);
+  expect(reservedAt).toBeGreaterThan(-1);
+  const reserved = css.slice(reservedAt);
+  expect(reserved).toContain("position: sticky");
+  expect(reserved).toContain("calc(100svh + 11 * var(--story-step))");
+  const outside = css.slice(0, reservedAt);
+  expect(outside).not.toContain("position: sticky");
+  expect(outside).not.toContain("--story-step");
   expect(css).not.toMatch(/@keyframes|\banimation\b|\btransition\b/);
   expect(english).not.toMatch(/data-story-produce="[^"]*"[^>]*style="[^"]*(?:scale|opacity)/);
 });

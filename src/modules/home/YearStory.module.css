@@ -1,6 +1,10 @@
 .band {
   position: relative;
   isolation: isolate;
+  min-inline-size: 0;
+}
+
+.stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas:
@@ -93,6 +97,7 @@
   place-items: center;
   min-inline-size: 0;
   block-size: 100%;
+  overflow: clip;
 }
 
 .orbit {
@@ -140,7 +145,7 @@
 }
 
 @media (min-width: 64rem) {
-  .band {
+  .stage {
     grid-template-columns: minmax(0, 1fr) minmax(0, auto);
     grid-template-areas: "copy object";
     column-gap: var(--space-8);
@@ -153,5 +158,22 @@
 
   .headline {
     padding-inline-end: var(--space-6);
+  }
+}
+
+/* The header is two rows: padding, the wordmark's two lines, the row gap and the nav.
+   No token holds that height, so the offset is those existing tokens, plus --space-1
+   for the hairline. It grows with the Arabic line heights. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .band {
+    block-size: calc(100svh + 11 * var(--story-step));
+  }
+
+  .stage {
+    position: sticky;
+    inset-block-start: calc(
+      var(--space-3) * 2 + var(--text-xl) * var(--leading-tight) + var(--space-1) + var(--text-sm) * var(--leading-body) +
+        var(--space-2) + var(--target-min) + var(--space-1)
+    );
   }
 }
