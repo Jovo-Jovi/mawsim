@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
+import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+
+const AXE_TAGS = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
 const LOCALES = ["ar", "en"] as const;
 const WIDTHS = [1280, 390] as const;
@@ -18,6 +21,7 @@ type Catalogue = {
     guideLink: string;
     storyCount: string;
   };
+  skip: { content: string };
   months: Record<string, string>;
 };
 
@@ -33,6 +37,15 @@ function setFor(month: number): string[] {
 
 function monthAfter(start: number, offset: number): number {
   return ((start - 1 + offset) % 12) + 1;
+}
+
+function cairoMonth(now = new Date()): number {
+  const part = new Intl.DateTimeFormat("en-US", { timeZone: "Africa/Cairo", month: "numeric" })
+    .formatToParts(now)
+    .find((item) => item.type === "month");
+  const month = Number(part?.value);
+  if (!Number.isInteger(month) || month < 1 || month > 12) throw new Error("cairo month is outside 1-12");
+  return month;
 }
 
 function sentence(locale: LocaleCode, month: number): string {
@@ -157,8 +170,9 @@ async function headerClearance(page: Page): Promise<{ heading: number; object: n
   return page.evaluate(() => {
     const header = document.querySelector("header");
     const heading = document.querySelector("h1");
-    const object = document.querySelector("[data-dial-turn]");
     const link = document.querySelector("main a[href*='guide?month=']");
+    let object = document.querySelector("[data-dial-turn]")?.parentElement ?? null;
+    while (object && object.querySelector("[data-story-produce]") === null) object = object.parentElement;
     if (!(header instanceof HTMLElement) || !(heading instanceof HTMLElement) || !(object instanceof HTMLElement) || !(link instanceof HTMLElement)) {
       return { heading: -1, object: -1, link: -1 };
     }
@@ -167,6 +181,44 @@ async function headerClearance(page: Page): Promise<{ heading: number; object: n
       heading: heading.getBoundingClientRect().top - edge,
       object: object.getBoundingClientRect().top - edge,
       link: link.getBoundingClientRect().top - edge,
+    };
+  });
+}
+
+async function bandAgainstStage(page: Page): Promise<{
+  hiddenSlot: boolean;
+  height: string;
+  band: number;
+  stage: number;
+  inline: string[];
+  lenis: boolean;
+  htmlStyle: string;
+}> {
+  return page.evaluate(() => {
+    const band = document.querySelector("[data-texture-band='hero']");
+    const stage = band instanceof HTMLElement
+      ? [...band.children].find((node) => node instanceof HTMLElement && node.getAttribute("aria-hidden") !== "true")
+      : null;
+    if (!(band instanceof HTMLElement) || !(stage instanceof HTMLElement)) {
+      return { hiddenSlot: false, height: "", band: -1, stage: -1, inline: ["missing"], lenis: false, htmlStyle: "" };
+    }
+    const inline: string[] = [];
+    for (const node of band.querySelectorAll("[data-dial-turn], [data-dial-label], [data-story-produce], [data-story-slot]")) {
+      if (!(node instanceof HTMLElement)) continue;
+      const name = node.getAttribute("data-story-produce") ?? node.getAttribute("data-story-slot") ?? node.tagName;
+      if (node.style.transform) inline.push(`${name}:transform`);
+      if (node.style.opacity) inline.push(`${name}:opacity`);
+      if (node.style.scale) inline.push(`${name}:scale`);
+      if (node.style.willChange) inline.push(`${name}:will-change`);
+    }
+    return {
+      hiddenSlot: band.closest("div[hidden][id^='S:']") !== null,
+      height: getComputedStyle(band).height,
+      band: band.getBoundingClientRect().height,
+      stage: stage.getBoundingClientRect().height,
+      inline,
+      lenis: [...document.documentElement.classList].some((name) => name === "lenis" || name.startsWith("lenis-")),
+      htmlStyle: document.documentElement.getAttribute("style") ?? "",
     };
   });
 }
@@ -328,3 +380,170 @@ for (const locale of LOCALES) {
     });
   }
 }
+
+test.describe("year story under reduced motion", () => {
+  test.use({ reducedMotion: "reduce" });
+
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      test(`reserves the story length, advances the month, paints an inline motion style, or adds the lenis class when motion is reduced (${locale} ${width})`, async ({
+        page,
+      }) => {
+        const month = cairoMonth();
+        const copy = catalogue(locale);
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.goto(`/${locale}`);
+        await page.locator("[data-dial-label]").first().waitFor();
+        const href = await page.locator("main a[href*='guide?month=']").getAttribute("href");
+        expect(href).toBe(`/${locale}/guide?month=${month}`);
+
+        const settled = await bandAgainstStage(page);
+        expect(settled.hiddenSlot).toBe(false);
+        expect(Math.abs(settled.band - settled.stage)).toBeLessThanOrEqual(0.5);
+        expect(settled.inline).toEqual([]);
+        expect(settled.lenis).toBe(false);
+
+        await scrollToY(page, await page.evaluate(() => document.documentElement.scrollHeight));
+        await expect.poll(async () => page.evaluate(() => window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 1)).toBe(true);
+        const after = await bandAgainstStage(page);
+        expect(Math.abs(after.band - after.stage)).toBeLessThanOrEqual(0.5);
+        expect(after.inline).toEqual([]);
+        expect(after.lenis).toBe(false);
+        expect(await page.locator("main a[href*='guide?month=']").getAttribute("href")).toBe(href);
+        expect(await visibleSlotText(page, "month")).toEqual([copy.months[String(month)] ?? ""]);
+        expect(await visibleSlotText(page, "count")).toEqual([sentence(locale, month)]);
+        expect((await forwardSlugs(page)).sort()).toEqual(setFor(month).sort());
+        const angle = await labelAngle(page, month);
+        expect(angleDelta(angle, 0)).toBeLessThanOrEqual(2);
+        console.log(
+          `year-story ${locale} ${width} reduced band=${settled.band.toFixed(1)} stage=${settled.stage.toFixed(1)} month=${month} angle=${angle.toFixed(2)} inline=0 lenis=false`,
+        );
+      });
+    }
+  }
+});
+
+test.describe("year story without javascript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      test(`reserves the story length, shows another month, or points the guide away from this month without JavaScript (${locale} ${width})`, async ({
+        page,
+      }) => {
+        const month = cairoMonth();
+        const copy = catalogue(locale);
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.goto(`/${locale}`);
+        await expect.poll(async () => page.locator("[data-texture-band='hero']").count()).toBe(1);
+
+        const reading = await bandAgainstStage(page);
+        console.log(
+          `year-story ${locale} ${width} nojs hiddenSlot=${reading.hiddenSlot} height=${reading.height} band=${reading.band.toFixed(1)} stage=${reading.stage.toFixed(1)}`,
+        );
+        if (reading.hiddenSlot) expect(reading.height).toBe("auto");
+        else expect(Math.abs(reading.band - reading.stage)).toBeLessThanOrEqual(0.5);
+        expect(reading.inline).toEqual([]);
+        expect(reading.lenis).toBe(false);
+
+        expect(await page.locator("main a[href*='guide?month=']").getAttribute("href")).toBe(`/${locale}/guide?month=${month}`);
+        expect(await visibleSlotText(page, "month")).toEqual([copy.months[String(month)] ?? ""]);
+        expect(await visibleSlotText(page, "count")).toEqual([sentence(locale, month)]);
+        expect((await forwardSlugs(page)).sort()).toEqual(setFor(month).sort());
+      });
+    }
+  }
+});
+
+test.describe("year story keyboard with lenis", () => {
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      test(`skips past the skip link, leaves the top of main out of view, or ignores PageDown from step 6 (${locale} ${width})`, async ({
+        page,
+      }) => {
+        const copy = catalogue(locale);
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.goto(`/${locale}`);
+        await page.locator("[data-dial-label]").first().waitFor();
+        await expect.poll(async () => page.evaluate(() => document.documentElement.classList.contains("lenis"))).toBe(true);
+
+        const href = await page.locator("main a[href*='guide?month=']").getAttribute("href");
+        const initial = Number(new URL(href ?? "", "http://127.0.0.1").searchParams.get("month"));
+        const { start, step } = await storyScroll(page);
+        const month = monthAfter(initial, 6);
+        await scrollToY(page, start + 6 * step);
+        await waitForAngle(page, month, 0);
+
+        await page.keyboard.press("Tab");
+        await expect(page.getByRole("link", { name: copy.skip.content, exact: true })).toBeFocused();
+        await page.keyboard.press("Enter");
+        await expect
+          .poll(async () =>
+            page.evaluate(() => {
+              const main = document.querySelector("main");
+              const active = document.activeElement;
+              if (!(main instanceof HTMLElement) || !(active instanceof HTMLElement)) return false;
+              const top = main.getBoundingClientRect().top;
+              return (active === main || main.contains(active)) && top >= -1 && top < window.innerHeight;
+            }),
+          )
+          .toBe(true);
+        const placed = await page.evaluate(() => {
+          const main = document.querySelector("main");
+          return main instanceof HTMLElement ? main.getBoundingClientRect().top : Number.NaN;
+        });
+        const before = await page.evaluate(() => window.scrollY);
+        await page.keyboard.press("PageDown");
+        await expect.poll(async () => page.evaluate((startY) => window.scrollY > startY + 1, before)).toBe(true);
+        const after = await page.evaluate(() => window.scrollY);
+        console.log(
+          `year-story ${locale} ${width} keyboard skip=focused mainTop=${placed.toFixed(1)} pageDown=${before.toFixed(1)}->${after.toFixed(1)}`,
+        );
+      });
+    }
+  }
+});
+
+test.describe("year story teardown", () => {
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      test(`leaves the lenis class or an inline style on html after the guide link (${locale} ${width})`, async ({
+        page,
+      }) => {
+        const copy = catalogue(locale);
+        const month = cairoMonth();
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.goto(`/${locale}`);
+        await page.locator("[data-dial-label]").first().waitFor();
+        await expect.poll(async () => page.evaluate(() => document.documentElement.classList.contains("lenis"))).toBe(true);
+        await page.getByRole("link", { name: copy.home.guideLink, exact: true }).click();
+        await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=${month}$`));
+        await expect
+          .poll(async () =>
+            page.evaluate(() => {
+              const root = document.documentElement;
+              const lenis = [...root.classList].some((name) => name === "lenis" || name.startsWith("lenis-"));
+              return !lenis && (root.getAttribute("style") ?? "") === "";
+            }),
+          )
+          .toBe(true);
+        console.log(`year-story ${locale} ${width} teardown lenis=false style=`);
+      });
+    }
+  }
+});
+
+test.describe("year story settled axe", () => {
+  for (const locale of LOCALES) {
+    for (const width of WIDTHS) {
+      test(`reports an axe violation on the settled home page (${locale} ${width})`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width === 390 ? 844 : 900 });
+        await page.goto(`/${locale}`);
+        await page.locator("[data-dial-label]").first().waitFor();
+        const violations = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
+        console.log(`year-story ${locale} ${width} axe=${violations.violations.length}`);
+        expect(violations.violations).toEqual([]);
+      });
+    }
+  }
+});
