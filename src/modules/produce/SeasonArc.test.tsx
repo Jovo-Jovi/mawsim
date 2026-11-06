@@ -264,9 +264,11 @@ it("draws orange from January, or a split season as one run", () => {
     ["12", 0],
   ]);
   expect(orangeDrawn.every((path) => attr(path, "style").includes("--arc-draw-count:5"))).toBe(true);
+  expect(orangeDrawn.every((path) => attr(path, "pathLength") === "1")).toBe(true);
   const may = orangePaths.find((path) => attr(path, "data-calendar-month") === "5");
   expect(attr(may ?? "", "data-in")).toBe("false");
   expect(attr(may ?? "", "style")).not.toContain("--arc-draw-place");
+  expect(attr(may ?? "", "pathLength")).toBe("");
 
   const split: Produce = {
     slug: "split-row",
@@ -287,4 +289,5 @@ it("draws orange from January, or a split season as one run", () => {
     ["5", 2],
   ]);
   expect(splitDrawn.every((path) => attr(path, "style").includes("--arc-draw-count:3"))).toBe(true);
+  expect(splitDrawn.every((path) => attr(path, "pathLength") === "1")).toBe(true);
 });

@@ -15,6 +15,7 @@ import {
 } from "./dial-geometry";
 import { ProducePhoto } from "./ProducePhoto";
 import type { ProducePhotoRow } from "./photos";
+import { SeasonArcMotion } from "./SeasonArcMotion";
 import { catalogueMonth, seasonSentence } from "./season-sentence";
 import { seasonRuns } from "./season-text";
 import styles from "./SeasonArc.module.css";
@@ -97,6 +98,7 @@ export function SeasonArc({
                     className={inSeason ? styles.inArc : styles.outArc}
                     data-calendar-month={calendarMonth}
                     data-in={inSeason ? "true" : "false"}
+                    pathLength={inSeason ? 1 : undefined}
                     style={drawn}
                   />
                 </g>
@@ -125,7 +127,9 @@ export function SeasonArc({
           })}
         </div>
         <div className={styles.disc}>
-          <ProducePhoto produce={produce} photo={photo} locale={locale} slot="page" priority />
+          <SeasonArcMotion>
+            <ProducePhoto produce={produce} photo={photo} locale={locale} slot="page" priority />
+          </SeasonArcMotion>
         </div>
       </div>
       <p className={styles.now}>

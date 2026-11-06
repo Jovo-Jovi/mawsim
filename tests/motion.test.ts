@@ -65,8 +65,8 @@ it("catches a @keyframes name outside draw, settle, rise and grow", () => {
   }
   expect(names).toContain("rise");
   expect(names).toContain("grow");
-  expect(names).not.toContain("draw");
-  expect(names).not.toContain("settle");
+  expect(names).toContain("draw");
+  expect(names).toContain("settle");
   expect(names.filter((name) => !ALLOWED_KEYFRAMES.has(name))).toEqual([]);
 });
 
@@ -96,9 +96,50 @@ it("catches a @keyframes other than draw that animates a property other than opa
   }
   expect(seen.has("rise")).toBe(true);
   expect(seen.has("grow")).toBe(true);
-  expect(seen.has("draw")).toBe(false);
-  expect(seen.has("settle")).toBe(false);
+  expect(seen.has("draw")).toBe(true);
+  expect(seen.has("settle")).toBe(true);
   expect(offenders).toEqual([]);
+});
+
+function declaredProperties(body: string): string[] {
+  return [...body.matchAll(/(?:^|[\s;{])([a-zA-Z-]+)\s*:/g)].map((match) => match[1] ?? "");
+}
+
+it("animates the season arc draw with more than stroke-dashoffset, settles with more than opacity, or places that animation outside the scripting query", () => {
+  const css = sheet("modules/produce/SeasonArc.module.css");
+  const draw = keyframeBodies(css).filter((block) => block.name === "draw");
+  const settle = keyframeBodies(css).filter((block) => block.name === "settle");
+  expect(draw).toHaveLength(1);
+  expect(settle).toHaveLength(1);
+  expect([...new Set(declaredProperties(draw[0]?.body ?? ""))]).toEqual(["stroke-dashoffset"]);
+  expect([...new Set(declaredProperties(settle[0]?.body ?? ""))]).toEqual(["opacity"]);
+
+  const marker = "@media (scripting: enabled) and (prefers-reduced-motion: no-preference)";
+  const scoped = blockAfter(css, marker);
+  expect(scoped).toHaveLength(1);
+  const inside = scoped.join("\n");
+  expect(inside).toContain("animation-name: draw");
+  expect(inside).toContain("animation-name: settle");
+  expect(inside).toContain("stroke-dasharray: 1 2");
+  expect(inside).toContain("var(--dur-dial)");
+  expect(inside).toContain("var(--ease-out)");
+  expect(inside).toContain("var(--dur-3)");
+
+  let outside = css;
+  for (const block of scoped) outside = outside.replace(block, "");
+  const cells = exactSelectorBodies(outside, ".inArc");
+  const ticks = exactSelectorBodies(outside, ".tick");
+  expect(cells.length).toBeGreaterThan(0);
+  expect(ticks.length).toBeGreaterThan(0);
+  for (const body of [...cells, ...ticks]) {
+    expect(body).not.toMatch(/animation-name\s*:/);
+    expect(body).not.toContain("stroke-dasharray");
+    expect(body).not.toContain("stroke-dashoffset");
+  }
+  const reduce = blockAfter(css, "@media (prefers-reduced-motion: reduce)").join("\n");
+  expect(reduce).toContain(".inArc");
+  expect(reduce).toContain(".tick");
+  expect(reduce).toContain("animation: none");
 });
 
 const CARD_MOTION = [
@@ -580,6 +621,53 @@ it("names an animated property other than rotation, scale or opacity, or passes 
   expect(source).toContain("rotation:");
   expect(source).toContain("scale:");
   expect(source).toContain("opacity:");
+  expect(keys.filter((key) => animated.has(key) && !allowed.has(key))).toEqual([]);
+  expect(source).not.toMatch(/\bpin\b/);
+  expect(source).not.toMatch(/\bsnap\b/);
+});
+
+it("animates a key other than scale, passes pin or snap, or imports lenis, in the season arc zoom", () => {
+  const allowed = new Set(["scale"]);
+  const animated = new Set([
+    ...allowed,
+    "rotation",
+    "opacity",
+    "x",
+    "y",
+    "width",
+    "height",
+    "top",
+    "left",
+    "right",
+    "bottom",
+    "autoAlpha",
+    "skewX",
+    "skewY",
+    "xPercent",
+    "yPercent",
+    "rotationX",
+    "rotationY",
+    "z",
+    "backgroundColor",
+    "color",
+    "fontSize",
+    "margin",
+    "padding",
+    "zIndex",
+    "filter",
+    "clipPath",
+    "visibility",
+    "display",
+    "transform",
+    "willChange",
+  ]);
+  const source = stripComments(readFileSync(path.join(srcRoot, "modules/produce/SeasonArcMotion.tsx"), "utf8")).replace(
+    /\/\/.*$/gm,
+    "",
+  );
+  const keys = [...source.matchAll(/[{,]\s*([A-Za-z][\w-]*)\s*:/g)].map((match) => match[1] ?? "");
+  expect(source).toContain("scale:");
+  expect(source).not.toMatch(/\blenis\b/i);
   expect(keys.filter((key) => animated.has(key) && !allowed.has(key))).toEqual([]);
   expect(source).not.toMatch(/\bpin\b/);
   expect(source).not.toMatch(/\bsnap\b/);
