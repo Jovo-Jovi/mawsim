@@ -35,7 +35,10 @@ People in Egypt who shop at markets and want to know what is fresh now, on a pho
   wrong direction or redirect loop in either language.
 - **R-5** Motion is calm and purposeful, and it respects reduced motion. (Amended by OD-10, issue #17: purposeful
   motion now includes a slowly turning 3D hero scene that can be paused, card hover and focus feedback, and a reveal
-  on scroll once. It stays calm.)
+  on scroll once. It stays calm.) (Amended by OD-11, issue #28: the 3D scene is removed. One twelve-month year dial
+  carries the motion: the home page's year story turns with the scroll and stops when the scroll stops, the guide's
+  dial picks the month and the cards re-sort, and the produce page's season arc draws in once. Nothing plays by
+  itself. B-2's month scroller becomes the dial, with a year chart view; B-3's season bar becomes the season arc.)
 - **R-6** Mobile-first; works at 390 and 1280 wide.
 - **R-7** Accessible to WCAG 2.2 AA.
 - **R-8** No layout shift.

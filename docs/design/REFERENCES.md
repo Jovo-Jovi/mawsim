@@ -25,3 +25,15 @@ are recorded here with what Mawsim takes and leaves.
 |---|---|---|---|
 | L5 | DESIGN_METHOD §5.1 — three.js and React Three Fiber (MIT) | real 3D for one small, slowly turning scene of stylised produce built in code (`DESIGN_SYSTEM.md` §13) | Drei, model files, post-processing, any scene from an example or gallery |
 | L6 | The owner's imagery sources (issue #17 thread): `grok-imagine-image-2.0`; the Unsplash License, the Pexels License, CC0 and CC BY on Wikimedia Commons and Openverse | images made or chosen for Mawsim under `DESIGN_SYSTEM.md` §11, each with its manifest row | any image without a usable licence, share-alike or non-commercial terms, and any reference screenshot |
+
+**Version 3 (OD-11, issue #28).** The request names two families of sites by name, with no link or image, and two
+libraries. Nothing was fetched. Each is recorded with what Mawsim takes and what it leaves.
+
+| Ref | Source | What we take | What we leave |
+|---|---|---|---|
+| R8 | Anthropic's sites, named in issue #28 ("calm and typographic") | motion that serves the words: a headline that changes like a turned page, a quiet cross-fade in a fixed slot, generous space around one idea, and no bounce or flourish | their typefaces, colours, illustrations, layouts, copy and code; any specific page |
+| R9 | Apple's product pages, named in issue #28 ("scroll-driven and pinned") | a section that holds still while the scroll scrubs one story through it, step by step, and lets go at the end; the scroll as the only clock | the product photography, the scale of the type, the black stage, any sequence, layout or code; the device-frame imagery |
+| L7 | DESIGN_METHOD §5.1: GSAP (`gsap`: core, ScrollTrigger, Flip; GreenSock's Standard "no charge" licence) | the year story's scrubbed timeline and the guide's shared-layout re-sort (`DESIGN_SYSTEM.md` §7, §13) | `@gsap/react`, every other plugin, any demo or CodePen effect |
+| L8 | DESIGN_METHOD §5.1: Lenis (`lenis`, MIT) | smooth scrolling for the home page's story, off under reduced motion | Lenis on any other page; scroll-jacking of any kind (snap, inertia that keeps moving, hijacked keys) |
+
+L5 (three.js and React Three Fiber) is retired in version 3: the hero scene is removed (OD-11 §6).

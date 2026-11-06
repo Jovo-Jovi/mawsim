@@ -187,6 +187,59 @@ the owner merges.
 a glTF or other model file (a new change request); the Motion library or the View Transitions API; any CSP, header or
 route change; a deploy; real farming or nutrition data.
 
+### OD-11 — "The year turns": one year dial, scroll-driven motion and a real calendar
+**Status:** DRAFT — signed when the human merges the intake PR
+**Amends:** OD-08 and OD-10 §1 (design contract version 3), OD-10 §4 (the 3D hero scene and three.js are removed),
+OD-04 §4 (GSAP and Lenis join for scroll-driven and shared-layout motion), D-03 (the guide gains a `view` query
+value), OD-09 §1 (the hero photograph moves into the dial's centre)
+**Requested by:** issue #28 (2026-11-06)
+**1.** The design contract becomes version 3 (`docs/DESIGN_SYSTEM.md`, written by the intake PR that lands this OD).
+The Direction stays "Almanac in the sun". Its spine becomes one object, the **year dial**: twelve equal cells in a
+ring, January at the top, clockwise in English and counter-clockwise in Arabic. It is the home page's story, the
+guide's month picker, every card's season ring and the produce page's season arc. Version 2 stays in git history.
+Merging the intake PR is the owner's approval of the new look. The rendered result is signed off at **G-YearTurns**.
+**2.** Home: the hero becomes a **year story**, a section held in place by CSS `position: sticky` while the visitor
+scrolls through it. The scroll turns the dial one month per step, from this month through the next eleven. That
+month's produce photographs, circle crops of the owner's images, come forward and the rest fade back. The headline
+names the month shown ("What is fresh in November"). Scroll drives everything: nothing plays by itself, there is no
+snap, and the dial stops when scrolling stops. The scroll length is reserved in CSS only when scripting is on and
+motion is allowed (`@media (scripting: enabled) and (prefers-reduced-motion: no-preference)`). Otherwise the section
+is its settled, still state for this month, at its natural height. So nothing shifts. The hero photograph (the
+manifest's `hero` row) is the dial's centre disc. It stays on the home page, credited and loaded first (OD-09 §1).
+**3.** Guide: the year dial replaces the month scroller. Its twelve months are links to `?month=N`, and previous and
+next links turn it by one month. Every control stays a link (R-2), with no drag gesture. When the month changes, the
+dial turns to it. Cards that stay slide into their new places, cards that leave fade out and new cards rise in
+(shared-layout motion with GSAP Flip). A second view, the **year chart**, is chosen by a link that sets
+`view=chart`: one row per produce, its in-season months as a bar across twelve columns, and the selected month's
+column highlighted. The selected month is this month unless the dial chose another. The kind chips apply to both
+views. Month, kind and view are query values set by links (D-03 extended). The language link keeps all three.
+**4.** Cards: each photograph is a circle inside its own season ring, with the in-season months lit. Nothing sits on
+the photograph, which closes CF-49 by design. Produce page: the twelve-box season bar becomes the **season arc**, the
+dial's ring around the circular photograph with the short month names around it. Its in-season months draw in once on
+entry. The photograph zooms slowly as the page scrolls (scrubbed, at most `--zoom-scroll`). The text list of the
+season stays, so season information is never colour alone.
+**5.** Motion libraries. `gsap` (its core with ScrollTrigger and Flip, under GreenSock's Standard "no charge" licence,
+which allows any website; `docs/method/DESIGN_METHOD.md` §5.1) and `lenis` (MIT) join, each named by its fence line
+(PR-47). `@gsap/react`, Motion, Drei and every other animation library stay out. Lenis smooths scrolling on the home
+page only, while its story is mounted. It is created only when motion is allowed and is destroyed on leaving the page.
+Keyboard, the skip link and in-page focus scroll as normal. Only `transform` and `opacity` animate (and SVG
+`stroke-dashoffset` for the arc's draw). Under reduced motion, or without JavaScript, every screen shows its settled
+state with no movement. Both locales are mirrored, and the dial turns the other way in Arabic.
+**6.** three.js, `@react-three/fiber` and `@types/three` are removed, with `HeroScene`, `HeroSceneFrame`,
+`HeroScenePoster`, `scene-mode` and their tests and tokens. This closes CF-43 (the 927 KB chunk), and CF-41 and CF-44
+(the scene's poster and placement) fall away with it. No client chunk of the build holds three.js.
+**7.** The boundary does not change. No route, zone, form, cookie, storage, header or CSP value changes, and nothing
+calls a third-party host. GSAP and Lenis are bundled from the site's own origin. They read only the scroll position,
+the viewport and `prefers-reduced-motion` in the browser, to choose how the page is drawn, and they send or store
+nothing (`docs/BOUNDARY_MODEL.md` §2). The `devos:boundary` line is unchanged. The Boundary gate applies, with its
+evidence, at each task that changes `package.json` (T20, T21).
+**8.** The work is six tasks, T18–T23 (`docs/PHASES.md`, phase P07), ending at the gate **G-YearTurns** (T23), which
+the owner merges.
+**Basis of signature:** the owner decides; merging the intake PR for issue #28 is the confirming act.
+**Does not decide:** a drag or swipe gesture on the dial (a later change request); the View Transitions API;
+`@gsap/react` or any other GSAP plugin than ScrollTrigger and Flip; Lenis outside the home page; new or replaced
+images (the owner's content, OD-09 §3); a CSP, header or route change; a deploy; real farming or nutrition data.
+
 ## D-rows
 
 | D | Decision | Date |
