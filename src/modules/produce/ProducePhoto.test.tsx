@@ -82,7 +82,7 @@ it("renders an image, drops the produce name, or exposes the ring when no photog
   expect(html).toContain(fruit.en);
   expect(html.match(/data-in="/g)?.length).toBe(12);
   expect(html).toContain('aria-hidden="true"');
-  expect(html).toContain("A 15.5 15.5 0 0 1");
+  expect(html).toContain("A 18.3 18.3 0 0 1");
   expect(html).not.toContain("dir=");
 });
 
