@@ -368,6 +368,70 @@ function round4(value: number): number {
   return Math.round(value * 10000) / 10000;
 }
 
+async function waitForDialBox(page: Page): Promise<void> {
+  await expect
+    .poll(
+      async () =>
+        page.evaluate(() => {
+          const links = [...document.querySelectorAll("a[data-month]")];
+          return links.length === 12 && links.every((element) => element instanceof HTMLElement && element.offsetWidth > 0);
+        }),
+      { timeout: 15_000 },
+    )
+    .toBe(true);
+}
+
+async function revealThenStill(page: Page): Promise<string[]> {
+  await waitForDialBox(page);
+  await page.evaluate(() => document.fonts.ready);
+  const limit = await page.evaluate(() => document.documentElement.scrollHeight);
+  for (let top = 0; top <= limit; top += 200) {
+    await page.evaluate((next) => window.scrollTo(0, next), top);
+    await page.evaluate(
+      () =>
+        new Promise<void>((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        }),
+    );
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+  let dirty: string[] = [];
+  await expect
+    .poll(
+      async () => {
+        dirty = await page.evaluate(() => {
+          const nodes = [...document.querySelectorAll("[data-dial-turn], [data-dial-label], [data-flip-id]")];
+          return nodes.flatMap((element) => {
+            const inline = (element.getAttribute("style") ?? "").trim();
+            const transform = getComputedStyle(element).transform;
+            if (inline.length === 0 && transform === "none") return [];
+            const name = element.getAttribute("data-flip-id") ?? element.tagName.toLowerCase();
+            return [`${name}:inline=${inline}:transform=${transform}`];
+          });
+        });
+        return dirty.length === 0;
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true);
+  return dirty;
+}
+
+async function inlineMotion(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
+    const nodes = [...document.querySelectorAll("[data-dial-turn], [data-dial-label], [data-flip-id]")];
+    return nodes.flatMap((element) => {
+      if (!(element instanceof HTMLElement)) return [];
+      const found = ["transform", "opacity", "will-change", "animation"].filter(
+        (name) => element.style.getPropertyValue(name).trim().length > 0,
+      );
+      if (found.length === 0) return [];
+      const name = element.getAttribute("data-flip-id") ?? element.tagName.toLowerCase();
+      return [`${name}:${found.join(",")}`];
+    });
+  });
+}
+
 for (const locale of ["en", "ar"] as const) {
   for (const viewport of VIEWPORTS) {
     test(`spins the long way, tilts a label, jumps a card, or shifts layout when August becomes September at ${locale} ${viewport.name}`, async ({
@@ -560,6 +624,128 @@ for (const locale of ["en", "ar"] as const) {
       const violations = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();
       expect(violations.violations).toEqual([]);
     });
+
+    test(`plays the dial on first load at ${locale} ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      const response = await page.goto(`/${locale}/guide?month=8`);
+      expect(response?.ok()).toBe(true);
+      const dirty = await revealThenStill(page);
+      console.log(`${locale} ${viewport.name} first-load dirty=${dirty.length}`);
+      expect(dirty).toEqual([]);
+    });
+
+    test(`leaves an inline transform, opacity, will-change or animation after the dial turn settles at ${locale} ${viewport.name}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      const response = await page.goto(`/${locale}/guide?month=8`);
+      expect(response?.ok()).toBe(true);
+      await waitForDialBox(page);
+      await page.locator('a[data-month="9"]').click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=9$`));
+      let leftover: string[] = [];
+      await expect
+        .poll(
+          async () => {
+            const angle = Math.abs(await labelAngle(page, "9"));
+            leftover = await inlineMotion(page);
+            return angle <= 2 && leftover.length === 0;
+          },
+          { timeout: 15_000 },
+        )
+        .toBe(true);
+      await waitStable(page);
+      leftover = await inlineMotion(page);
+      console.log(`${locale} ${viewport.name} clean-end leftover=${leftover.join(" ") || "none"}`);
+      expect(leftover).toEqual([]);
+    });
+
+    test(`leaves an inline transform, opacity, will-change or animation when a second month click interrupts the turn at ${locale} ${viewport.name}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      const response = await page.goto(`/${locale}/guide?month=8`);
+      expect(response?.ok()).toBe(true);
+      await waitForDialBox(page);
+      await page.locator('a[data-month="9"]').click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=9$`));
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(() => {
+              const turn = document.querySelector("[data-dial-turn]");
+              return turn instanceof HTMLElement && turn.style.transform.trim().length > 0;
+            }),
+          { timeout: 15_000 },
+        )
+        .toBe(true);
+      // A coordinate click hits whatever is painted on top while the dial is moving.
+      await page.locator('a[data-month="10"]').evaluate((element) => {
+        if (element instanceof HTMLAnchorElement) element.click();
+      });
+      await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=10$`));
+      let leftover: string[] = [];
+      await expect
+        .poll(
+          async () => {
+            const angle = Math.abs(await labelAngle(page, "10"));
+            leftover = await inlineMotion(page);
+            return angle <= 2 && leftover.length === 0;
+          },
+          { timeout: 15_000 },
+        )
+        .toBe(true);
+      await waitStable(page);
+      leftover = await inlineMotion(page);
+      console.log(`${locale} ${viewport.name} clean-revert leftover=${leftover.join(" ") || "none"}`);
+      expect(leftover).toEqual([]);
+    });
+
+    test(`cuts a glyph of the selected month label at ${locale} ${viewport.name}`, async ({ page }) => {
+      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+      const rows: string[] = [];
+      for (let month = 1; month <= 12; month += 1) {
+        const response = await page.goto(`/${locale}/guide?month=${month}`);
+        expect(response?.ok()).toBe(true);
+        await waitForDialBox(page);
+        const measured = await page.evaluate(() => document.fonts.ready.then(() => {
+          const selected = document.querySelector("a[aria-current='true']");
+          if (!(selected instanceof HTMLElement)) return null;
+          const text = [...selected.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
+          if (!text) return null;
+          const range = document.createRange();
+          range.selectNodeContents(text);
+          const rect = range.getBoundingClientRect();
+          const box = selected.getBoundingClientRect();
+          const centerX = box.x + box.width / 2;
+          const centerY = box.y + box.height / 2;
+          const radius = Math.min(box.width, box.height) / 2;
+          const corners = [
+            [rect.left, rect.top],
+            [rect.right, rect.top],
+            [rect.left, rect.bottom],
+            [rect.right, rect.bottom],
+          ];
+          const outside = corners.filter(([x, y]) => {
+            if (x === undefined || y === undefined) return false;
+            return (x - centerX) ** 2 + (y - centerY) ** 2 > (radius + 0.5) ** 2;
+          }).length;
+          return {
+            text: text.textContent ?? "",
+            scrollWidth: selected.scrollWidth,
+            clientWidth: selected.clientWidth,
+            outside,
+          };
+        }));
+        if (measured === null) throw new Error(`selected label missing for month ${month}`);
+        rows.push(
+          `${month}:${measured.text} sw=${measured.scrollWidth} cw=${measured.clientWidth} outside=${measured.outside}`,
+        );
+        expect(measured.scrollWidth).toBeLessThanOrEqual(measured.clientWidth);
+        expect(measured.outside).toBe(0);
+      }
+      console.log(`${locale} ${viewport.name} pill ${rows.join(" ")}`);
+    });
   }
 }
 
@@ -627,20 +813,22 @@ test.describe("guide turn without javascript", () => {
         const foreign: string[] = [];
         watchRequests(page, foreign);
         await page.setViewportSize({ width: viewport.width, height: viewport.height });
-        expect(slugsInMonth(9)).toEqual([...SEPTEMBER]);
-        const response = await page.goto(`/${locale}/guide?month=8`);
+        const expected = slugsInMonth(9);
+        expect(expected).toEqual([...SEPTEMBER]);
+        const response = await page.goto(`/${locale}/guide?month=9`);
         expect(response?.ok()).toBe(true);
-        // Next streams this dynamic page into a hidden slot. The attribute is the framework shell.
-        await page.evaluate(() => {
-          for (const node of document.querySelectorAll("div[hidden][id^='S:']")) node.removeAttribute("hidden");
-        });
-        await page.locator('a[data-month="9"]').click();
-        await expect(page).toHaveURL(new RegExp(`/${locale}/guide\\?month=9$`));
+        await expect.poll(async () => page.locator("li[data-flip-id]").count(), { timeout: 15_000 }).toBe(10);
         const visible = await page.locator("li[data-flip-id]:not([hidden])").evaluateAll((elements) =>
           elements.map((element) => element.getAttribute("data-flip-id") ?? ""),
         );
-        console.log(`${locale} ${viewport.name} nojs slugs=${visible.join(",")}`);
-        expect(visible).toEqual([...SEPTEMBER]);
+        const held = await page.evaluate(
+          () =>
+            [...document.querySelectorAll("li[data-flip-id]:not([hidden])")].some(
+              (card) => card.closest("div[hidden][id^='S:']") !== null,
+            ),
+        );
+        console.log(`${locale} ${viewport.name} nojs slugs=${visible.join(",")} hiddenSlot=${held}`);
+        expect(visible).toEqual([...expected]);
         await expect(page.locator('a[data-month="9"]')).toHaveAttribute("aria-current", "true");
         expect(foreign).toEqual([]);
       });

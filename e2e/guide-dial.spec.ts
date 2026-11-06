@@ -75,7 +75,19 @@ for (const locale of ["en", "ar"] as const) {
       await expect(months.locator("a[data-month]")).toHaveCount(12);
       const selected = months.locator('a[aria-current="true"]');
       await expect(selected).toHaveAttribute("data-month", "8");
-      await expect.poll(() => selected.evaluate((element) => getComputedStyle(element).transform)).toBe("none");
+      // The guide streams into a hidden slot. A link there already has transform
+      // "none" and a 0×0 box, so the size has to be real before the grow-in ends.
+      await expect
+        .poll(
+          () =>
+            selected.evaluate((element) => {
+              const link = element as HTMLElement;
+              if (link.offsetWidth < 1 || link.offsetHeight < 1) return "hidden";
+              return getComputedStyle(link).transform;
+            }),
+          { timeout: 15_000 },
+        )
+        .toBe("none");
 
       const boxes = await monthBoxes(page, locale);
       const steps = {

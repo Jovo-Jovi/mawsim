@@ -25,6 +25,12 @@
   transition-timing-function: var(--ease-out), var(--ease-out);
 }
 
+/* The longest Arabic short name overflows the pill at --text-xs.
+   Two steps of --pill-grow-from keep every glyph inside the circle. */
+.link:lang(ar) {
+  font-size: calc(var(--text-xs) * var(--pill-grow-from) * var(--pill-grow-from));
+}
+
 .link:hover {
   color: var(--color-ink);
 }

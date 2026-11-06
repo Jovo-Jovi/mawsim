@@ -53,23 +53,20 @@ function turnDial(
   const offset = dialTurnOffset(previous, selected, direction, (month) => turnDegrees[month - 1] ?? Number.NaN);
   const turn = root.querySelector("[data-dial-turn]");
   const labels = root.querySelectorAll("[data-dial-label]");
-  if (turn) gsap.fromTo(turn, { rotation: offset }, { rotation: 0, duration, ease: easeInOut });
+  // clearProps drops the inline transform when the turn reaches 0, so a settled dial matches the stylesheet.
+  if (turn) {
+    gsap.fromTo(turn, { rotation: offset }, { rotation: 0, duration, ease: easeInOut, clearProps: "transform" });
+  }
   if (labels.length > 0) {
-    gsap.fromTo(labels, { rotation: -offset }, { rotation: 0, duration, ease: easeInOut });
+    gsap.fromTo(labels, { rotation: -offset }, { rotation: 0, duration, ease: easeInOut, clearProps: "transform" });
   }
 }
 
 function riseIn(elements: Element[], duration: number, stagger: number, rise: string) {
   if (elements.length === 0) return;
   // The card's own arrival animation writes transform, which would hide this rise.
-  const release = () => {
-    for (const element of elements) {
-      if (element instanceof HTMLElement) element.style.animation = "";
-    }
-  };
-  for (const element of elements) {
-    if (element instanceof HTMLElement) element.style.animation = "none";
-  }
+  // Set through GSAP so a context revert removes the inline value with the tween.
+  gsap.set(elements, { animation: "none" });
   return gsap.fromTo(
     elements,
     { opacity: 0, y: rise },
@@ -82,8 +79,12 @@ function riseIn(elements: Element[], duration: number, stagger: number, rise: st
         const place = index < enteringStaggerCap ? index : enteringStaggerCap - 1;
         return place * stagger;
       },
-      onComplete: release,
-      onInterrupt: release,
+      onComplete: () => {
+        gsap.set(elements, { clearProps: "animation" });
+      },
+      onInterrupt: () => {
+        gsap.set(elements, { clearProps: "animation" });
+      },
     },
   );
 }
@@ -193,6 +194,14 @@ export function GuideMotion({
     return () => {
       cleaned = true;
       ctx.revert();
+      // Revert can leave Flip's inline transform on a card when a second month arrives mid-turn.
+      for (const node of root.querySelectorAll("[data-dial-turn], [data-dial-label], [data-flip-id]")) {
+        if (!(node instanceof HTMLElement)) continue;
+        node.style.animation = "";
+        node.style.transform = "";
+        node.style.opacity = "";
+        node.style.willChange = "";
+      }
     };
   }, [direction, selectedMonth, turnKey]);
 
