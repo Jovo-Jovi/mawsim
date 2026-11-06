@@ -39,19 +39,19 @@ export function ProduceCard({
   const other = otherLocale(locale);
   return (
     <Link className={styles.card} href={localeHref(locale, `/produce/${produce.slug}`)}>
-      <div className={styles.frame} aria-hidden={photo ? undefined : true}>
-        <ProducePhoto
-          produce={produce}
-          photo={photo}
-          locale={locale}
-          slot="card"
-          currentMonth={currentMonth}
-        />
-        {photo ? (
-          <span className={styles.badge}>
-            <SeasonRing kind={produce.kind} months={produce.months} currentMonth={currentMonth} />
-          </span>
-        ) : null}
+      <div className={styles.frame}>
+        <div className={styles.ring} data-season-ring>
+          <SeasonRing kind={produce.kind} months={produce.months} currentMonth={currentMonth} />
+        </div>
+        <div className={styles.circle} data-photo-circle aria-hidden={photo ? undefined : true}>
+          <ProducePhoto
+            produce={produce}
+            photo={photo}
+            locale={locale}
+            slot="card"
+            currentMonth={currentMonth}
+          />
+        </div>
       </div>
       <div className={styles.copy}>
         <h2 className={styles.name}><bdi>{nameIn[locale](produce)}</bdi></h2>

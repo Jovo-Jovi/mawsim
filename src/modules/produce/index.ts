@@ -15,6 +15,17 @@ export { ProducePhoto } from "./ProducePhoto";
 export { MarketTexture } from "./MarketTexture";
 export { ProduceCard } from "./ProduceCard";
 export { SeasonBar } from "./SeasonBar";
+export {
+  calendarMonthAccentTick,
+  calendarMonthLabelPoint,
+  dialTurnDegrees,
+  dialViewBoxSize,
+  ringBandWidth,
+  ringCellPath,
+  ringInnerEdgeRadius,
+  ringOuterEdgeRadius,
+  ringStrokeRadius,
+} from "./dial-geometry";
 export { StorageTipPanel } from "./StorageTipPanel";
 export { seasonRuns } from "./season-text";
 export { catalogueMonth, seasonSentence } from "./season-sentence";

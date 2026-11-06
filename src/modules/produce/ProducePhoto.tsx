@@ -8,7 +8,7 @@ import { SeasonRing } from "./SeasonRing";
 import styles from "./ProducePhoto.module.css";
 
 const sizesBySlot = {
-  card: "(min-width: 64rem) 25vw, 50vw",
+  card: "(min-width: 64rem) 20vw, 40vw",
   page: "(min-width: 64rem) 50vw, 100vw",
   hero: "100vw",
 } as const;
@@ -59,19 +59,31 @@ export function ProducePhoto({
     );
   }
   const other = otherLocale(locale);
+  const names = (
+    <div className={styles.copy}>
+      <p className={styles.name}>
+        <bdi>{produce[locale]}</bdi>
+      </p>
+      <p className={styles.counter} lang={other}>
+        <bdi>{produce[other]}</bdi>
+      </p>
+    </div>
+  );
+  if (slot === "card") {
+    return (
+      <div className={frameClass}>
+        <div className={styles.tile} data-kind={produce.kind}>
+          {names}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className={frameClass}>
       <div className={styles.tile} data-kind={produce.kind}>
         <div className={styles.dial}>
           <SeasonRing kind={produce.kind} months={produce.months} currentMonth={currentMonth} />
-          <div className={styles.copy}>
-            <p className={styles.name}>
-              <bdi>{produce[locale]}</bdi>
-            </p>
-            <p className={styles.counter} lang={other}>
-              <bdi>{produce[other]}</bdi>
-            </p>
-          </div>
+          {names}
         </div>
       </div>
     </div>

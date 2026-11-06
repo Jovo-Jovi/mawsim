@@ -9,7 +9,9 @@
 }
 
 .card {
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1;
+  block-size: 100%;
+  border-radius: var(--radius-pill);
 }
 
 .page {
@@ -125,54 +127,6 @@
   font-size: var(--text-sm);
 }
 
-/* The card frame is the narrow slot. Page and hero keep the rules above. */
-.card .tile {
-  padding: var(--space-1);
-}
-
-.card .dial {
-  inline-size: min(100cqmin, 100%);
-  max-inline-size: 100%;
-  max-block-size: 100%;
-  min-inline-size: 0;
-  min-block-size: 0;
-}
-
-.card .copy {
-  position: absolute;
-  z-index: 1;
-  inset-block-start: 50%;
-  inset-inline: var(--space-1);
-  translate: 0 -50%;
-  inline-size: fit-content;
-  max-inline-size: 100%;
-  margin-inline: auto;
-  padding-inline: var(--space-2);
-  padding-block: var(--space-1);
-}
-
-.card .name,
-.card .counter {
-  overflow-wrap: normal;
-  word-break: normal;
-  white-space: nowrap;
-}
-
-/* A two-line pill covers the ring in the short card frame. The card repeats the counter-name. */
-@container (max-block-size: 8rem) {
-  .card .counter {
-    display: none;
-  }
-
-  .card .name {
-    font-size: var(--text-xs);
-  }
-
-  .card .copy {
-    padding-inline: var(--space-1);
-  }
-}
-
 .card .photo,
 .card .tile {
   transform-origin: center;
@@ -181,8 +135,10 @@
   transition-timing-function: var(--ease-out);
 }
 
-/* The tile is already the kind colour, so this halo uses the surface or it would disappear. */
-.dial::before {
+/* The tile is already the kind colour, so this halo uses the surface or it would disappear.
+   The card disc has no halo of its own; page and hero keep theirs. */
+.page .dial::before,
+.hero .dial::before {
   content: "";
   position: absolute;
   z-index: 1;
@@ -206,7 +162,8 @@
     transform: scale(var(--zoom-photo));
   }
 
-  a:hover .dial::before {
+  a:hover .page .dial::before,
+  a:hover .hero .dial::before {
     opacity: var(--glow-ring-opacity);
   }
 }
@@ -216,7 +173,8 @@ a:focus-visible .card .tile {
   transform: scale(var(--zoom-photo));
 }
 
-a:focus-visible .dial::before {
+a:focus-visible .page .dial::before,
+a:focus-visible .hero .dial::before {
   opacity: var(--glow-ring-opacity);
 }
 
@@ -227,16 +185,22 @@ a:focus-visible .dial::before {
   a:hover .card .tile,
   a:focus-visible .card .photo,
   a:focus-visible .card .tile,
-  .dial::before,
-  a:hover .dial::before,
-  a:focus-visible .dial::before {
+  .page .dial::before,
+  .hero .dial::before,
+  a:hover .page .dial::before,
+  a:hover .hero .dial::before,
+  a:focus-visible .page .dial::before,
+  a:focus-visible .hero .dial::before {
     transform: none;
     transition: none;
   }
 
-  .dial::before,
-  a:hover .dial::before,
-  a:focus-visible .dial::before {
+  .page .dial::before,
+  .hero .dial::before,
+  a:hover .page .dial::before,
+  a:hover .hero .dial::before,
+  a:focus-visible .page .dial::before,
+  a:focus-visible .hero .dial::before {
     opacity: 0;
   }
 }

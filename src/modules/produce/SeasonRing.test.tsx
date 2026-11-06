@@ -32,15 +32,15 @@ it("omits the accent tick or draws it on the wrong arc", () => {
   expect(plain.match(/data-in="/g)?.length).toBe(12);
   const marked = renderToStaticMarkup(<SeasonRing kind="fruit" months={[7, 8, 9, 10]} currentMonth={8} />);
   expect(marked.match(/<line\b/g)?.length).toBe(1);
-  expect(marked).toContain('x1="10.525"');
-  expect(marked).toContain('y1="29.475"');
-  expect(marked).toContain('x2="7.131"');
-  expect(marked).toContain('y2="32.869"');
+  expect(marked).toContain('x1="8.262"');
+  expect(marked).toContain('y1="31.738"');
+  expect(marked).toContain('x2="5.858"');
+  expect(marked).toContain('y2="34.142"');
   expect(marked.match(/data-in="/g)?.length).toBe(12);
   const january = renderToStaticMarkup(<SeasonRing kind="fruit" months={[7, 8, 9, 10]} currentMonth={1} />);
-  expect(january).toContain('x1="23.468"');
-  expect(january).toContain('y1="7.057"');
-  expect(january).not.toContain('x1="10.525"');
+  expect(january).toContain('x1="24.296"');
+  expect(january).toContain('y1="3.966"');
+  expect(january).not.toContain('x1="8.262"');
 });
 
 it("drops the current-month tick on the fallback or draws it over a photograph", () => {
@@ -49,7 +49,7 @@ it("drops the current-month tick on the fallback or draws it over a photograph",
     <ProducePhoto produce={produce} photo={undefined} locale="en" slot="page" currentMonth={8} />,
   );
   expect(fallback.match(/<line\b/g)?.length).toBe(1);
-  expect(fallback).toContain('x1="10.525"');
+  expect(fallback).toContain('x1="8.262"');
   const untouched = renderToStaticMarkup(
     <ProducePhoto produce={produce} photo={undefined} locale="en" slot="page" />,
   );

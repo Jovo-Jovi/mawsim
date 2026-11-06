@@ -85,13 +85,12 @@ async function readMotion(card: Locator): Promise<Reading> {
     if (!(photo instanceof HTMLElement)) throw new Error("missing photo");
     const frame = photo.parentElement;
     if (!(frame instanceof HTMLElement)) throw new Error("missing frame");
-    const ring = anchor.querySelector("svg[data-kind]");
-    const badge = ring?.parentElement ?? null;
-    if (!(badge instanceof HTMLElement)) throw new Error("missing badge");
+    const ring = anchor.querySelector("[data-season-ring]");
+    if (!(ring instanceof HTMLElement)) throw new Error("missing season ring");
     const cardStyle = getComputedStyle(anchor);
     const tileStyle = getComputedStyle(photo);
-    const glow = getComputedStyle(badge, "::before");
-    let block: HTMLElement | null = badge;
+    const glow = getComputedStyle(ring, "::before");
+    let block: HTMLElement | null = ring;
     while (block) {
       const parent = getComputedStyle(block);
       const shifted = parent.transform !== "none" || (parent.translate !== "none" && parent.translate !== "");
@@ -135,7 +134,7 @@ async function readMotion(card: Locator): Promise<Reading> {
     const fromBorderX = borderLeft + paddingX + shiftX;
     const fromBorderY = borderTop + paddingY + shiftY;
     const hostBox = host.getBoundingClientRect();
-    const dialBox = badge.getBoundingClientRect();
+    const dialBox = ring.getBoundingClientRect();
     const scaleX = host.offsetWidth === 0 ? 1 : hostBox.width / host.offsetWidth;
     const scaleY = host.offsetHeight === 0 ? 1 : hostBox.height / host.offsetHeight;
     const haloX = hostBox.left + hostBox.width / 2 + (fromBorderX - host.offsetWidth / 2) * scaleX;
@@ -156,8 +155,8 @@ async function readMotion(card: Locator): Promise<Reading> {
       haloDy: haloY - (dialBox.top + dialBox.height / 2),
       haloWidth: width,
       haloHeight: height,
-      dialWidth: badge.offsetWidth,
-      dialHeight: badge.offsetHeight,
+      dialWidth: ring.offsetWidth,
+      dialHeight: ring.offsetHeight,
     };
   });
 }
@@ -191,7 +190,7 @@ async function pollMotion(card: Locator, ready: (reading: Reading) => boolean): 
 function line(label: string, reading: Reading): string {
   const pair = scalePair(reading.tile);
   const scale = pair ? `${pair.x},${pair.y}` : reading.tile;
-  return `${label} transform=${reading.transform} img=${reading.tile} scale=${scale} glow=${reading.glowOpacity} glowTransform=${reading.glowTransform} outline=${reading.outlineStyle}/${reading.outlineWidth} frame=${reading.frameWidth}x${reading.frameHeight} layout=${reading.layoutWidth}x${reading.layoutHeight} haloDx=${reading.haloDx.toFixed(2)} haloDy=${reading.haloDy.toFixed(2)} halo=${reading.haloWidth.toFixed(2)}x${reading.haloHeight.toFixed(2)} badge=${reading.dialWidth}x${reading.dialHeight}`;
+  return `${label} transform=${reading.transform} img=${reading.tile} scale=${scale} glow=${reading.glowOpacity} glowTransform=${reading.glowTransform} outline=${reading.outlineStyle}/${reading.outlineWidth} frame=${reading.frameWidth}x${reading.frameHeight} layout=${reading.layoutWidth}x${reading.layoutHeight} haloDx=${reading.haloDx.toFixed(2)} haloDy=${reading.haloDy.toFixed(2)} halo=${reading.haloWidth.toFixed(2)}x${reading.haloHeight.toFixed(2)} ring=${reading.dialWidth}x${reading.dialHeight}`;
 }
 
 async function openGuide(page: Page, locale: "en" | "ar", foreign: string[]): Promise<Locator> {

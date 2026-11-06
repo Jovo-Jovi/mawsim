@@ -56,6 +56,12 @@
   --container: 72rem;
   --target-min: 2.75rem;
 
+  --dial-size: 20rem;
+  --dial-picker-size: 18rem;
+  --dial-step: 30deg;
+  --ring-inset: var(--space-3);
+  --arc-size: 18rem;
+
   --dur-1: 120ms;
   --dur-2: 200ms;
   --dur-3: 420ms;
@@ -70,6 +76,13 @@
   --tilt-card: 1.5deg;
   --glow-ring-opacity: 0.55;
   --glow-ring-spread: 0.5rem;
+  --story-step: 60svh;
+  --story-scrub: 0.4s;
+  --story-back-scale: 0.72;
+  --story-back-opacity: 0.35;
+  --dur-flip: 560ms;
+  --flip-stagger: 40ms;
+  --zoom-scroll: 1.08;
   --scene-turn: 48s;
   --scene-size: 12rem;
   --texture-opacity: 0.08;
@@ -112,11 +125,15 @@
 @media (min-width: 40rem) {
   :root {
     --scene-size: 14rem;
+    --dial-size: 28rem;
+    --dial-picker-size: 20rem;
   }
 }
 
 @media (min-width: 64rem) {
   :root {
     --scene-size: 16rem;
+    --dial-size: 34rem;
+    --arc-size: 24rem;
   }
 }

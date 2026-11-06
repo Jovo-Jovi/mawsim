@@ -29,7 +29,7 @@
     transform: translateY(calc(var(--space-1) / 2 * -1)) rotateY(calc(var(--tilt-card) * -1));
   }
 
-  .card:hover .badge::before {
+  .card:hover .ring::before {
     opacity: var(--glow-ring-opacity);
   }
 }
@@ -46,7 +46,7 @@
   transform: translateY(calc(var(--space-1) / 2 * -1)) rotateY(calc(var(--tilt-card) * -1));
 }
 
-.card:focus-visible .badge::before {
+.card:focus-visible .ring::before {
   opacity: var(--glow-ring-opacity);
 }
 
@@ -60,25 +60,21 @@
   position: relative;
   inline-size: 100%;
   min-inline-size: 0;
+  aspect-ratio: 1;
 }
 
-.badge {
+.ring {
   position: absolute;
-  inset-block-start: var(--space-2);
-  inset-inline-end: var(--space-2);
+  inset: 0;
   display: grid;
-  inline-size: var(--space-9);
-  block-size: var(--space-9);
-  border: 1px solid var(--color-hairline);
-  border-radius: var(--radius-pill);
-  background-color: var(--color-surface);
+  pointer-events: none;
 }
 
-.badge::before {
+.ring::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit;
+  border-radius: var(--radius-pill);
   pointer-events: none;
   opacity: 0;
   transition-property: opacity;
@@ -86,16 +82,24 @@
   transition-timing-function: var(--ease-out);
 }
 
-.badge:has([data-kind="fruit"])::before {
+.ring:has([data-kind="fruit"])::before {
   box-shadow: 0 0 var(--glow-ring-spread) var(--glow-ring-spread) var(--color-kind-fruit);
 }
 
-.badge:has([data-kind="vegetable"])::before {
+.ring:has([data-kind="vegetable"])::before {
   box-shadow: 0 0 var(--glow-ring-spread) var(--glow-ring-spread) var(--color-kind-vegetable);
 }
 
-.badge:has([data-kind="leafy"])::before {
+.ring:has([data-kind="leafy"])::before {
   box-shadow: 0 0 var(--glow-ring-spread) var(--glow-ring-spread) var(--color-kind-leafy);
+}
+
+.circle {
+  position: absolute;
+  /* dialViewBoxSize 40, ringBandWidth 3.4: the band is 8.5% of the frame. */
+  inset: calc(8.5% + var(--ring-inset));
+  overflow: hidden;
+  border-radius: var(--radius-pill);
 }
 
 .copy {
@@ -184,7 +188,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .badge::before {
+  .ring::before {
     animation: none;
     transition: none;
   }
@@ -198,8 +202,8 @@
     transform: none;
   }
 
-  .card:hover .badge::before,
-  .card:focus-visible .badge::before {
+  .card:hover .ring::before,
+  .card:focus-visible .ring::before {
     opacity: 0;
     transform: none;
   }
