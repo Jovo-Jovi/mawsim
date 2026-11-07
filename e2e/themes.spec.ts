@@ -80,6 +80,22 @@ async function revealSettled(page: Page): Promise<void> {
     .toBe(true);
 }
 
+// Links transition `color` for `--dur-1`. A theme change snaps the ground and
+// animates the ink, so a contrast check in that window reads a mixed pair.
+async function colorSettled(page: Page): Promise<void> {
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        if (document.documentElement.hasAttribute("data-theme-fade")) return false;
+        return document.getAnimations().every((animation) => {
+          if (!(animation instanceof CSSTransition)) return true;
+          return animation.playState !== "running";
+        });
+      }),
+    )
+    .toBe(true);
+}
+
 async function pressChoice(page: Page, choice: SchemeName): Promise<void> {
   const button = page.locator(`[data-theme-choice="${choice}"]`);
   await expect(button).toBeVisible();
@@ -156,6 +172,7 @@ async function hairline(page: Page, pageName: string): Promise<void> {
 }
 
 async function check(page: Page, pageName: string, locale: LocaleCode, width: number, theme: ThemeLabel): Promise<void> {
+  await colorSettled(page);
   await axeClean(page);
   pass(pageName, locale, width, theme, "axe");
   await focusRing(page);
