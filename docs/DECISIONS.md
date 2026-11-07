@@ -240,6 +240,68 @@ the owner merges.
 `@gsap/react` or any other GSAP plugin than ScrollTrigger and Flip; Lenis outside the home page; new or replaced
 images (the owner's content, OD-09 §3); a CSP, header or route change; a deploy; real farming or nutrition data.
 
+### OD-12 — A theme switch (System · Light · Dark) with a circular reveal, and one remembered display preference
+**Status:** DRAFT — signed when the human merges the intake PR
+**Requested by:** issue #36
+**Amends:** OD-05 §1 and §3 (one zone, `theme-preference`, for one browser-storage key), OD-08 and OD-11 §1 (design
+contract version 4), OD-10 and OD-11 "Does not decide" (the View Transitions API, for the theme change only), the
+brief's R-1 and R-3 (`docs/PRODUCT_BRIEF.md`), and `docs/SCOPE.md` "Out of scope" (a theme toggle; browser storage)
+**1.** The header of every page, in both locales, gets a **theme switch** at its inline end, mirrored in Arabic: three
+`<button type="button">` controls, System, Light and Dark, in one labelled group, each with `aria-pressed`, an icon
+(auto, sun, moon) and a name from both catalogues. They are usable by keyboard, with the visible focus ring of
+`docs/DESIGN_SYSTEM.md` §9, and each target is at least `--target-min`. **System is the default** and keeps today's
+behaviour: the theme follows `prefers-color-scheme`, live. Light or Dark sets `data-theme` on `<html>`, and System
+removes it. Every control is still a link or a button (R-2).
+**2.** The choice is remembered in **one `localStorage` key, `mawsim-theme`**, whose only values are `light`, `dark` and
+`system`. Nothing else is stored, and nothing is stored before a visitor presses a button. The value is a display
+preference the visitor sets, not data about the visitor. It never leaves the browser: no request, route, header, log,
+cookie or server code reads or carries it. It is not a cookie and never becomes one. An unknown value is read as
+System. If storage is unavailable or throws, the switch still changes the theme of the page in view, and the next document
+load (a reload or a new visit) starts at System. A link inside the site does not reload the document, so it may keep
+the choice.
+**3.** The `devos:boundary` line of `docs/BOUNDARY_MODEL.md` gains the zone **`theme-preference`**
+(`personal_data: false`, no URL). Its shipped source is only `src/components/theme/theme-storage.ts` and
+`public/theme-init.js`, the only shipped files that may touch `localStorage`. Three test files are in the zone as
+evidence only, and may name the key only to stub or read it: `src/components/theme/theme-storage.test.ts`,
+`tests/theme-init.test.ts` and `e2e/theme-switch.spec.ts`. Everything else keeps the full rule. Cookies,
+`sessionStorage`, `indexedDB`, forms, beacons, analytics and trackers stay forbidden everywhere, this zone included.
+The Boundary gate is not waived. It holds, and its evidence is required at every task of this OD that touches the
+theme's storage, the layout's `<head>` or the headers. No personal data is held, so no Protection model is needed and
+the repository stays public (OD-03).
+**4.** **No flash of the other theme.** A stored Light or Dark choice is applied before the first paint by a small
+same-origin script, `public/theme-init.js`, loaded synchronously from the root layout's `<head>`. It reads the key and
+sets `data-theme`, and does nothing else. The CSP **does not change** (`docs/SECURITY_MODEL.md` §4): the file is
+allowed by `script-src 'self'`. No hash and no nonce is added, because a hash beside the existing `'unsafe-inline'`
+makes browsers ignore `'unsafe-inline'` (CSP Level 2 and later), and that would block Next.js's own inline bootstrap
+scripts. No `'unsafe-inline'` is added anywhere.
+**5.** **The reveal.** With motion allowed, choosing a theme reveals it as a circle growing from the pressed button
+until it covers the page. It runs over `--dur-theme` (500 ms) on `--ease-in-out`, through
+`document.startViewTransition` with a `clip-path` circle on the new root snapshot. Where the API is missing, the change
+is a short cross-fade of colours over `--dur-2`. Under `prefers-reduced-motion: reduce` the change is instant. Only
+colours change: no element moves, resizes or reflows, and layout shift stays 0. The View Transitions API is used for
+this change only. Page navigation does not use it, and neither does Next.js's experimental integration.
+**6.** **Both themes are finished and equal.** Every screen meets WCAG 2.2 AA in light and in dark. This covers text
+contrast, the focus ring and the non-text contrast `docs/DESIGN_SYSTEM.md` §2 lists, across the year dial, the season
+rings and arcs, the year chart, the cards, the photographs' frames, the photo fallback and the year story. It is
+computed from the tokens by a test, and proven by axe on every page in both themes.
+**7.** **The README** shows twelve screenshots, each one viewport tall (1280 × 800) with every photograph in view
+loaded: the home, the guide and the mango page, in `en` and `ar`, in light and in dark. They replace today's three
+full-page Arabic captures.
+**8.** The design contract becomes **version 4** (`docs/DESIGN_SYSTEM.md`, written by the intake PR that lands this OD):
+§2 (`--dur-theme`, the contrast pairs), §4 Themes, §5 the header with the switch, §6 `ThemeSwitch` and three new icons,
+§7 the reveal, §9 and §10. Merging the intake PR is the owner's approval of the switch's design. The rendered result is
+signed off at **G-Theme**.
+**9.** The work is three tasks, T24–T26 (`docs/PHASES.md`, phase P08). T24 adds the stored choice, the pre-paint
+script and the switch with an instant change. It is **risk 3** because it opens the zone and touches the layout's
+`<head>`, so the developer merges it. T25 adds the reveal. T26 proves both themes on every screen, fixes what that
+finds, and takes the README screenshots. It ends at the gate **G-Theme**, which the owner merges.
+**Basis of signature:** the owner decides; merging the intake PR for issue #36 is the confirming act. The Boundary gate
+itself cannot be waived by any OD. This OD holds it: the stored value is not a visitor's data and never leaves the
+browser.
+**Does not decide:** any other stored value, a cookie, `sessionStorage` or `indexedDB`. A theme read from the URL or
+sent to the server. A theme per page, or a theme beyond light and dark. View transitions between pages. A CSP, header,
+route or redirect change. A new dependency. New or replaced images (OD-09 §3). A deploy.
+
 ## D-rows
 
 | D | Decision | Date |
