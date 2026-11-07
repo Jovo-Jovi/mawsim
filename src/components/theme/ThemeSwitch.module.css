@@ -19,6 +19,10 @@
   color: var(--color-ink-muted);
   font: inherit;
   cursor: pointer;
+  /* The bar centers this control. A press scrolls by that offset unless the
+     margin edge already meets the scrollport, which moves the page under the
+     sticky bar and the next press scrolls back. */
+  scroll-margin-block-start: var(--space-7);
 }
 
 .choice:hover {
