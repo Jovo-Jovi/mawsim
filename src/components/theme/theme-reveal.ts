@@ -19,7 +19,12 @@ function token(name: "--dur-theme" | "--ease-in-out"): string {
 }
 
 function durationMs(declared: string): number {
-  return Number.parseFloat(declared);
+  const value = declared.trim();
+  const amount = Number.parseFloat(value);
+  // Computed time is seconds (`.5s`), while the animations API takes milliseconds.
+  if (value.endsWith("ms")) return amount;
+  if (value.endsWith("s")) return amount * 1000;
+  return amount;
 }
 
 function revealGeometry(from: HTMLElement): { x: number; y: number; radius: number } {
