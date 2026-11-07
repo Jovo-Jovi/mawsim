@@ -69,13 +69,16 @@ module creates its folder and its entry.
   and `height`, a `sizes` value per slot and the frame's fixed `aspect-ratio`, so nothing shifts. The hero is the
   only `priority` image; the rest load lazily. The owner generates a file and its manifest row with
   `scripts/images/generate.mjs`, which he runs on his own computer (OD-10 §3). No remote image host is configured.
-- **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state. `Reveal`
+- **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state. `ThemeSwitch`
+  (`src/components/theme/ThemeSwitch.tsx`) is a client component: it reads the remembered choice and applies it when a
+  button is pressed. `public/theme-init.js` is the one synchronous head script (OD-12 §4): it applies a stored Light or
+  Dark choice before first paint. `Reveal`
   (`src/modules/guide/Reveal.tsx`) adds an attribute and an observer and renders no state. `YearStoryMotion`
   (`src/modules/home/YearStoryMotion.tsx`) scrubs the home story with `gsap` ScrollTrigger and, only while motion
   is allowed, smooths that scroll with `lenis`. `GuideMotion` (`src/modules/guide/GuideMotion.tsx`) re-sorts the
   guide cards with `gsap` Flip. `SeasonArcMotion` (`src/modules/produce/SeasonArcMotion.tsx`) scrubs the produce
   photograph with `gsap` ScrollTrigger. The hero scene and its canvas are not part of the build. Every control is
-  a link. The produce pages are generated for every slug × locale. "This month" is
+  a link or a button. The produce pages are generated for every slug × locale. "This month" is
   computed on the server in `Africa/Cairo` and cached for at most an hour (with Cache Components, a `"use cache"`
   function with `cacheLife("hours")`), so the content is never changed, only revealed.
 - **Data.** `content/produce.json` is imported once, in `src/modules/produce/`, and checked by a unit test (unique

@@ -100,7 +100,8 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --color-bg: #12201A;
     --color-surface: #1A2B23;
     --color-surface-glass: rgb(26 43 35 / 0.72);
@@ -118,6 +119,30 @@
     --color-hairline: rgb(243 235 221 / 0.16);
     --texture-ink: #F3EBDD;
   }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #12201A;
+  --color-surface: #1A2B23;
+  --color-surface-glass: rgb(26 43 35 / 0.72);
+  --color-ink: #F3EBDD;
+  --color-ink-muted: #B9C2B5;
+  --color-primary: #7CC39A;
+  --color-on-primary: #12201A;
+  --color-accent: #E59466;
+  --color-highlight: #F2C230;
+  --color-on-highlight: #12201A;
+  --color-kind-fruit: #F0A04B;
+  --color-kind-vegetable: #F07A6A;
+  --color-kind-leafy: #8BC77F;
+  --color-track: #2A3D33;
+  --color-hairline: rgb(243 235 221 / 0.16);
+  --texture-ink: #F3EBDD;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
 }
 
 @media (min-width: 40rem) {

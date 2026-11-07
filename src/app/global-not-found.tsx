@@ -12,7 +12,11 @@ export const metadata: Metadata = {
 
 export default function GlobalNotFound() {
   return (
-    <html lang={defaultLocale} dir={directionOf(defaultLocale)} className={fontVariableClass}>
+    <html lang={defaultLocale} dir={directionOf(defaultLocale)} className={fontVariableClass} suppressHydrationWarning>
+      <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- OD-12 §4: the theme is set before first paint */}
+        <script src="/theme-init.js" />
+      </head>
       <body>
         <PageShell locale={defaultLocale} path="">
           <NotFoundCopy locale={defaultLocale} />

@@ -104,6 +104,10 @@ const catalogueKeys = [
   "produce.stateJoin",
   "produce.thisMonth",
   "skip.content",
+  "theme.dark",
+  "theme.label",
+  "theme.light",
+  "theme.system",
 ] as const;
 
 function flatKeys(value: unknown, prefix = ""): string[] {
@@ -158,5 +162,26 @@ it("drops a produce-page string or copies the English into Arabic", () => {
 it("adds a key the fence does not name, or loses one", () => {
   expect(flatKeys(messages("en")).sort()).toEqual([...catalogueKeys]);
   expect(flatKeys(messages("ar")).sort()).toEqual([...catalogueKeys]);
-  expect(catalogueKeys).toHaveLength(87);
+  expect(catalogueKeys).toHaveLength(91);
+});
+
+it("drops a theme name, or keeps the collects notice that denies the remembered choice", () => {
+  expect(messages("en").theme).toEqual({
+    label: "Theme",
+    system: "System",
+    light: "Light",
+    dark: "Dark",
+  });
+  expect(messages("ar").theme).toEqual({
+    label: "المظهر",
+    system: "حسب الجهاز",
+    light: "فاتح",
+    dark: "داكن",
+  });
+  expect(messages("en").about.collects).toBe(
+    "Nothing about you. There are no accounts, forms, cookies, analytics or trackers, and nothing about your visit is logged. If you choose Light or Dark, that one choice is kept in your own browser so the next page shows it. It is never sent to Mawsim or to anyone else.",
+  );
+  expect(messages("ar").about.collects).toBe(
+    "لا شيء عنك. لا حسابات ولا نماذج ولا ملفات تعريف ارتباط ولا أدوات تحليل أو تتبّع، ولا يُسجَّل أي شيء عن زيارتك. إذا اخترت المظهر الفاتح أو الداكن، يُحفظ هذا الاختيار وحده في متصفحك لتظهر به الصفحة التالية، ولا يُرسَل إلى موسم ولا إلى أي جهة أخرى.",
+  );
 });

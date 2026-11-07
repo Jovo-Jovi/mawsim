@@ -20,6 +20,12 @@
   "language": {
     "switch": "العربية"
   },
+  "theme": {
+    "label": "Theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "notice": {
     "sample": "Sample data for a test product — not farming or nutrition advice."
   },
@@ -102,7 +108,7 @@
     "whatTitle": "What Mawsim is",
     "what": "Mawsim is a small guide to the fruit and vegetables in season in Egypt, month by month, for anyone on their way to the market. It is a test product: its seasons and storage tips are sample data, not farming or nutrition advice.",
     "collectsTitle": "What Mawsim collects",
-    "collects": "Nothing. There are no accounts, forms, cookies, browser storage, analytics or trackers, and nothing about your visit is logged.",
+    "collects": "Nothing about you. There are no accounts, forms, cookies, analytics or trackers, and nothing about your visit is logged. If you choose Light or Dark, that one choice is kept in your own browser so the next page shows it. It is never sent to Mawsim or to anyone else.",
     "languagesTitle": "Two languages",
     "languages": "The page address sets the language: Arabic reads right to left and English left to right, and Arabic is the default. Your device's language settings are never read. The language link at the top and bottom of every page keeps you on the same page.",
     "photosTitle": "Photographs",

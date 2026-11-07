@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, it } from "vitest";
 import type { Locale } from "@/i18n/config";
+import { messages } from "@/i18n/messages";
 import { SiteHeader } from "./SiteHeader";
 
 function navAnchors(html: string): { href: string; text: string; current: string | null }[] {
@@ -39,4 +40,33 @@ it("reorders Home, Guide and About, or marks a header link current on the wrong 
   expect(arabicGuide.map((anchor) => anchor.text)).toEqual(["الرئيسية", "الدليل", "عن الموقع"]);
   expect(arabicGuide.map((anchor) => anchor.href)).toEqual(["/ar", "/ar/guide", "/ar/about"]);
   expect(arabicGuide.map((anchor) => anchor.current)).toEqual([null, "page", null]);
+});
+
+it("drops the theme group, reorders its buttons, or presses a choice other than the server snapshot", () => {
+  for (const locale of ["en", "ar"] as const) {
+    const copy = messages(locale).theme;
+    const html = renderToStaticMarkup(<SiteHeader locale={locale} path="" />);
+    const groups = [...html.matchAll(/<div\b[^>]*role="group"[^>]*>[\s\S]*?<\/div>/g)];
+    expect(groups, locale).toHaveLength(1);
+    const group = groups[0]?.[0] ?? "";
+    expect(group).toContain(`aria-label="${copy.label}"`);
+    const buttons = [...group.matchAll(/<button\b([^>]*)>/g)].map((match) => match[1] ?? "");
+    expect(buttons).toHaveLength(3);
+    expect(buttons.every((tag) => /\btype="button"/.test(tag))).toBe(true);
+    expect(buttons.map((tag) => /data-theme-choice="([^"]*)"/.exec(tag)?.[1])).toEqual([
+      "system",
+      "light",
+      "dark",
+    ]);
+    expect(buttons.map((tag) => /aria-label="([^"]*)"/.exec(tag)?.[1])).toEqual([
+      copy.system,
+      copy.light,
+      copy.dark,
+    ]);
+    expect(buttons.map((tag) => /aria-pressed="([^"]*)"/.exec(tag)?.[1])).toEqual([
+      "true",
+      "false",
+      "false",
+    ]);
+  }
 });
