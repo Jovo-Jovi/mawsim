@@ -1,6 +1,6 @@
 # MAWSIM — Session context
 
-**Phase:** P08 Theme switch · **Station:** J5 · **Next task:** T26 · **Profile:** A, adapted (no personal
+**Phase:** P08 Theme switch · **Station:** J5 · **Next task:** G-Theme (owner merges) · **Profile:** A, adapted (no personal
 data, no database) · **Scope:** mvp
 
 ## Done steps
@@ -16,6 +16,7 @@ data, no database) · **Scope:** mvp
 | T23 | The year turns acceptance | PASS on `docs/PHASES.md` (T23 a3) |
 | T24 | System, Light and Dark in the header, one storage key, applied before first paint | in the tree this task builds on |
 | T25 | The theme reveal | done in this task |
+| T26 | Both themes on every screen, and the README screenshots | done in this task |
 
 ## Open carry-forwards
 
@@ -23,4 +24,4 @@ data, no database) · **Scope:** mvp
 
 ## Next action
 
-P08 continues. T25 is done: the theme change is revealed as a circle from the switch. T26 is next: both themes on every screen, and the README screenshots, ending at G-Theme.
+P08's gate is G-Theme. T26 is done: both themes on every screen, and the README screenshots. The owner merges.

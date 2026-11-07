@@ -13,7 +13,16 @@ Mawsim (موسم) is a bilingual guide to which fruits and vegetables are in sea
 
 ## Screenshots
 
-![The Arabic guide in August, with the year dial as the month picker](docs/screenshots/guide-ar.png)
-![The Arabic home in November, with the year story settled on this month](docs/screenshots/home-ar.png)
-![The Arabic mango page in November, season arc drawn, July to October lit](docs/screenshots/produce-ar.png)
+![The English home in the light theme](docs/screenshots/home-en-light.png)
+![The English home in the dark theme](docs/screenshots/home-en-dark.png)
+![The Arabic home in the light theme](docs/screenshots/home-ar-light.png)
+![The Arabic home in the dark theme](docs/screenshots/home-ar-dark.png)
+![The English guide in the light theme](docs/screenshots/guide-en-light.png)
+![The English guide in the dark theme](docs/screenshots/guide-en-dark.png)
+![The Arabic guide in the light theme](docs/screenshots/guide-ar-light.png)
+![The Arabic guide in the dark theme](docs/screenshots/guide-ar-dark.png)
+![The English mango page in the light theme](docs/screenshots/mango-en-light.png)
+![The English mango page in the dark theme](docs/screenshots/mango-en-dark.png)
+![The Arabic mango page in the light theme](docs/screenshots/mango-ar-light.png)
+![The Arabic mango page in the dark theme](docs/screenshots/mango-ar-dark.png)
 ![The English home in dark, chosen with the theme switch](docs/screenshots/theme-reveal-en.png)
