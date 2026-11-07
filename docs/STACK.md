@@ -72,7 +72,8 @@ module creates its folder and its entry.
 - **Rendering.** Server Components by default; `"use client"` only for a control that needs browser state. `ThemeSwitch`
   (`src/components/theme/ThemeSwitch.tsx`) is a client component: it reads the remembered choice and applies it when a
   button is pressed. `public/theme-init.js` is the one synchronous head script (OD-12 §4): it applies a stored Light or
-  Dark choice before first paint. `Reveal`
+  Dark choice before first paint. The theme reveal uses `document.startViewTransition` with no dependency, for the
+  theme change only, and never for navigation (OD-12 §5). `Reveal`
   (`src/modules/guide/Reveal.tsx`) adds an attribute and an observer and renders no state. `YearStoryMotion`
   (`src/modules/home/YearStoryMotion.tsx`) scrubs the home story with `gsap` ScrollTrigger and, only while motion
   is allowed, smooths that scroll with `lenis`. `GuideMotion` (`src/modules/guide/GuideMotion.tsx`) re-sorts the

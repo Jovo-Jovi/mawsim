@@ -83,6 +83,7 @@
   --dur-flip: 560ms;
   --flip-stagger: 40ms;
   --zoom-scroll: 1.08;
+  --dur-theme: 500ms;
   --texture-opacity: 0.08;
   --texture-ink: #1F2A22;
   --texture-tile: 12rem;

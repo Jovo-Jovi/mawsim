@@ -2,7 +2,8 @@
 
 import { useLayoutEffect, useSyncExternalStore } from "react";
 import { Icon } from "../Icon";
-import { applyCurrentTheme, chooseTheme, currentThemeChoice, subscribeThemeChoice } from "./theme-storage";
+import { revealThemeChoice } from "./theme-reveal";
+import { applyCurrentTheme, currentThemeChoice, subscribeThemeChoice } from "./theme-storage";
 import styles from "./ThemeSwitch.module.css";
 
 export function ThemeSwitch({
@@ -38,7 +39,7 @@ export function ThemeSwitch({
           data-theme-choice={option.choice}
           aria-pressed={choice === option.choice ? "true" : "false"}
           aria-label={option.name}
-          onClick={() => chooseTheme(option.choice)}
+          onClick={(event) => revealThemeChoice(option.choice, event.currentTarget)}
         >
           <Icon name={option.icon} />
         </button>
