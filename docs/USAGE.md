@@ -11,21 +11,21 @@ Every agent run of this project, totalled from the records in `docs/usage/`: one
   supervisor's second opinions, and a change request answered without a plan. Each shows its usage on its own run
   page or comment.
 
-Runs: 197 · Not reported: 34 · Last run: 2026-11-07T03:56:05.741Z
+Runs: 200 · Not reported: 34 · Last run: 2026-11-07T05:02:58.253Z
 
 ## Total
 
 | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|
-| 197 | 19,045,153 | 10,341,223 | 1,101,574,236 | 17,586,643 | $289.64 (91 without a price) |
+| 200 | 19,376,096 | 10,449,744 | 1,114,265,572 | 17,653,646 | $290.03 (93 without a price) |
 
 ## By model
 
 | Tool | Model | Runs | Input | Output | Cache read | Cache write | Cost (USD) |
 |---|---|---|---|---|---|---|---|
 | claude | claude-opus-5-5 | 50 | 127,252 | 4,427,693 | 441,992,882 | 15,882,140 | $277.75 |
-| claude | claude-sonnet-5-5 | 22 | 650 | 336,046 | 19,901,738 | 1,704,503 | $11.88 |
-| cursor | grok-4.7-high | 69 | 12,956,200 | 3,854,767 | 426,326,016 | 0 | — |
+| claude | claude-sonnet-5-5 | 23 | 672 | 343,755 | 20,385,458 | 1,771,506 | $12.27 |
+| cursor | grok-4.7-high | 71 | 13,287,121 | 3,955,579 | 438,533,632 | 0 | — |
 | cursor | grok-4.7-xhigh-fast | 56 | 5,961,051 | 1,722,717 | 213,353,600 | 0 | — |
 
 ## By stage
@@ -35,8 +35,8 @@ Runs: 197 · Not reported: 34 · Last run: 2026-11-07T03:56:05.741Z
 | blueprint | 2 | 118,706 | 281,166 | 23,843,989 | 751,315 | $15.31 |
 | intake | 6 | 852 | 426,055 | 43,917,376 | 1,359,529 | $26.34 |
 | revise | 1 | 62 | 24,159 | 1,164,892 | 109,905 | $1.46 |
-| builder | 125 | 18,917,251 | 5,577,484 | 639,679,616 | 0 | — |
-| reviewer | 63 | 8,282 | 4,032,359 | 392,968,363 | 15,365,894 | $246.52 |
+| builder | 127 | 19,248,172 | 5,678,296 | 651,887,232 | 0 | — |
+| reviewer | 64 | 8,304 | 4,040,068 | 393,452,083 | 15,432,897 | $246.92 |
 
 ## By task
 
@@ -70,3 +70,4 @@ Runs: 197 · Not reported: 34 · Last run: 2026-11-07T03:56:05.741Z
 | T22 | 5 | 641,548 | 251,550 | 26,251,216 | 77,507 | $0.44 (3 without a price) |
 | T23 | 12 | 1,093,786 | 713,524 | 79,551,220 | 1,242,451 | $22.91 (7 without a price) |
 | T24 | 4 | 810,010 | 321,304 | 31,041,885 | 433,169 | $6.61 (3 without a price) |
+| T25 | 3 | 330,943 | 108,521 | 12,691,336 | 67,003 | $0.39 (2 without a price) |

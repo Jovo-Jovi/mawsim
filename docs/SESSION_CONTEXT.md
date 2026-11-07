@@ -1,6 +1,6 @@
 # MAWSIM — Session context
 
-**Phase:** P08 Theme switch · **Station:** J5 · **Next task:** T24, waiting for the developer's merge (risk 3) · **Profile:** A, adapted (no personal
+**Phase:** P08 Theme switch · **Station:** J5 · **Next task:** T26 · **Profile:** A, adapted (no personal
 data, no database) · **Scope:** mvp
 
 ## Done steps
@@ -14,6 +14,8 @@ data, no database) · **Scope:** mvp
 | T12–T17 | Imagery pipeline through the showcase acceptance | PASS on `docs/PHASES.md` |
 | T18–T22 | Year dial, guide motion, the home year story and the produce season arc | PASS on `docs/PHASES.md` (T18 a2, T19 a3, T20 a2, T21 a2, T22 a1) |
 | T23 | The year turns acceptance | PASS on `docs/PHASES.md` (T23 a3) |
+| T24 | System, Light and Dark in the header, one storage key, applied before first paint | in the tree this task builds on |
+| T25 | The theme reveal | done in this task |
 
 ## Open carry-forwards
 
@@ -21,4 +23,4 @@ data, no database) · **Scope:** mvp
 
 ## Next action
 
-P08 is in progress. T23 is PASS. T24 is waiting for the developer's merge (risk 3): System, Light and Dark in the header, one `localStorage` key, applied before first paint.
+P08 continues. T25 is done: the theme change is revealed as a circle from the switch. T26 is next: both themes on every screen, and the README screenshots, ending at G-Theme.
