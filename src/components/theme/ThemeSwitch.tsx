@@ -1,8 +1,8 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useLayoutEffect, useSyncExternalStore } from "react";
 import { Icon } from "../Icon";
-import { chooseTheme, currentThemeChoice, subscribeThemeChoice } from "./theme-storage";
+import { applyCurrentTheme, chooseTheme, currentThemeChoice, subscribeThemeChoice } from "./theme-storage";
 import styles from "./ThemeSwitch.module.css";
 
 export function ThemeSwitch({
@@ -17,6 +17,11 @@ export function ThemeSwitch({
   dark: string;
 }) {
   const choice = useSyncExternalStore(subscribeThemeChoice, currentThemeChoice, () => "system");
+  useLayoutEffect(() => {
+    // A locale change commits <html> again and drops data-theme. Put the choice back
+    // before paint. This does not write storage.
+    applyCurrentTheme();
+  });
   const options = [
     { choice: "system", icon: "auto", name: system },
     { choice: "light", icon: "sun", name: light },

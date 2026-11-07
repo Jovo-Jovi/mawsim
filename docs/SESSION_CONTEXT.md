@@ -1,6 +1,6 @@
 # MAWSIM — Session context
 
-**Phase:** P07 The year turns · **Station:** J5 · **Next task:** T23, waiting at G-YearTurns for the developer's merge · **Profile:** A, adapted (no personal
+**Phase:** P08 Theme switch · **Station:** J5 · **Next task:** T24, waiting for the developer's merge (risk 3) · **Profile:** A, adapted (no personal
 data, no database) · **Scope:** mvp
 
 ## Done steps
@@ -13,6 +13,7 @@ data, no database) · **Scope:** mvp
 | T10–T11 | About page, photo credits, hero dial and the motion pass | PASS on `docs/PHASES.md` |
 | T12–T17 | Imagery pipeline through the showcase acceptance | PASS on `docs/PHASES.md` |
 | T18–T22 | Year dial, guide motion, the home year story and the produce season arc | PASS on `docs/PHASES.md` (T18 a2, T19 a3, T20 a2, T21 a2, T22 a1) |
+| T23 | The year turns acceptance | PASS on `docs/PHASES.md` (T23 a3) |
 
 ## Open carry-forwards
 
@@ -20,4 +21,4 @@ data, no database) · **Scope:** mvp
 
 ## Next action
 
-P07 is in progress. T18–T22 are done. T23 is at G-YearTurns: the owner reads the captures and merges. The guide renders on each request (`ƒ`, CF-80) so the page arrives whole without JavaScript.
+P08 is in progress. T23 is PASS. T24 is waiting for the developer's merge (risk 3): System, Light and Dark in the header, one `localStorage` key, applied before first paint.

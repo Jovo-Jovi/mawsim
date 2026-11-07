@@ -42,6 +42,10 @@ export function chooseTheme(choice: ThemeChoice): void {
   for (const listener of listeners) listener(choice);
 }
 
+export function applyCurrentTheme(): void {
+  applyTheme(currentThemeChoice());
+}
+
 export function subscribeThemeChoice(listener: (choice: ThemeChoice) => void): () => void {
   listeners.add(listener);
   return () => {

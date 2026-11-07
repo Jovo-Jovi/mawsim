@@ -6,6 +6,7 @@ vi.mock("./theme-storage", () => ({
   subscribeThemeChoice: () => () => {},
   currentThemeChoice: () => "dark",
   chooseTheme: () => {},
+  applyCurrentTheme: () => {},
 }));
 
 it("uses the client snapshot, drops a choice, or leaves a button unnamed", () => {
