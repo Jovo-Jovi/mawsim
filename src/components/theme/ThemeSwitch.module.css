@@ -1,0 +1,45 @@
+.group {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  background: var(--color-track);
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--target-min);
+  block-size: var(--target-min);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.choice:hover {
+  color: var(--color-ink);
+}
+
+.choice:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-primary);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* The pressed pill follows the document attribute, so it is right before hydration. */
+:global(:root:not([data-theme])) .choice[data-theme-choice="system"],
+:global(:root[data-theme="light"]) .choice[data-theme-choice="light"],
+:global(:root[data-theme="dark"]) .choice[data-theme-choice="dark"] {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+
+@media (scripting: none) {
+  .group {
+    visibility: hidden;
+  }
+}

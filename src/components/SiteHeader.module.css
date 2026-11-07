@@ -15,7 +15,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
-    "brand language"
+    "brand tools"
     "nav nav";
   align-items: center;
   column-gap: var(--space-3);
@@ -44,10 +44,23 @@
   min-inline-size: 0;
 }
 
-.language {
-  grid-area: language;
+.tools {
+  display: flex;
+  grid-area: tools;
+  align-items: center;
+  justify-content: flex-end;
+  column-gap: var(--space-2);
   justify-self: end;
-  min-inline-size: 0;
+}
+
+@media (width < 22.5rem) {
+  .bar {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "brand"
+      "tools"
+      "nav";
+  }
 }
 
 .link {
@@ -83,7 +96,7 @@
 @media (min-width: 40rem) {
   .bar {
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    grid-template-areas: "brand nav language";
+    grid-template-areas: "brand nav tools";
     row-gap: 0;
   }
 }

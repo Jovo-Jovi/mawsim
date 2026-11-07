@@ -3,6 +3,7 @@ import type { Locale } from "@/i18n/config";
 import { localeHref } from "@/i18n/href";
 import { messages } from "@/i18n/messages";
 import { LanguageLink } from "./LanguageLink";
+import { ThemeSwitch } from "./theme/ThemeSwitch";
 import { Wordmark } from "./Wordmark";
 import styles from "./SiteHeader.module.css";
 
@@ -48,8 +49,14 @@ export function SiteHeader({
             {copy.nav.about}
           </Link>
         </nav>
-        <div className={styles.language}>
+        <div className={styles.tools}>
           <LanguageLink locale={locale} path={path} query={query} />
+          <ThemeSwitch
+            label={copy.theme.label}
+            system={copy.theme.system}
+            light={copy.theme.light}
+            dark={copy.theme.dark}
+          />
         </div>
       </div>
     </header>
