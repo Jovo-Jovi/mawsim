@@ -24,7 +24,11 @@ export default async function LocaleLayout({ children }: { children: ReactNode }
   const value = await localeSegment();
   const locale = isLocale(value) ? value : defaultLocale;
   return (
-    <html lang={locale} dir={directionOf(locale)} className={fontVariableClass}>
+    <html lang={locale} dir={directionOf(locale)} className={fontVariableClass} suppressHydrationWarning>
+      <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts -- OD-12 §4: the theme is set before first paint */}
+        <script src="/theme-init.js" />
+      </head>
       <body>{isLocale(value) ? children : <Suspense>{children}</Suspense>}</body>
     </html>
   );
