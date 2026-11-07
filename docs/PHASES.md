@@ -28,7 +28,7 @@ wait for the developer's merge.
 | T21 | P07 | J5 | Home: the scroll-driven year story with Lenis; the 3D hero scene and three.js removed | 2 | — | [x] | PASS a2 — docs/reviews/T21-a2.md |
 | T22 | P07 | J5 | Produce page: the season arc around the circular photograph, drawn on entry, with the scroll zoom | 2 | — | [x] | PASS a1 — docs/reviews/T22-a1.md |
 | T23 | P07 | J5 | "The year turns" acceptance: every screen in both locales, the site-wide e2e and the captures | 2 | G-YearTurns | [x] | PASS a3 — docs/reviews/T23-a3.md |
-| T24 | P08 | J5 | Theme switch: System · Light · Dark in the header, the choice kept in one storage key and applied before first paint | 3 | — | [ ] | — |
+| T24 | P08 | J5 | Theme switch: System · Light · Dark in the header, the choice kept in one storage key and applied before first paint | 3 | — | [x] | PASS a1 — docs/reviews/T24-a1.md |
 | T25 | P08 | J5 | The theme reveal: a circle from the switch through the View Transitions API, a cross-fade fallback, instant under reduced motion | 2 | — | [ ] | — |
 | T26 | P08 | J5 | Both themes proven on every screen, and the README screenshots in light and dark | 2 | G-Theme | [ ] | — |
 
