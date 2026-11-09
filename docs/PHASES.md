@@ -31,7 +31,7 @@ wait for the developer's merge.
 | T24 | P08 | J5 | Theme switch: System · Light · Dark in the header, the choice kept in one storage key and applied before first paint | 3 | — | [x] | PASS a1 — docs/reviews/T24-a1.md |
 | T25 | P08 | J5 | The theme reveal: a circle from the switch through the View Transitions API, a cross-fade fallback, instant under reduced motion | 2 | — | [x] | PASS a1 — docs/reviews/T25-a1.md |
 | T26 | P08 | J5 | Both themes proven on every screen, and the README screenshots in light and dark | 2 | G-Theme | [x] | PASS a1 — docs/reviews/T26-a1.md |
-| T27 | P09 | J5 | Canary: the work job's token cannot write, and the review stays in its sandbox | 2 | — | [ ] | — |
+| T27 | P09 | J5 | Canary: the work job's token cannot write, and the review stays in its sandbox | 2 | — | [x] | PASS a1 — docs/reviews/T27-a1.md |
 | T28 | P09 | J5 | Canary: a forged bundle is rejected before any push or review | 1 | — | [ ] | — |
 
 ## Phases
