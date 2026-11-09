@@ -5,7 +5,9 @@ import { execFileSync } from "node:child_process";
 import { join, dirname, relative, resolve, isAbsolute } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
+// PR-90: the cycle's publish job runs these scripts from its checkout of main over a workspace it built itself
+// (DEVOS_ROOT): the rules come from main, the data from the verified branch. Unset, the scripts' own repository.
+export const ROOT = process.env.DEVOS_ROOT ? resolve(process.env.DEVOS_ROOT) : join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const P = (...p) => join(ROOT, ...p);
 
 export function readJson(rel) {
@@ -64,7 +66,11 @@ export function withModelOverrides(cfg, env = process.env) {
 }
 
 export function config() {
-  return withModelOverrides(readJson("devos.config.json")).config;
+  const cfg = withModelOverrides(readJson("devos.config.json")).config;
+  // PR-91: inside a unit the cycle's base is the unit's branch; the publish job names it.
+  const base = String(process.env.DEVOS_BASE ?? "").trim();
+  if (base && UNIT_BRANCH.test(base)) cfg.base_branch = base;
+  return cfg;
 }
 
 // ---------- PHASES.md ----------------------------------------------------------------------
@@ -136,6 +142,42 @@ export function taskAfter(rows, task) {
   return rows.slice(i + 1).find((r) => !isMethodRow(r)) ?? null;
 }
 
+// ---------- units of acceptance (PR-91) -----------------------------------------------------
+// Product tasks are built in units. Inside a unit a PASS merges into the unit's branch; at the unit's end the cycle
+// opens one pull request into main and stops: only the person's merge reaches main. Method fixes are in no unit.
+
+export const UNIT_PREFIX = "devos/unit-";
+export const UNIT_BRANCH = /^devos\/unit-T\d{2,3}$/;
+export const UNIT_MODES = ["gate", "phase", "task"];
+
+/** acceptance.unit: gate (a unit ends at a row with a Gate and at a phase's last row), phase, or task. */
+export function acceptanceUnit(cfg) {
+  const mode = String(cfg?.acceptance?.unit ?? "gate");
+  return UNIT_MODES.includes(mode) ? mode : "gate";
+}
+
+const hasGate = (row) => Boolean(row?.gate && row.gate !== "—" && row.gate !== "-");
+
+/** The unit that holds `task`: its product rows in order, first and last task, and branch; null for a method row. */
+export function unitOf(rows, task, mode = "gate") {
+  const product = rows.filter((r) => !isMethodRow(r));
+  const i = product.findIndex((r) => r.task === task);
+  if (i < 0) return null;
+  const ends = (k) => mode === "task" || k === product.length - 1 || product[k + 1].phase !== product[k].phase || (mode === "gate" && hasGate(product[k]));
+  let start = i;
+  while (start > 0 && !ends(start - 1)) start--;
+  let end = i;
+  while (!ends(end)) end++;
+  const tasks = product.slice(start, end + 1);
+  return { tasks: tasks.map((r) => r.task), first: tasks[0].task, last: tasks.at(-1).task, branch: `${UNIT_PREFIX}${tasks.at(-1).task}` };
+}
+
+/** PR-91 (Q2 a): a product PASS waits on its own task PR only at risk 3; a Gate is signed by the unit's acceptance. A
+ *  method fix waits as before (PR-28). */
+export function waitsOnTaskPr(row) {
+  return isMethodRow(row) ? isHumanGate(row) : row.risk >= 3;
+}
+
 export function updatePhasesRow(task, { done, verdict }) {
   const file = P("docs/PHASES.md");
   const text = readFileSync(file, "utf8");
@@ -152,13 +194,21 @@ export function updatePhasesRow(task, { done, verdict }) {
 
 // ---------- git ----------------------------------------------------------------------------
 
+// PR-90: in the publish job (DEVOS_ROOT set), git reads only the repository's own configuration, which publish wrote,
+// never starts a hook or an fsmonitor program, and reads every path as a path (a branch's firebase.json cannot pass
+// `:(exclude)…` magic to a gate's diff).
+const PUBLISH_GIT = process.env.DEVOS_ROOT ? ["-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false"] : [];
+const PUBLISH_ENV = process.env.DEVOS_ROOT
+  ? { env: { ...Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_"))), GIT_CONFIG_NOSYSTEM: "1", GIT_CONFIG_GLOBAL: "/dev/null", GIT_LITERAL_PATHSPECS: "1" } }
+  : {};
+
 export function git(args, opts = {}) {
-  return execFileSync("git", args, { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], ...opts }).trim();
+  return execFileSync("git", [...PUBLISH_GIT, ...args], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], ...PUBLISH_ENV, ...opts }).trim();
 }
 
 /** Paths changed in the working tree relative to HEAD, including untracked, excluding ignored. */
 export function changedPaths() {
-  const out = execFileSync("git", ["status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: ROOT, encoding: "utf8" });
+  const out = execFileSync("git", [...PUBLISH_GIT, "status", "--porcelain=v1", "-z", "--untracked-files=all"], { cwd: ROOT, encoding: "utf8", ...PUBLISH_ENV });
   const paths = [];
   const parts = out.split("\0").filter(Boolean);
   for (let i = 0; i < parts.length; i++) {
@@ -176,7 +226,7 @@ export function changedPaths() {
  * diff.
  */
 export function diffPaths(base, pathspec = []) {
-  const out = execFileSync("git", ["diff", "--name-only", "--no-renames", "-z", `${base}...HEAD`, ...(pathspec.length > 0 ? ["--", ...pathspec] : [])], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+  const out = execFileSync("git", [...PUBLISH_GIT, "diff", "--name-only", "--no-renames", "-z", `${base}...HEAD`, ...(pathspec.length > 0 ? ["--", ...pathspec] : [])], { cwd: ROOT, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], ...PUBLISH_ENV });
   return out.split("\0").filter(Boolean);
 }
 

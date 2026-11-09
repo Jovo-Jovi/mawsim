@@ -10,7 +10,8 @@ import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSyn
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
+// PR-90: DEVOS_ROOT, as lib.mjs reads it.
+const ROOT = process.env.DEVOS_ROOT ? path.resolve(process.env.DEVOS_ROOT) : path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const PENDING = path.join(ROOT, ".devos", "usage", "pending.jsonl");
 const DIR = path.join(ROOT, "docs", "usage");
 const SUMMARY = path.join(ROOT, "docs", "USAGE.md");
@@ -54,9 +55,21 @@ function lastResult(list) {
   return [...list].reverse().find((item) => item.type === "result") ?? (list.length === 1 ? list[0] : null);
 }
 
+/** E62: a Claude Code stream stopped before its result: the usage of each assistant message, counted once per message id. */
+function claudeMessages(list) {
+  const messages = new Map();
+  for (const item of list) {
+    const m = item.type === "assistant" ? item.message : null;
+    if (m && typeof m === "object" && m.usage && typeof m.usage === "object") messages.set(m.id ?? messages.size, m.usage);
+  }
+  if (messages.size === 0) return EMPTY;
+  const sum = (key) => [...messages.values()].reduce((total, u) => total + (num(u[key]) ?? 0), 0);
+  return { ...EMPTY, input: sum("input_tokens"), output: sum("output_tokens"), cache_read: sum("cache_read_input_tokens"), cache_write: sum("cache_creation_input_tokens") };
+}
+
 function claude(list) {
   const r = lastResult(list);
-  if (!r) return EMPTY;
+  if (!r) return claudeMessages(list);
   const seconds = num(r.duration_ms) === null ? null : Math.round(r.duration_ms / 1000);
   const cost = num(r.total_cost_usd);
   const models = r.modelUsage && typeof r.modelUsage === "object" ? Object.values(r.modelUsage) : [];

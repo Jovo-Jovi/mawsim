@@ -158,8 +158,11 @@ async function collect() {
     }
   }
 
-  // 3. Vercel preview of this branch (task PRs only).
-  if (task && process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) await diagnoseVercel(f, add);
+  // 3. Vercel preview of this branch (task PRs, and a unit's acceptance PR: Vercel's own preview, from Git, PR-91), and
+  // on an acceptance PR what could deploy or reach a secret outside your merge.
+  const unit = /^devos\/unit-T\d{2,3}$/.test(branch);
+  if ((task || unit) && process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) await diagnoseVercel(f, add);
+  if (unit && process.env.VERCEL_TOKEN && process.env.VERCEL_PROJECT_ID) await diagnoseDeploy(f, add);
 
   // 4. Branch against main.
   if (f.mergeable_state === "dirty") {
@@ -264,6 +267,43 @@ function deployBypass() {
   return value.deploy?.bypass === true;
 }
 
+/**
+ * PR-91: what could put production, or a production value, outside your merge: Vercel deploying main from Git (before
+ * devos-deploy's backup and migrations), and a variable that Production and Preview share (a branch preview reads it).
+ * Names only, never a value.
+ */
+export function deploymentFindings(project, envs, vercelJson) {
+  const items = [];
+  const link = project?.link;
+  const enabled = vercelJson?.git?.deploymentEnabled;
+  const mainOff = enabled === false || (enabled && typeof enabled === "object" && enabled.main === false);
+  if (link && (link.productionBranch ?? "main") === "main" && !mainOff && !project?.commandForIgnoringBuildStep) {
+    items.push({ key: "deploy-git", label: "Production from Git", level: "warn", state: "Vercel deploys main from Git",
+      todo: [{ who: "you", text: "Turn it off, so production deploys only from `devos-deploy` after your merge: `\"git\": { \"deploymentEnabled\": { \"main\": false } }` in `vercel.json`, or an Ignored Build Step in the project's Git settings." }] });
+  }
+  const shared = [...new Set((Array.isArray(envs) ? envs : []).filter((e) => {
+    const t = Array.isArray(e?.target) ? e.target : [e?.target];
+    return t.includes("production") && t.includes("preview");
+  }).map((e) => String(e.key).replace(/[^A-Za-z0-9_]/g, "")))].sort();
+  if (shared.length) {
+    items.push({ key: "deploy-env", label: "Preview variables", level: "warn", state: `${shared.length} shared with Production`,
+      todo: [{ who: "you", text: `A preview built from a branch reads these Production values: ${shared.map((k) => `\`${k}\``).join(", ")}. In Vercel → Settings → Environment Variables, give Preview its own values (or none).` }] });
+  }
+  return items;
+}
+
+async function diagnoseDeploy(f, add) {
+  const id = process.env.VERCEL_PROJECT_ID;
+  const project = await vercel(`/v9/projects/${encodeURIComponent(id)}`);
+  const env = await vercel(`/v10/projects/${encodeURIComponent(id)}/env`);
+  if (!project || project.error || !env || env.error) { f.evidence.push(`Vercel API (deployment checks): ${project?.error ?? env?.error ?? "no token"}`); return; }
+  let vercelJson = null;
+  try { vercelJson = existsSync(P("vercel.json")) ? JSON.parse(readFileSync(P("vercel.json"), "utf8")) : null; } catch { vercelJson = null; }
+  const items = deploymentFindings(project, env.envs, vercelJson);
+  if (!items.length) add({ key: "deploy", label: "Deployment settings", level: "ok", state: "production only from your merge; no shared Preview variable", todo: [] });
+  for (const item of items) add(item);
+}
+
 async function diagnoseVercel(f, add) {
   const list = await vercel(`/v6/deployments?projectId=${process.env.VERCEL_PROJECT_ID}&limit=40`);
   if (!list || list.error) { f.evidence.push(`Vercel API: ${list?.error ?? "no token"}`); return; }
@@ -274,12 +314,12 @@ async function diagnoseVercel(f, add) {
   const inspector = d.inspectorUrl;
   if (d.state === "BLOCKED") {
     add({ key: "vercel", label: "Vercel preview", level: "warn", state: "Blocked by Vercel", link: inspector,
-      todo: [{ who: "auto", text: "Vercel blocked it because the commit author (`devos-runner`) is not the owner of your Hobby team. Since PR-15 the runner deploys previews without git metadata, so new attempts are not blocked. The preview is evidence only; it does not block the merge." }] });
+      todo: [{ who: "you", text: "Vercel blocked it because the commit author (`devos-runner`) is not the owner of your Hobby team. Since PR-90 the cycle makes no preview of its own (it holds no Vercel token): a preview comes only from Vercel's Git integration, which a Hobby team blocks for the runner's commits. The review and the screenshots use the local build; the preview does not block the merge." }] });
     return;
   }
   if (d.state === "ERROR" || d.state === "CANCELED") {
     add({ key: "vercel", label: "Vercel preview", level: "warn", state: d.state.toLowerCase(), link: inspector,
-      todo: [{ who: "you", text: `Open the [deployment](${inspector}) for the build log. It does not block the merge; the next attempt deploys again.` }] });
+      todo: [{ who: "you", text: `Open the [deployment](${inspector}) for the build log. It does not block the merge; Vercel builds the branch again on its next push.` }] });
     return;
   }
   if (d.state !== "READY") { add({ key: "vercel", label: "Vercel preview", level: "info", state: d.state.toLowerCase(), link: url, todo: [] }); return; }

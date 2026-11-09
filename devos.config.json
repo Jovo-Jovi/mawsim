@@ -4,6 +4,10 @@
   "base_branch": "main",
   "branch_prefix": "task/",
   "max_attempts": 3,
+  "acceptance": {
+    "$comment": "PR-91: product tasks are built in units. A unit ends at a row with a Gate and at the last row of a phase (gate), at the last row of a phase (phase), or at every task (task). A PASS merges into the unit's branch, devos/unit-<its last task>; at the unit's end the cycle opens one pull request into main (devos:acceptance) and stops, and only your merge of it reaches main. Method fixes (Phase PM) are in no unit.",
+    "unit": "gate"
+  },
   "builder": {
     "cli": "agent",
     "model": "grok-4.7-high",
@@ -138,7 +142,7 @@
       ]
     },
     "builder_method": {
-      "$comment": "PR-28: a method fix (Phase PM) may change workflows, runner scripts, guards, prompts and this config; never the product, the reviewer's own rules or the ledgers. The workflow from main forces the deep review and the human gate.",
+      "$comment": "PR-28: a method fix (Phase PM) may change runner scripts, guards, prompts and this config; never the product, the reviewer's own rules or the ledgers. The workflow from main forces the deep review and the human gate. PR-90: never a workflow or action file, which a person applies by hand.",
       "deny": [
         "src/**",
         "content/**",
@@ -429,6 +433,19 @@
           "src/modules/<name>/index.ts"
         ]
       }
+    }
+  },
+  "tool_versions": {
+    "$comment": "PR-93 (M3): the exact version of each tool the workflows install, read by scripts/devos/pins.mjs. A project may set its own in devos/project.json; devos upgrade brings the engine's. Each npm package is its newest release at least two weeks old when the engine pinned it; cursor is the agent package Cursor's installer served then (it lists no older one), checked by the SHA-256 of its linux/x64 download.",
+    "claude": "2.1.310",
+    "codex": "0.164.0",
+    "gemini": "0.65.0",
+    "firebase": "15.34.1",
+    "vercel": "65.2.0",
+    "pnpm": "10.34.9",
+    "cursor": {
+      "version": "2026.11.05-86047df",
+      "sha256_linux_x64": "170b77786cbf4c93064d64fff12b71a178b968730561c64afc2e8e752535442e"
     }
   },
   "project": "MAWSIM",

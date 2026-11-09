@@ -47,6 +47,38 @@ export function fenceMedia(text) {
   return line ? backticked(line[1]) : null;
 }
 
+/** The `- Dependencies:` line's text (PR-85), or null when the fence has none. */
+function dependencyLine(text) {
+  const line = /^- Dependencies:[ \t]*(.*)$/m.exec(headOf(text));
+  return line ? line[1].trim() : null;
+}
+
+const MAX_PAGES = 10;
+
+/** The launch task's `- Launch:` line (PR-88): the main pages its readiness checks visit, or `none`; { found, none, paths, errors }. */
+export function launchLine(fenceText) {
+  const line = String(fenceText ?? "").split(/\r?\n/).find((row) => /^- Launch:/.test(row));
+  if (line === undefined) return { found: false, none: false, paths: [], errors: [] };
+  const value = line.slice("- Launch:".length).trim();
+  if (/^none$/i.test(value)) return { found: true, none: true, paths: [], errors: [] };
+  const paths = value.split(/\s*[·,]\s*|\s+/).filter(Boolean);
+  const errors = [];
+  if (paths.length === 0) errors.push("names no page: give the main pages (`- Launch: / · /pricing`) or `none`");
+  for (const item of paths) if (!/^\/[^\s?#]*$/.test(item)) errors.push(`"${item}" is not a page path (it starts with / and has no query)`);
+  if (new Set(paths).size !== paths.length) errors.push("names a page twice");
+  if (paths.length > MAX_PAGES) errors.push(`names ${paths.length} pages; ${MAX_PAGES} at most`);
+  return { found: true, none: false, paths, errors };
+}
+
+/** The packages the fence's `- Dependencies:` line names (PR-85): [] for `none` and for no line at all. */
+export function fenceDependencies(text) {
+  const line = dependencyLine(text);
+  return line === null || /^none$/i.test(line) ? [] : backticked(line);
+}
+
+// An npm package name: lower case, an optional @scope/, no leading dot or underscore.
+export const PACKAGE_NAME = /^(?:@[a-z0-9][a-z0-9._~-]*\/)?[a-z0-9][a-z0-9._~-]*$/;
+
 /** The items of docs/design/media.json (PR-79), or null when there is no readable plan. */
 export function mediaItems() {
   try {
@@ -160,6 +192,18 @@ export function checkFence(text, file) {
     else if (items === null) findings.push("a `- Media:` line needs docs/design/media.json, the media plan (PR-79)");
     else for (const id of media) if (!items.some((item) => item.id === id)) findings.push(`media item \`${id}\` is not in docs/design/media.json`);
   }
+
+  // PR-85: the packages the task may add to a manifest, or `none`.
+  const dependencies = dependencyLine(text);
+  if (dependencies !== null) {
+    const names = fenceDependencies(text);
+    if (names.length === 0 && !/^none$/i.test(dependencies)) findings.push("the `- Dependencies:` line names no package: name each in backticks, or write `none` (PR-85)");
+    for (const name of names) if (name.length > 214 || !PACKAGE_NAME.test(name)) findings.push(`dependency \`${name}\` is not a package name (such as \`zod\` or \`@scope/name\`)`);
+    for (const name of new Set(names.filter((name, i) => names.indexOf(name) !== i))) findings.push(`dependency \`${name}\` is named twice`);
+  }
+
+  // PR-88: the launch task names the main pages its readiness checks visit, or `none`.
+  for (const error of launchLine(head).errors) findings.push(`the \`- Launch:\` line ${error} (PR-88)`);
 
   if (!hasPart(text, "Done when")) findings.push("no Done when section");
   if (!hasPart(text, "Do NOT")) findings.push("no Do NOT section");
