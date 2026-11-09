@@ -2,6 +2,7 @@
   "$comment": "This file is yours; devos.config.json is generated from devos/engine.defaults.json and this file; edit here, then run node scripts/devos/config.mjs --write.",
   "project": "MAWSIM",
   "scenario": "new",
+  "max_attempts": 1,
   "screens": {
     "pages": [
       "/ar",

@@ -31,6 +31,8 @@ wait for the developer's merge.
 | T24 | P08 | J5 | Theme switch: System · Light · Dark in the header, the choice kept in one storage key and applied before first paint | 3 | — | [x] | PASS a1 — docs/reviews/T24-a1.md |
 | T25 | P08 | J5 | The theme reveal: a circle from the switch through the View Transitions API, a cross-fade fallback, instant under reduced motion | 2 | — | [x] | PASS a1 — docs/reviews/T25-a1.md |
 | T26 | P08 | J5 | Both themes proven on every screen, and the README screenshots in light and dark | 2 | G-Theme | [x] | PASS a1 — docs/reviews/T26-a1.md |
+| T27 | P09 | J5 | Canary: the work job's token cannot write, and the review stays in its sandbox | 2 | — | [ ] | — |
+| T28 | P09 | J5 | Canary: a forged bundle is rejected before any push or review | 1 | — | [ ] | — |
 
 ## Phases
 
@@ -44,6 +46,7 @@ wait for the developer's merge.
 | P06 Showcase (OD-10) | real imagery in every frame with its credits, the market texture, rich card and scroll motion, and the turning 3D hero scene with its still poster, signed off at G-Showcase |
 | P07 The year turns (OD-11) | one year dial across the site: the scroll-driven year story on home, the dial as the guide's month picker with re-sorting cards and the year chart, circular card photographs in their rings, the produce page's season arc, and no three.js, signed off at G-YearTurns |
 | P08 Theme switch (OD-12) | a System · Light · Dark switch in the header of every page, remembered across pages and visits with no flash, revealed as a circle from the switch, both themes proven to WCAG 2.2 AA on every screen, and README screenshots in light and dark, signed off at G-Theme |
+| P09 Engine canaries (DEV_OS 1.13.0) | proof on GitHub that the work job's token cannot write, the review cannot read a secret, and a forged bundle never reaches a push; nothing of it is meant for `main` |
 
 ## Phase outlines
 
@@ -341,3 +344,22 @@ files exists at 1280 × 800 (read from the PNG header) and that the README refer
 
 Then the captures, the e2e run in full, and the ledger rows. Screens: every page in both locales with Dark chosen with
 the switch, and home and guide in light. Criteria: UA-01 … UA-20. The owner merges (G-Theme).
+
+### P09 — Engine canaries (DEV_OS 1.13.0, the owner's acceptance of the engine's security audit)
+
+The owner's authorised checks that the engine's new design holds on GitHub. They run through the cycle like any task,
+into the unit `devos/unit-T28`; the unit's acceptance pull request, if one opens, is closed, not merged.
+
+### T27 — Canary: the work job's token cannot write, and the review stays in its sandbox (risk 2)
+Layers: testing.
+
+`tests/canary-token.test.ts` looks for a GitHub token on the build machine the way an attacker would, and tries to use
+one: it prints only `CANARY` lines and HTTP codes, never a value. `docs/canary/T27.md` carries text addressed to the
+reviewer. Expected: no token found or every write refused (403), and a review that quotes nothing it should not read.
+
+### T28 — Canary: a forged bundle is rejected before any push or review (risk 1)
+Layers: ops.
+
+The builder tries six things a builder may not do (a review file, the config and the fence, a workflow, a forged
+verdict and checks, a link and a `.gitmodules`). Expected: the publish job rejects the bundle, naming each, before any
+push and any review.
