@@ -11,7 +11,7 @@
 // Env: GH_TOKEN (the runner token), REPO, EVENT_NAME, WF_NAME, WF_RUN_ID, WF_CONCLUSION.
 import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from "node:fs";
-import { P, config, parsePhases, nextOpenTask, emit } from "./lib.mjs";
+import { P, config, parsePhases, nextOpenTask, isMethodRow, emit } from "./lib.mjs";
 
 const argv = process.argv.slice(2);
 const cmd = argv[0] || "scan";
@@ -52,6 +52,22 @@ const today = () => new Date().toISOString().slice(0, 10);
 // ---------- facts ----------
 function collect() {
   const rows = parsePhases().rows;
+  // PR-91: the open unit's progress is on its branch until your merge (unit.mjs open, as the cycle reads it). A unit
+  // that is complete waits for your acceptance, whether its pull request is open or closed: nothing is idle then.
+  let unitComplete = false;
+  try {
+    const dir = P(".devos/supervisor/unit");
+    execFileSync(process.execPath, [P("scripts/devos/unit.mjs"), "open", "--repo", REPO, "--out", dir], { stdio: "ignore", env: { ...process.env, GITHUB_OUTPUT: "" } });
+    const open = JSON.parse(readFileSync(`${dir}/open.json`, "utf8"));
+    if (open) {
+      const unitRows = parsePhases(readFileSync(`${dir}/PHASES.md`, "utf8")).rows;
+      for (const r of rows) {
+        const u = isMethodRow(r) ? null : unitRows.find((x) => x.task === r.task);
+        if (u?.done) r.done = true;
+      }
+      unitComplete = open.tasks.every((t) => rows.find((r) => r.task === t)?.done);
+    }
+  } catch { /* no unit, or GitHub did not answer: main's view */ }
   const next = nextOpenTask(rows);
   const runsJson = api(`repos/${REPO}/actions/workflows/${CYCLE}/runs?per_page=25`) || { workflow_runs: [] };
   const runs = (runsJson.workflow_runs || []).map((r) => ({
@@ -77,6 +93,9 @@ function collect() {
     event: { name: process.env.EVENT_NAME || "", workflow: (process.env.WF_PATH || "").split("/").pop().replace(/\.ya?ml$/, "") || process.env.WF_NAME || "", run: process.env.WF_RUN_ID || "", conclusion: process.env.WF_CONCLUSION || "" },
     next_task: next ? { task: next.task, name: next.name, phase: next.phase } : null,
     runs, active: active.map((r) => r.id), task_prs: taskPrs, intake_prs: intakePrs.map((p) => p.number), rescues,
+    // PR-91: a unit's acceptance pull request waits for your merge; nothing is idle meanwhile.
+    acceptance_prs: prs.filter((p) => p.labels.includes("devos:acceptance")).map((p) => p.number),
+    unit_complete: unitComplete,
   };
   writeFileSync(`${DIR}/facts.json`, JSON.stringify(facts, null, 2));
   return facts;
@@ -112,31 +131,42 @@ function answeredAfter(pr, since) {
 // the maximum execution time". That run stopped; a run someone cancelled did not. `saved`: the builder's work was
 // pushed before the limit, so only the checks and the review need to run again.
 // The annotations are read with the workflow's own token (`checks: read`), since DEVOS_PAT has no Checks access. If
-// they cannot be read, a job that ran its whole limit (the cycle job's `timeout-minutes`) counts as stopped.
-function cycleJobMinutes() {
+// they cannot be read, a job that ran its whole limit (its `timeout-minutes`) counts as stopped.
+// PR-90: an attempt runs in two jobs, `work` (devos-work.yml, listed as "work / work") and `publish`; a run from before
+// has one job, `cycle`. The builder's work is pushed by publish's "Push the builder's work" (before: "Commit and push
+// the builder's work"), so a `work` job stopped at its limit has saved nothing.
+const LIMITED = {
+  cycle: ["devos-cycle.yml", "cycle", 150],
+  work: ["devos-work.yml", "work", 150],
+  "work / work": ["devos-work.yml", "work", 150],
+  publish: ["devos-cycle.yml", "publish", 120],
+};
+function jobMinutes(name) {
+  const [file, job, fallback] = LIMITED[name];
   try {
-    const text = readFileSync(P(".github/workflows/devos-cycle.yml"), "utf8");
-    const job = text.slice(text.search(/^ {2}cycle:\s*$/m));
-    const m = job.match(/^ {4}timeout-minutes:\s*(\d+)/m);
-    return m ? Number(m[1]) : 0;
+    const text = readFileSync(P(`.github/workflows/${file}`), "utf8");
+    const at = text.search(new RegExp(`^ {2}${job}:\\s*$`, "m"));
+    if (at < 0) return fallback;
+    const m = text.slice(at).match(/^ {4}timeout-minutes:\s*(\d+)/m);
+    return m ? Number(m[1]) : fallback;
   } catch {
-    return 0;
+    return fallback;
   }
 }
 function timeLimit(runId) {
   const jobs = api(`repos/${REPO}/actions/runs/${runId}/jobs`)?.jobs || [];
   for (const j of jobs) {
-    // Only the cycle job: cancelling `wait-and-resume` is how the owner stops a wait.
-    if (j.name !== "cycle" || j.conclusion !== "cancelled") continue;
+    // Only the attempt's own jobs: cancelling `wait-and-resume` is how the owner stops a wait.
+    if (!Object.hasOwn(LIMITED, j.name) || j.conclusion !== "cancelled") continue;
     let notes = null;
     try { notes = JSON.parse(gh(["api", `repos/${REPO}/check-runs/${j.id}/annotations`], { allowFail: true, report: true }) || "null"); } catch { notes = null; }
-    const limit = cycleJobMinutes();
+    const limit = jobMinutes(j.name);
     const ran = (new Date(j.completed_at).getTime() - new Date(j.started_at).getTime()) / 60000;
     const hit = Array.isArray(notes)
       ? notes.some((a) => /exceeded the maximum execution time/i.test(a.message || ""))
       : limit > 0 && ran >= limit - 1;
     if (hit) {
-      const saved = (j.steps || []).some((st) => /^Commit and push the builder's work/.test(st.name || "") && st.conclusion === "success");
+      const saved = (j.steps || []).some((st) => /^(Commit and push the builder's work|Push the builder's work)/.test(st.name || "") && st.conclusion === "success");
       return { hit: true, saved };
     }
   }
@@ -265,7 +295,8 @@ function detect(facts) {
 
   // 4. Nothing moving although work is waiting.
   const lastRun = facts.runs[0];
-  const waitingForOwner = facts.task_prs.some((p) => p.labels.some((l) => ["devos:human-gate", "devos:quota-wait", "devos:halted", "devos:needs-you"].includes(l)));
+  const waitingForOwner = facts.task_prs.some((p) => p.labels.some((l) => ["devos:human-gate", "devos:quota-wait", "devos:halted", "devos:needs-you"].includes(l))) ||
+    (facts.acceptance_prs ?? []).length > 0 || facts.unit_complete === true;
   if (!busy && !waitingForOwner && !inc.length && facts.next_task && facts.intake_prs.length === 0 &&
       (!lastRun || minutesSince(lastRun.updated) > S.idle_minutes) &&
       !facts.task_prs.some((p) => p.head === `task/${facts.next_task.task}`)) {

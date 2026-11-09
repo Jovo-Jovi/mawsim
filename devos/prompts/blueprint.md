@@ -7,9 +7,10 @@ stores data, sign-in, languages, deploy target and repository visibility. Nobody
 run: where the answers and your research leave something open, choose the safer option and record it as an
 **assumption** in `docs/DEVOS_FIT.md`.
 
-When `devos/intake-docs/` exists, read every file in it before step 1 (PDFs too), and every image in
-`docs/design/references/` (the developer's design references and brand assets, named for what they show; your Read
-tool shows an image). A file your tool cannot open (a format it does not read, or an image too large for it) is
+When `devos/intake-docs/` exists, read every file in it before step 1 (PDFs too). Read every image in
+`docs/design/references/` too (the developer's design references and brand assets, named for what they show; your Read
+tool shows an image), and in `docs/design/own/` (images the developer owns, such as a logo or product photos, which the
+product shows as they are). A file your tool cannot open (a format it does not read, or an image too large for it) is
 worked from its name and the developer's notes, and recorded as an assumption. Where a document and the answers
 disagree, the answers win. Anything the product needs that neither gives goes into `docs/OPEN_QUESTIONS.md`, one
 question per line; when nothing is open, that file holds the single line `No open questions.`
@@ -81,6 +82,11 @@ Work in this order.
    image, video and voice item of `media_kinds` the phases' screens need for that ambition, each with its use, its
    file in the stack's static folder, its prompt (or, for voice, its text, language and voice) written from the
    direction, and `status` `planned`; `DESIGN_SYSTEM.md` gives each a fallback. Nothing is generated in this run.
+   Every image in `docs/design/own/` is an item of that plan too, whatever `modules.media` says (PR-82): `"source":
+   "own"`, `from` its path there, `kind` `image`, its use, its alt text (or `decorative`), its file in the stack's
+   static folder with the same extension, and `status` `planned`. When `modules.media` is `none`, the plan lists only
+   these, with `provider` `none`. Never regenerate, edit or crop one, and never use it as a design reference: the
+   direction is built around it.
    Two formats are read by guards and must be exact:
    - `docs/PHASES.md`: the header `| Task | Phase | Station | Name | Risk | Gate | Done | Verdict |`, a separator
      row, then one row per task — `T01` first, ids ascending, Risk 1, 2 or 3, Done `[ ]`, Verdict `—`.
@@ -95,7 +101,7 @@ Work in this order.
    only through its public entry (`guard:imports`, PR-58); the task that first builds a module creates its folder
    and its public entry. Fill `.cursor/rules/10-security-data.mdc` and
    `.cursor/rules/30-vocabulary.mdc`. Write `.cursor/mcp.example.json` and `devos/ci/mcp.ci.json` from step 3, and
-   `CLAUDE.md` from the handbook's §15.1 template. Write the `devos:boundary` line in `docs/BOUNDARY_MODEL.md`
+   `CLAUDE.md` from the handbook's §15.1 template (not in a local project: it is handed over, PR-83). Write the `devos:boundary` line in `docs/BOUNDARY_MODEL.md`
    (PR-19). With the backend module, plan T01 or the first J4 task to create `supabase/`.
 6. **Issue fence T01** as `docs/fences/T01.md` in the format of handbook §6.3, and rehearse every path it names.
    T01 is always the scaffold, from `devos.config.json` `stack.scaffold`, and builds no feature: run its `create`
@@ -108,6 +114,10 @@ Work in this order.
    is `node scripts/devos/run-checks.mjs --strict` exiting 0. T01 keeps the root `README.md` (PR-77): the
    generator's own README is never copied, T01 only fills `## Getting started` with the commands it makes work, and
    no Done-when asks for `README.md` to be absent. T01 is not a UI fence: it carries no `- Screens:` line.
+   In a local project (`devos/answers.json` `cycle` is `local`), DEV_OS hands the project over once the developer
+   approves (PR-83): its scripts, guards, workflows and agent settings leave and `docs/method/` stays. So no fence
+   there names `scripts/devos/`, a guard or a `devos` command: T01's Done-when is each of `devos.config.json`
+   `stack.commands` exiting 0, and the developer ticks `docs/PHASES.md`.
    Every fence carries `- Layers: <layer> · <layer>` in its header: the layers of `devos/skills/INDEX.md` the task touches (`design`, `motion`, `frontend`, `accessibility`, `architecture`, `backend`, `api`, `database`, `security`, `reliability`, `testing`, `ops`); T01's are usually `ops · testing`. The runner gives the builder and the reviewer the skills of those layers, and a server-side or deep task always the security layer and a code task the testing layer (PR-55, PR-56, PR-57).
    Every fence also carries the builder line `- Builder: <an id of devos.config.json agents.pool> · Effort:
    <low|medium|high|xhigh> · Fast: <yes|no>` (T01: `high`, `no`, or the builder's fixed `effort` and `fast` when `devos.config.json` gives it one, PR-78) and `- Paths: \`<glob>\` · …`: every file and
@@ -116,6 +126,14 @@ Work in this order.
    `docs/SESSION_CONTEXT.md`, `docs/DEVELOPMENT_JOURNAL.md` and a lockfile beside a listed manifest are always
    allowed. Before you finish, run `node scripts/devos/fence-check.mjs docs/fences/T01.md` and fix every finding
    (PR-58).
+   Every fence also carries `- Dependencies: \`<package>\` · …`, or `- Dependencies: none`: every package the task may
+   add to a manifest (`guard:deps`, PR-85). T01 creates the manifest, so its line names the packages it adds beyond
+   the stack's `create` commands, such as the logger.
+   With `scope` `full`, the last task before launch is **the launch task** (`docs/method/READINESS.md`, PR-88):
+   risk 3, with the owner's gate. Its fence carries `- Launch: / · /<page> · …`, naming the main pages (10 at most),
+   or `- Launch: none` for a product without pages. Its `- Layers:` line names every layer the product has. Its steps
+   fix what the readiness checklist needs: security headers, error tracking, backups and rate limits. It adds no
+   feature.
    Every later fence that builds a screen carries a `- Screens:` line and a `### Design specification`
    (`docs/method/DESIGN_METHOD.md` §3), and, when the screen shows planned media, `- Media: \`<id>\` · …` (PR-81).
 7. **End with a summary** as your final message: the profile, the ODs the developer signs by approving, your
